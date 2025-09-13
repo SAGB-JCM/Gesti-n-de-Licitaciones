@@ -621,6 +621,7 @@
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="proyecto">Proyecto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombre">Nombre<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="descripcion">Descripción<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="generalidades">Generalidades<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="siglasDependencia">Dependencia<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="codigoExpediente">Cód. Expediente<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="procedimientoContratacion">Procedimiento<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
@@ -674,6 +675,7 @@
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="proyecto">Proyecto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombre">Nombre<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="descripcion">Descripción<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="generalidades">Generalidades<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="siglasDependencia">Dependencia<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="codigoExpediente">Cód. Expediente<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="procedimientoContratacion">Procedimiento<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
@@ -1489,6 +1491,7 @@
                     <td class="py-4 px-6">${truncateText(licitacionItem.proyecto, 30)}</td>
                     <td class="py-4 px-6">${truncateText(licitacionItem.nombre, 30)}</td>
                     <td class="py-4 px-6">${truncateText(licitacionItem.descripcion, 30)}</td>
+                    <td class="py-4 px-6">${truncateText(licitacionItem.generalidades, 30)}</td>
                     <td class="py-4 px-6">${truncateText(licitacionItem.siglasDependencia, 30)}</td>
                     <td class="py-4 px-6">${truncateText(licitacionItem.codigoExpediente, 30)}</td>
                     <td class="py-4 px-6">${truncateText(licitacionItem.procedimientoContratacion, 30)}</td>
@@ -2956,9 +2959,9 @@
         // =============================================
 
         const exportHeaders = [
-            "No.", "Proyecto", "Nombre", "Descripción", "Siglas Dependencia", "Código Expediente", 
-            "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura", "Fecha Fallo", 
-            "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto", "Link Compras XM"
+            "No.", "Proyecto", "Nombre", "Descripción", "Generalidades", "Siglas Dependencia", 
+            "Código Expediente", "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura", 
+            "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto", "Link Compras XM"
         ];
 
         function prepareExportData(data) {
@@ -2967,6 +2970,7 @@
                 "Proyecto": licitacionItem.proyecto || "",
                 "Nombre": licitacionItem.nombre || "",
                 "Descripción": licitacionItem.descripcion || "",
+                "Generalidades": licitacionItem.generalidades || "",
                 "Siglas Dependencia": licitacionItem.siglasDependencia || "",
                 "Código Expediente": licitacionItem.codigoExpediente || "",
                 "Procedimiento": licitacionItem.procedimientoContratacion || "",
