@@ -1,0 +1,3217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Seguimiento de Licitaciones</title>
+    
+    <!-- jQuery (requerido para Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- js-xlsx para leer archivos de Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Select2 for searchable dropdown -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <!-- html2pdf para generar reportes en PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Librerías para manipulación de .docx -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.34.1/docxtemplater.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <!-- SunEditor (Rich Text Editor) -->
+    <link href="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/css/suneditor.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/suneditor@latest/dist/suneditor.min.js"></script>
+
+    <!-- Firebase App (el módulo principal de Firebase) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #9C2348;
+            --secondary-color: #A6802D;
+            --accent-color: #1E5B4F;
+            --success-color: #10B981;
+            --danger-color: #EF4444;
+        }
+        
+        html { font-size: 60%; }
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
+        
+        .bg-primary { background-color: var(--primary-color); }
+        .text-primary { color: var(--primary-color); }
+        .border-primary { border-color: var(--primary-color); }
+        .focus\:ring-primary:focus { --tw-ring-color: var(--primary-color); }
+        
+        .bg-secondary { background-color: var(--secondary-color); }
+        .text-secondary { color: var(--secondary-color); }
+        .border-secondary { border-color: var(--secondary-color); }
+        
+        .bg-accent { background-color: var(--accent-color); }
+        .text-accent { color: var(--accent-color); }
+        .border-accent { border-color: var(--accent-color); }
+        
+        .bg-success { background-color: var(--success-color); }
+        .hover\:bg-success-dark:hover { background-color: #059669; }
+        
+        .bg-danger { background-color: var(--danger-color); }
+        .hover\:bg-danger-dark:hover { background-color: #DC2626; }
+        
+        .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
+        .modal-leave { animation: fadeOut 0.3s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+        
+        .hidden { display: none; }
+        .tab-btn.active { border-color: var(--primary-color); color: var(--primary-color); font-weight: bold; }
+        
+        .loader { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(255, 255, 255, 0.9); z-index: 9999; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        }
+        .loader .spinner { 
+            border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; 
+            border-left-color: var(--primary-color); animation: spin 1s ease infinite; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .table-container { 
+            overflow-x: auto; 
+            max-height: 455px;
+            overflow-y: auto;
+        }
+
+        /* Estilo específico para la altura de la tabla de histórico */
+        #historical-table-container {
+            max-height: 510px; /* <-- Puedes ajustar este valor a tu preferencia */
+        }
+        
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb {
+            background: #c5c5c5;
+            border-radius: 10px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Mejora para encabezados de tabla fijos */
+        .table-container thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f1f5f9; /* Color de bg-slate-100 para evitar transparencia */
+        }
+
+        .sortable-header { cursor: pointer; }
+        .sortable-header .sort-icon { display: none; }
+        .sortable-header.asc .sort-icon.asc,
+        .sortable-header.desc .sort-icon.desc { display: inline-block; }
+        .filterable-header { 
+            cursor: pointer; 
+            position: relative;
+        }
+        .filterable-header .filter-icon {
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .filterable-header:hover .filter-icon,
+        .filterable-header.active .filter-icon {
+            opacity: 1;
+            color: var(--primary-color);
+        }
+
+        .filter-dropdown {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            z-index: 20;
+            max-height: 250px;
+            overflow-y: auto;
+            min-width: 200px;
+        }
+        
+        input:invalid, select:invalid { border-color: #ef4444; }
+        
+        .section-title { font-weight: bold; color: var(--primary-color); margin-bottom: 1rem; }
+        
+        .max-w-7xl {
+            max-width: 100% !important;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .table-container table {
+            width: 100%;
+            min-width: 1200px;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            align-items: end;
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .form-field {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        /* --- Reglas para restaurar el tamaño original de Resumen, Comentario y Fuente --- */
+
+        /* 1. Hacer que el contenedor del campo ocupe todo el ancho del grid */
+        .form-field.full-width {
+            grid-column: 1 / -1; /* Ocupa todas las columnas del grid */
+        }
+
+        /* 2. Anular el ancho fijo del contenedor interno para los textareas */
+        .form-field.full-width .flex-with-buttons {
+            min-width: 100%;
+            max-width: 100%;
+        }
+
+        /* Anular ancho fijo para el campo de fuente también */
+        .form-field:has(#licitacion-linkComprasXM) .flex-with-buttons, .form-field:has(#edit-licitacion-linkComprasXM) .flex-with-buttons {
+            min-width: 100%;
+            max-width: 100%;
+        }
+
+        /* 3. Ocultar los botones de edición para los campos de texto libre */
+        .form-field:has(textarea) .edit-btn,
+        .form-field:has(#licitacion-linkComprasXM) .edit-btn,
+        .form-field:has(#edit-licitacion-linkComprasXM) .edit-btn {
+            display: none;
+        }
+
+        .licitacion-form-container {
+            max-height: 75vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .licitacion-form-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .licitacion-form-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .licitacion-form-container::-webkit-scrollbar-thumb {
+            background: #c5c5c5;
+            border-radius: 10px;
+        }
+
+        .licitacion-form-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .flex-with-buttons {
+            display: flex;
+            align-items: flex-end; /* Alinea el botón con la base del campo */
+            /* Clave: Establece un tamaño fijo para el contenedor del campo y el botón */
+            min-width: 340px;
+            max-width: 340px;
+        }
+
+        .flex-with-buttons .select2-container {
+            flex-grow: 1;
+            margin-bottom: 1px;
+            min-width: 0; /* Permite que el select se encoja y no se desborde */
+        }
+
+        .flex-with-buttons input,
+        .flex-with-buttons textarea {
+            min-width: 0; /* Permite que el campo se encoja y no se desborde */
+        }
+
+        .flex-with-buttons button {
+            height: 38px;
+            width: 38px;
+            margin-bottom: 1px;
+            flex-shrink: 0;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+        }
+
+        .flex-with-buttons button.edit-btn {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .flex-with-buttons button.paste-btn:hover {
+            background-color: #16463c;
+        }
+        
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            padding: 5px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 26px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container {
+            width: 100% !important;
+        }
+
+        /* Regla clave para truncar el texto dentro del campo de selección */
+        .select2-container .select2-selection--single .select2-selection__rendered {
+            display: block;
+            padding-left: 8px;
+            padding-right: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .link-cell {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #1a56db;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .wide-modal .relative {
+            max-width: 76rem !important;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        .dynamic-chart-container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .dynamic-chart-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+        
+        .dynamic-chart-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .dynamic-table-container {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .dynamic-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .dynamic-table th, .dynamic-table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        .dynamic-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .dynamic-table tr:nth-child(even) {
+            background-color: #f3f4f6;
+        }
+        
+        #toggle-labels-btn {
+            transition: all 0.3s ease;
+        }
+
+        #toggle-labels-btn.bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+
+        .webview-modal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .webview-container {
+            width: 90vw;
+            height: 90vh;
+            max-width: 1200px;
+        }
+
+        .webview-modal iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 0.5rem;
+        }
+
+        /* Estilos para el modal de detalles de la licitación */
+        .details-modal-content {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            background-color: #f9fafb;
+        }
+        .details-header {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .details-header .date {
+            font-size: 1rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .details-header .project {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-top: 0.25rem;
+        }
+        .details-section {
+            margin-bottom: 1.5rem;
+        }
+        .details-section h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+        }
+
+        .contenteditable {
+            min-height: 100px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            overflow-wrap: break-word; /* Evita el desbordamiento horizontal con texto largo */
+            background-color: white;
+            overflow-y: auto;
+        }
+
+        .contenteditable:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(156, 35, 72, 0.2);
+        }
+
+        .formatted-content {
+            font-size: 1rem;
+            line-height: 1.5;
+            overflow-wrap: break-word; /* Evita que el texto largo se desborde del contenedor */
+        }
+
+        .formatted-content p {
+            margin-bottom: 0.5rem;
+        }
+
+        .formatted-content ul, .formatted-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Regla mejorada para la sangría de las listas */
+        .formatted-content ul li, .formatted-content ol li {
+            list-style-position: outside !important; /* Asegura que la viñeta esté fuera del flujo de texto */
+            padding-left: 1.5em; /* Espacio para la viñeta y un poco más */
+            text-indent: -1.5em; /* Sangría negativa para alinear el texto de las siguientes líneas */
+            margin-left: 1.5em; /* Empuja todo el elemento a la derecha para crear el espacio de la sangría */
+        }
+
+        .formatted-content strong, .formatted-content b {
+            font-weight: bold;
+        }
+
+        .formatted-content em, .formatted-content i {
+            font-style: italic;
+        }
+
+        .formatted-content u {
+            text-decoration: underline;
+        }
+
+        /* Clase para bloquear el scroll del body cuando un modal está abierto */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#1E5B4F',
+                            light: '#b52e5a',
+                            dark: '#7d1c3a'
+                        },
+                        secondary: {
+                            DEFAULT: '#A6802D',
+                            light: '#bf9a41',
+                            dark: '#8a6b22'
+                        },
+                        accent: {
+                            DEFAULT: '#9C2348',
+                            light: '#267c6c',
+                            dark: '#16463c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased text-slate-700">
+
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+        <p class="mt-4 text-sm text-slate-600">Cargando datos, por favor espera...</p>
+    </div>
+
+    <div id="app" class="min-h-screen hidden">
+
+        <header class="bg-primary shadow-lg sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjx0ZXh0IHg9IjEwIiB5PSIzNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSI+U0lTVEVNQSBERSBMSUNJVEFDSU9ORVM8L3RleHQ+PC9zdmc+" alt="Logo Sistema Licitaciones" class="h-16 w-auto">
+                    <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Sistema de Seguimiento de Licitaciones</h1>
+                </div>
+                <div id="user-info" class="text-white text-sm font-mono"></div>
+            </div>
+        </header>
+
+        <div class="bg-white shadow-sm sticky top-[56px] z-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div id="tabs" class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button data-tab="licitaciones" class="tab-btn active whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Licitaciones</button>
+                        <button data-tab="historico" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Histórico</button>
+                        <button data-tab="reportes" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Reportes</button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+            <main id="tab-content-licitaciones" class="tab-content">
+                <section class="bg-white p-6 rounded-xl shadow-md mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="text-center md:text-left">
+                        <h3 class="text-xl font-semibold text-slate-800">Gestión de Licitaciones</h3>
+                        <p class="text-slate-500">Registra nuevas licitaciones y haz su seguimiento.</p>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <button id="add-licitacion-btn" class="bg-success hover:bg-success-dark text-white font-bold py-4 px-8 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center space-x-3">
+                            <i class="fa-solid fa-plus h-6 w-6"></i>
+                            <span>Registrar Nueva Licitación</span>
+                        </button>
+                    </div>
+                </section>
+                
+                <section id="licitacion-log">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-primary">Registro de Licitaciones</h2>
+                        <div class="flex items-center space-x-2">
+                            <div class="relative w-full">
+                                <input type="text" id="filter-input-main" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <button id="clear-filter-btn-main" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden">
+                                    <i class="fa-solid fa-times-circle"></i>
+                                </button>
+                            </div>
+                            <button id="download-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <span>Descargar Excel</span>
+                            </button>
+                            <button id="migrate-licitacion-btn" class="migrate-btn bg-accent hover:bg-accent-dark text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap">
+                                <i class="fa-solid fa-database"></i>
+                                <span>Migrar a Histórico</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-md table-container">
+                        <table class="w-full text-sm text-left text-slate-500">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                                <tr id="main-table-header">
+                                    <th scope="col" class="py-3 px-6">No.</th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="proyecto">Proyecto <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombre">Nombre <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="siglasDependencia">Siglas Dependencia <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="codigoExpediente">Código Expediente <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="procedimientoContratacion">Procedimiento <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="tipo">Tipo <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="anoPublicacion">Año Publicación <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="fechaPresentacionApertura">Fecha Apertura <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="fechaFallo">Fecha Fallo <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="ganadorLicitacion">Ganador <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="licitacion-table-body"></tbody>
+                        </table>
+                        <div id="no-licitacion-message" class="p-6 text-center text-slate-500 hidden">
+                            <p>No hay licitaciones registradas en la base de datos.</p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <div id="tab-content-historico" class="tab-content hidden">
+                <section id="historical-log">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-primary">Registro Histórico</h2>
+                        <div class="flex items-center space-x-2">
+                            <div class="relative w-full">
+                                <input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <button id="clear-filter-btn-historical" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden">
+                                    <i class="fa-solid fa-times-circle"></i>
+                                </button>
+                            </div>
+                            <button id="download-historical-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <span>Descargar Excel</span>
+                            </button>
+                            <label for="historical-file-input" class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg shadow-sm transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap"><i class="fa-solid fa-file-upload"></i><span>Subir Excel</span><input type="file" id="historical-file-input" class="hidden" accept=".xlsx, .xls"></label>
+                            <button id="import-historical-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-200 ease-in-out hidden items-center space-x-2 whitespace-nowrap" disabled><i class="fa-solid fa-database"></i><span>Subir Excel</span></button>
+                        </div>
+                    </div>
+                    <div id="historical-table-container" class="bg-white rounded-xl shadow-md table-container">
+                        <table class="w-full text-sm text-left text-slate-500">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                                <tr id="historical-table-header">
+                                    <th scope="col" class="py-3 px-6">No.</th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="proyecto">Proyecto <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombre">Nombre <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="siglasDependencia">Siglas Dependencia <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="codigoExpediente">Código Expediente <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="procedimientoContratacion">Procedimiento <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="tipo">Tipo <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="anoPublicacion">Año Publicación <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="fechaPresentacionApertura">Fecha Apertura <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="fechaFallo">Fecha Fallo <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="ganadorLicitacion">Ganador <span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historical-table-body"></tbody>
+                        </table>
+                        <div id="no-historical-message" class="p-6 text-center text-slate-500 hidden">
+                            <p>No hay datos históricos cargados.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="tab-content-reportes" class="tab-content hidden">
+                <section id="reportes" class="bg-white p-6 rounded-xl shadow-md mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-primary">Reportes</h2>
+                        <div class="flex items-center space-x-4">
+                            <button id="upload-template-btn" class="bg-secondary hover:bg-secondary-dark text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
+                                <i class="fa-solid fa-file-word"></i>
+                                <span>Cargar Plantilla Word</span>
+                            </button>
+                            <div class="flex items-center space-x-2">
+                                <label for="reportes-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
+                                <select id="reportes-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                                    <option value="historico">Histórico</option>
+                                    <option value="licitaciones">Licitaciones</option>
+                                    <option value="combinado">Licitaciones + Histórico</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="dynamic-chart-container">
+                        <div class="dynamic-chart-header">
+                            <h3 class="text-xl font-semibold text-slate-800">Licitaciones por</h3>
+                            <select id="dynamic-chart-variable" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                                <option value="proyecto">Proyecto</option>
+                                <option value="siglasDependencia">Dependencia</option>
+                                <option value="procedimientoContratacion">Procedimiento</option>
+                                <option value="tipo">Tipo</option>
+                                <option value="ganadorLicitacion">Ganador</option>
+                            </select>
+                            <button id="toggle-labels-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-3 rounded ml-2">
+                                <i class="fa-solid fa-tag"></i>
+                            </button>
+                        </div>
+                        <div class="dynamic-chart-content">
+                            <div class="chart-wrapper">
+                                <canvas id="dynamicChart"></canvas>
+                            </div>
+                            <div class="dynamic-table-container">
+                                <h4 class="text-lg font-semibold text-slate-800 mb-2 text-center">Distribución</h4>
+                                <table class="dynamic-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="dynamic-table-header">Variable</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dynamic-table-body">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    
+    <div id="licitacion-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-times-circle fa-lg"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-primary mb-6">Registrar Nueva Licitación</h3>
+            <div class="licitacion-form-container">
+                <form id="licitacion-form" class="space-y-6" novalidate>
+                    <!-- Grupo 1: Identificación del Proyecto -->
+                    <div class="section-title">Identificación del Proyecto</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="licitacion-proyecto">Proyecto</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-proyecto" name="proyecto" required></select>
+                                <button type="button" id="edit-proyecto-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-nombre">Nombre</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-nombre" name="nombre" required></select>
+                                <button type="button" id="edit-nombre-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="licitacion-descripcion">Descripción</label>
+                            <div class="flex-with-buttons">
+                                <textarea id="licitacion-descripcion" name="descripcion" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <button type="button" id="edit-descripcion-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="licitacion-generalidades">Generalidades Del Proyecto</label>
+                            <div class="flex-with-buttons">
+                                <textarea id="licitacion-generalidades" name="generalidades" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <button type="button" id="edit-generalidades-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grupo 2: Detalles Administrativos de la Licitación -->
+                    <div class="section-title">Detalles Administrativos de la Licitación</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="licitacion-siglasDependencia">Siglas Dependencia</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-siglasDependencia" name="siglasDependencia" required></select>
+                                <button type="button" id="edit-siglasDependencia-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-codigoExpediente">Código De Expediente</label>
+                            <div class="flex-with-buttons">
+                                <input type="text" id="licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                                <button type="button" id="edit-codigoExpediente-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-procedimientoContratacion">Procedimiento de Contratación</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-procedimientoContratacion" name="procedimientoContratacion" required></select>
+                                <button type="button" id="edit-procedimientoContratacion-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-tipo">Tipo</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-tipo" name="tipo" required></select>
+                                <button type="button" id="edit-tipo-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grupo 3: Cronología del Proceso -->
+                    <div class="section-title">Cronología del Proceso</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="licitacion-anoPublicacion">Año De Publicación</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-anoPublicacion" name="anoPublicacion" required></select>
+                                <button type="button" id="edit-anoPublicacion-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-fechaPresentacionApertura">Fecha De Presentación Y Apertura De Proposiciones</label>
+                            <input type="date" id="licitacion-fechaPresentacionApertura" name="fechaPresentacionApertura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-fechaFallo">Fecha De Fallo</label>
+                            <input type="date" id="licitacion-fechaFallo" name="fechaFallo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-fechaEstimadaInicio">Fecha Estimada De Inicio De Contrato</label>
+                            <input type="date" id="licitacion-fechaEstimadaInicio" name="fechaEstimadaInicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                        </div>
+                    </div>
+
+                    <!-- Grupo 4: Participantes y Resultados -->
+                    <div class="section-title">Participantes y Resultados</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="licitacion-registradosInteres">Registrados o Manifestaron interés por participar</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-registradosInteres" name="registradosInteres" required></select>
+                                <button type="button" id="edit-registradosInteres-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-nombreLicitantes">Nombre del o de los licitantes o cotizantes</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-nombreLicitantes" name="nombreLicitantes" required></select>
+                                <button type="button" id="edit-nombreLicitantes-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-ganadorLicitacion">Ganador De La Licitación</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-ganadorLicitacion" name="ganadorLicitacion" required></select>
+                                <button type="button" id="edit-ganadorLicitacion-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-monto">Monto</label>
+                            <div class="flex-with-buttons">
+                                <input type="number" id="licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                                <button type="button" id="edit-monto-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grupo 5: Verificación -->
+                    <div class="section-title">Verificación</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field sm:col-span-2">
+                            <label for="licitacion-linkComprasXM">Link Compras XM</label>
+                            <div class="flex-with-buttons">
+                                <input type="url" id="licitacion-linkComprasXM" name="linkComprasXM" placeholder="https://compras.xm.com/licitacion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                                <button type="button" id="edit-linkComprasXM-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end pt-4">
+                        <button type="submit" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Licitación</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
+            <button id="close-edit-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-times-circle fa-lg"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-primary mb-6">Editar Licitación</h3>
+            <div class="licitacion-form-container">
+                <form id="edit-form" class="space-y-6" novalidate>
+                    <input type="hidden" id="edit-id">
+                    
+                    <!-- Grupo 1: Identificación del Proyecto -->
+                    <div class="section-title">Identificación del Proyecto</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="edit-licitacion-proyecto">Proyecto</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-proyecto" name="proyecto" required></select>
+                                <button type="button" id="edit-proyecto-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-nombre">Nombre</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-nombre" name="nombre" required></select>
+                                <button type="button" id="edit-nombre-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="edit-licitacion-descripcion">Descripción</label>
+                            <div class="flex-with-buttons">
+                                <textarea id="edit-licitacion-descripcion" name="descripcion" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <button type="button" id="edit-descripcion-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="edit-licitacion-generalidades">Generalidades Del Proyecto</label>
+                            <div class="flex-with-buttons">
+                                <textarea id="edit-licitacion-generalidades" name="generalidades" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <button type="button" id="edit-generalidades-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grupo 2: Detalles Administrativos de la Licitación -->
+                    <div class="section-title">Detalles Administrativos de la Licitación</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="edit-licitacion-siglasDependencia">Siglas Dependencia</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-siglasDependencia" name="siglasDependencia" required></select>
+                                <button type="button" id="edit-siglasDependencia-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-codigoExpediente">Código De Expediente</label>
+                            <div class="flex-with-buttons">
+                                <input type="text" id="edit-licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                                <button type="button" id="edit-codigoExpediente-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-procedimientoContratacion">Procedimiento de Contratación</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-procedimientoContratacion" name="procedimientoContratacion" required></select>
+                                <button type="button" id="edit-procedimientoContratacion-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-tipo">Tipo</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-tipo" name="tipo" required></select>
+                                <button type="button" id="edit-tipo-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grupo 3: Cronología del Proceso -->
+                    <div class="section-title">Cronología del Proceso</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="edit-licitacion-anoPublicacion">Año De Publicación</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-anoPublicacion" name="anoPublicacion" required></select>
+                                <button type="button" id="edit-anoPublicacion-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-fechaPresentacionApertura">Fecha De Presentación Y Apertura De Proposiciones</label>
+                            <input type="date" id="edit-licitacion-fechaPresentacionApertura" name="fechaPresentacionApertura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-fechaFallo">Fecha De Fallo</label>
+                            <input type="date" id="edit-licitacion-fechaFallo" name="fechaFallo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-fechaEstimadaInicio">Fecha Estimada De Inicio De Contrato</label>
+                            <input type="date" id="edit-licitacion-fechaEstimadaInicio" name="fechaEstimadaInicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                        </div>
+                    </div>
+
+                    <!-- Grupo 4: Participantes y Resultados -->
+                    <div class="section-title">Participantes y Resultados</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="edit-licitacion-registradosInteres">Registrados o Manifestaron interés por participar</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-registradosInteres" name="registradosInteres" required></select>
+                                <button type="button" id="edit-registradosInteres-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-nombreLicitantes">Nombre del o de los licitantes o cotizantes</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-nombreLicitantes" name="nombreLicitantes" required></select>
+                                <button type="button" id="edit-nombreLicitantes-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-ganadorLicitacion">Ganador De La Licitación</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-ganadorLicitacion" name="ganadorLicitacion" required></select>
+                                <button type="button" id="edit-ganadorLicitacion-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-monto">Monto</label>
+                            <div class="flex-with-buttons">
+                                <input type="number" id="edit-licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                                <button type="button" id="edit-monto-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grupo 5: Verificación -->
+                    <div class="section-title">Verificación</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field sm:col-span-2">
+                            <label for="edit-licitacion-linkComprasXM">Link Compras XM</label>
+                            <div class="flex-with-buttons">
+                                <input type="url" id="edit-licitacion-linkComprasXM" name="linkComprasXM" placeholder="https://compras.xm.com/licitacion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                                <button type="button" id="edit-linkComprasXM-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end pt-4">
+                        <button type="submit" class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
+            <h3 class="text-xl font-bold text-slate-800 mb-4">Confirmar Eliminación</h3>
+            <p class="text-slate-600 mb-6">¿Estás seguro de que deseas eliminar este registro?</p>
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-delete-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="confirm-delete-btn" class="bg-danger hover:bg-danger-dark text-white font-bold py-2 px-4 rounded-lg">Eliminar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="replace-historical-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
+            <h3 class="text-xl font-bold text-primary mb-4">Reemplazar Histórico</h3>
+            <p class="text-slate-600 mb-6">¿Desea reemplazar el histórico actual?</p>
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-replace-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">No</button>
+                <button id="confirm-replace-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Sí</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="edit-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
+            <h3 class="text-xl font-bold text-primary mb-4">Editar Opción</h3>
+            <input type="text" id="edit-option-input" placeholder="Edite la opción" class="w-full p-2 border border-gray-300 rounded-md mb-4">
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-edit-option-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="confirm-edit-option-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="password-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[55] flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
+            <h3 class="text-xl font-bold text-primary mb-4">Verificación de Seguridad</h3>
+            <p class="text-slate-600 mb-4">Esta acción requiere autenticación. Por favor, ingrese la contraseña.</p>
+            <input type="password" id="password-input" placeholder="Contraseña" class="w-full p-2 border border-gray-300 rounded-md mb-4">
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-password-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="confirm-password-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Verificar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="webview-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center webview-modal">
+        <div class="relative bg-white rounded-lg shadow-xl webview-container">
+            <button id="close-webview-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10 bg-white rounded-full p-1">
+                <i class="fa-solid fa-times-circle fa-lg"></i>
+            </button>
+            <iframe id="webview-frame" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <div id="migrate-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
+            <h3 class="text-xl font-bold text-primary mb-4">Migrar Licitaciones</h3>
+            <p class="text-slate-600 mb-6">¿Está seguro de que desea migrar todas las licitaciones al Histórico? Esta acción no se puede deshacer.</p>
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-migrate-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="confirm-migrate-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Migrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="template-upload-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-primary">Seleccionar Plantilla para Cargar</h3>
+                <button id="close-template-upload-modal-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa-solid fa-times-circle fa-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <button data-template-type="default" class="upload-template-type-btn w-full bg-secondary hover:bg-secondary-dark text-white font-bold py-3 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-file-word"></i><span>Plantilla de Licitaciones (Default)</span></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-details-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
+            <button id="close-details-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-times-circle fa-lg"></i>
+            </button>
+            <div class="flex items-center space-x-4 mb-6">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjx0ZXh0IHg9IjEwIiB5PSIzNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSI+U0lTVEVNQSBERSBMSUNJVEFDSU9ORVM8L3RleHQ+PC9zdmc+" alt="Logo Sistema Licitaciones" class="h-16 w-auto">
+                <h3 class="text-2xl font-bold text-primary">Detalle de la Licitación</h3>
+            </div>
+            <div class="licitacion-form-container">
+                <div id="details-modal-content" class="details-modal-content">
+                    <!-- El contenido se generará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // MÓDULO: Verificación de dependencias
+        // =============================================
+        
+        function checkRequiredLibraries() {
+            // Retrocompatibilidad: si PizZip se carga como PizZipUtils, asignarlo.
+            if (typeof window.PizZip === 'undefined' && typeof window.PizZipUtils !== 'undefined') {
+                window.PizZip = window.PizZipUtils;
+            }
+
+            const libraries = {
+                'PizZip': typeof window.PizZip,
+                'docxtemplater': typeof window.docxtemplater,
+                'saveAs': typeof window.saveAs,
+                'XLSX': typeof window.XLSX,
+                'firebase': typeof firebase,
+                'Chart': typeof Chart,
+                '$': typeof window.$,
+                'select2': typeof $.fn.select2
+            };
+            
+            const missing = Object.entries(libraries)
+                .filter(([lib, type]) => type === 'undefined')
+                .map(([lib]) => lib);
+            
+            return missing;
+        }
+        
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+                document.head.appendChild(script);
+            });
+        }
+
+        function loadFallbackLibraries(missingLibs) {
+            const fallbacks = {
+                'PizZip': 'https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js',
+                'docxtemplater': 'https://cdn.jsdelivr.net/npm/docxtemplater@3.34.1/build/docxtemplater.min.js'
+            };
+            return Promise.all(missingLibs.filter(lib => fallbacks[lib]).map(lib => loadScript(fallbacks[lib])));
+        }
+
+        // =============================================
+        // MÓDULO: Configuración de Firebase
+        // =============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAM-s449e94yeJ89EBDqNo-iMQdUDeDaLE",
+            authDomain: "gestion-de-licitaciones.firebaseapp.com",
+            projectId: "gestion-de-licitaciones",
+            storageBucket: "gestion-de-licitaciones.firebasestorage.app",
+            messagingSenderId: "864617389687",
+            appId: "1:864617389687:web:6304345019f280e9c2f072",
+            measurementId: "G-K3LL4TNB5W"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+
+        // =============================================
+        // MÓDULO: Variables globales y estado de la aplicación
+        // =============================================
+        let licitaciones = [];
+        let historicalLicitaciones = [];
+        let userId;
+
+        // Referencias a colecciones de Firebase
+        const licitacionesCollectionRef = db.collection("licitaciones");
+        const historicalLicitacionesCollectionRef = db.collection("historicalLicitaciones");
+
+        // Variables de estado de la aplicación
+        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, downloadExcelBtn, migrateLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, reportesDataSource, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, migrateModal, cancelMigrateBtn, confirmMigrateBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
+        
+        let currentEditIsHistorical = false;
+        
+        let fieldOptions = {
+            proyectos: [],
+            nombres: [],
+            siglasDependencias: [],
+            procedimientosContratacion: [],
+            tipos: [],
+            anosPublicacion: [],
+            registradosInteres: [],
+            nombreLicitantes: [],
+            ganadoresLicitacion: []
+        };
+
+        let currentEditingField = null;
+        let currentEditingValue = null;
+        let pendingAction = null;
+        let showChartLabels = true;
+        let activeFilters = {
+            main: {},
+            historical: {}
+        };
+        let currentFilterDropdown = null;
+        let activeSelectElement = null;
+        let openModalCount = 0; // Contador para modales anidados
+
+        // =============================================
+        // MÓDULO: Utilidades
+        // =============================================
+        
+        function showApp() {
+            loader.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.createElement('div');
+            const colors = { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500', info: 'bg-gray-500' };
+            alertContainer.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white transform transition-all duration-300 z-[60] ${colors[type]}`;
+            alertContainer.textContent = message;
+            document.body.appendChild(alertContainer);
+            setTimeout(() => { alertContainer.remove(); }, 3000);
+        }
+
+        function openModal(modal) {
+            modal.classList.remove('hidden', 'modal-leave');
+            modal.classList.add('modal-enter');
+            if (openModalCount === 0) {
+                document.body.classList.add('modal-open'); // Bloquear scroll solo si es el primer modal
+            }
+            openModalCount++;
+        }
+
+        function closeModal(modal) {
+            modal.classList.remove('modal-enter');
+            modal.classList.add('modal-leave');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                openModalCount--;
+                if (openModalCount <= 0) {
+                    document.body.classList.remove('modal-open'); // Restaurar scroll solo si no quedan modales abiertos
+                    openModalCount = 0; // Resetear por seguridad
+                }
+            }, 300);
+        }
+
+        function openModalWithFocus(modal, elementToFocus) {
+            openModal(modal);
+            setTimeout(() => elementToFocus.focus(), 150); // Pequeño delay para la animación
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                // Tratar la fecha como UTC para evitar problemas de zona horaria.
+                // new Date('2024-01-15') se interpreta como UTC midnight.
+                const [year, month, day] = dateString.split('-').map(Number);
+                const date = new Date(Date.UTC(year, month - 1, day));
+                return date.toLocaleDateString('es-ES', { timeZone: 'UTC' });
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        function truncateText(text, maxLength = 50) {
+            if (!text) return 'N/A';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function stripHtml(html) {
+            if (!html) return '';
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            return doc.body.textContent || "";
+        }
+
+        function formatLongDate(dateString) {
+            if (!dateString) return 'Fecha no disponible';
+            try {
+                const [year, month, day] = dateString.split('-').map(Number);
+                const date = new Date(Date.UTC(year, month - 1, day));
+                
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    timeZone: 'UTC'
+                };
+                return new Intl.DateTimeFormat('es-ES', options).format(date);
+            } catch (e) { return dateString; }
+        }
+
+        function getMonthName(dateString) {
+            if (!dateString) return 'Mes no disponible';
+            try {
+                const [year, month, day] = dateString.split('-').map(Number);
+                const date = new Date(Date.UTC(year, month - 1, day));
+                
+                const monthName = new Intl.DateTimeFormat('es-ES', { 
+                    month: 'long',
+                    timeZone: 'UTC'
+                }).format(date);
+
+                // Capitalizar la primera letra
+                return monthName.charAt(0).toUpperCase() + monthName.slice(1);
+            } catch (e) { return 'Error de mes'; }
+        }
+
+        function base64ToArrayBuffer(base64) {
+            // Primero, removemos el prefijo "data:application/..." si existe
+            const base64Data = base64.substring(base64.indexOf(',') + 1);
+            const binary_string = window.atob(base64Data);
+            const len = binary_string.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function cleanWordHTML(html) {
+            if (!html) return '';
+
+            // 1. Eliminar comentarios, metadatos y namespaces de Word
+            html = html.replace(/<!--[\s\S]*?-->/gi, '');
+            html = html.replace(/<meta[\s\S]*?>/gi, '');
+            html = html.replace(/<link[\s\S]*?>/gi, '');
+            html = html.replace(/<style[\s\S]*?<\/style>/gi, '');
+            html = html.replace(/<o:p>[\s\S]*?<\/o:p>/gi, '');
+            html = html.replace(/<w:[\s\S]*?<\/w:[\s\S]*?>/gi, ''); // Elimina nodos de Word
+            html = html.replace(/\s*xmlns:?[^=]*="[^"]*"/gi, ''); // Elimina atributos xmlns
+
+            // 2. Reemplazar múltiples <br> por párrafos para mejor estructura
+            html = html.replace(/<br\s*\/?>\s*<br\s*\/?>/gi, '</p><p>');
+
+            return html;
+        }
+
+        function normalizeFontSizes(html) {
+            if (!html) return '';
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Recorrer todos los elementos para limpiar estilos
+            tempDiv.querySelectorAll('*').forEach(el => {
+                if (el.style) {
+                    // Conservar solo el margen izquierdo para la indentación
+                    const marginLeft = el.style.marginLeft;
+                    
+                    // Limpiar todos los estilos en línea
+                    el.removeAttribute('style');
+                    
+                    // Si había un margen, volver a aplicarlo
+                    if (marginLeft) {
+                        el.style.marginLeft = marginLeft;
+                    }
+                }
+                // Eliminar otros atributos que no sean de estilo (class, id, etc.)
+                ['class', 'id', 'lang', 'dir'].forEach(attr => el.removeAttribute(attr));
+            });
+
+            return tempDiv.innerHTML;
+        }
+        // =============================================
+        // MÓDULO: Interfaz de usuario
+        // =============================================
+        
+        function setupTabs() {
+            tabsContainer.addEventListener('click', (e) => {
+                if (e.target.matches('.tab-btn')) {
+                    const tabName = e.target.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    tabContents.forEach(content => content.classList.toggle('hidden', content.id !== `tab-content-${tabName}`));
+                    if (tabName === 'reportes') {
+                        setTimeout(updateCharts, 50);
+                    }
+                }
+            });
+        }
+
+        function renderTable(tableBody, data, isHistorical = false) {
+            const noDataMessage = isHistorical ? noHistoricalMessage : noLicitacionMessage;
+            tableBody.innerHTML = '';
+            noDataMessage.classList.toggle('hidden', data.length > 0);
+
+            data.forEach((licitacionItem, index) => {
+                const row = document.createElement('tr');
+                row.className = 'bg-white border-b hover:bg-gray-50';
+                
+                row.innerHTML = `
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6">${truncateText(licitacionItem.proyecto, 30)}</td>
+                    <td class="py-4 px-6">${truncateText(licitacionItem.nombre, 30)}</td>
+                    <td class="py-4 px-6">${truncateText(licitacionItem.siglasDependencia, 30)}</td>
+                    <td class="py-4 px-6">${truncateText(licitacionItem.codigoExpediente, 30)}</td>
+                    <td class="py-4 px-6">${truncateText(licitacionItem.procedimientoContratacion, 30)}</td>
+                    <td class="py-4 px-6">${truncateText(licitacionItem.tipo, 30)}</td>
+                    <td class="py-4 px-6">${truncateText(licitacionItem.anoPublicacion, 30)}</td>
+                    <td class="py-4 px-6">${formatDate(licitacionItem.fechaPresentacionApertura)}</td>
+                    <td class="py-4 px-6">${formatDate(licitacionItem.fechaFallo)}</td>
+                    <td class="py-4 px-6">${truncateText(licitacionItem.ganadorLicitacion, 30)}</td>
+                    <td class="py-4 px-6 flex space-x-2">
+                        <button data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="generate-doc-btn text-blue-600 hover:text-blue-800" title="Generar Reporte Individual">
+                            <i class="fa-solid fa-file-word"></i>
+                        </button>
+                        <button data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="edit-btn text-blue-500 hover:text-blue-700">
+                            <i class="fa-solid fa-edit"></i>
+                        </button>
+                        <button data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="delete-btn text-red-500 hover:text-red-700">
+                            <i class="fa-solid fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function applyAllFilters(data, filterKey) {
+            const searchInput = document.getElementById(`filter-input-${filterKey}`);
+            const searchText = searchInput ? searchInput.value.toLowerCase() : '';
+            const columnFilters = activeFilters[filterKey];
+
+            return data.filter(item => {
+                // 1. Check search box filter
+                const matchesSearch = searchText === '' || Object.values(item).some(value => 
+                    String(value).toLowerCase().includes(searchText)
+                );
+                if (!matchesSearch) return false;
+
+                // 2. Check column filters
+                for (const col in columnFilters) {
+                    if (columnFilters[col].length > 0) {
+                        const itemValue = col === 'fechaPresentacionApertura' || col === 'fechaFallo' ? formatDate(item[col]) : (item[col] || 'N/A');
+                        if (!columnFilters[col].includes(itemValue)) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            });
+        }
+
+        /**
+         * Obtiene los datos pre-filtrados por todas las columnas excepto la especificada.
+         * Esto es crucial para que los dropdowns de filtro muestren solo opciones relevantes.
+         * @param {function} dataProvider - Función que devuelve el conjunto de datos completo.
+         * @param {string} filterKey - 'main' o 'historical'.
+         * @param {string} excludeColumn - La clave de la columna a excluir del filtrado.
+         * @returns {Array} - Los datos filtrados.
+         */
+        function getPreFilteredData(dataProvider, filterKey, excludeColumn) {
+            const allData = dataProvider() || [];
+            const searchInput = document.getElementById(`filter-input-${filterKey}`);
+            const searchText = searchInput ? searchInput.value.toLowerCase() : '';
+            const columnFilters = activeFilters[filterKey];
+
+            return allData.filter(item => {
+                const matchesSearch = searchText === '' || Object.values(item).some(value => String(value).toLowerCase().includes(searchText));
+                if (!matchesSearch) return false;
+
+                return Object.entries(columnFilters).every(([col, values]) => {
+                    if (col === excludeColumn || values.length === 0) return true;
+                    const itemValue = col === 'fechaPresentacionApertura' || col === 'fechaFallo' ? formatDate(item[col]) : (item[col] || 'N/A');
+                    return values.includes(itemValue);
+                });
+            });
+        }
+
+        function setupColumnFilters(headerId, dataProvider, renderFunc, filterKey) {
+            const headerRow = document.getElementById(headerId);
+            headerRow.addEventListener('click', e => {
+                const header = e.target.closest('.filterable-header');
+                if (!header) return;
+
+                if (currentFilterDropdown) {
+                    currentFilterDropdown.remove();
+                    currentFilterDropdown = null;
+                }
+
+                const filterBy = header.dataset.filterBy;
+                // Usar los datos pre-filtrados para generar las opciones del dropdown.
+                const preFilteredData = getPreFilteredData(dataProvider, filterKey, filterBy);
+
+                const uniqueValues = [...new Set(preFilteredData.map(item => {
+                    let value = item[filterBy] || 'N/A';
+                    // Normalización para campos de texto (proyecto, resumen, etc.)
+                    if (typeof value === 'string') {
+                        // Para la fecha, usamos el formato específico.
+                        if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') return formatDate(value);
+                        // Para otros strings, normalizamos eliminando espacios al inicio y final.
+                        return value.trim();
+                    }
+                    return value;
+                }))].sort((a, b) => {
+                    // Lógica de ordenamiento personalizada para fechas en el filtro
+                    if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') {
+                        try {
+                            const dateA = new Date(a.split('/').reverse().join('-'));
+                            const dateB = new Date(b.split('/').reverse().join('-'));
+                            return dateA - dateB; // Orden ascendente
+                        } catch (err) { return a.localeCompare(b); }
+                    }
+                    return a.localeCompare(b, 'es', { numeric: true });
+                });
+
+                const dropdown = document.createElement('div');
+                dropdown.className = 'filter-dropdown p-2 space-y-1';
+                
+                const activeColumnFilters = activeFilters[filterKey][filterBy] || [];
+
+                dropdown.innerHTML = `
+                    <div class="p-1 border-b border-gray-200">
+                        <input type="text" placeholder="Buscar opciones..." class="filter-search-input w-full text-xs p-1 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div class="filter-options-container max-h-48 overflow-y-auto">
+                        ${uniqueValues.map(value => `
+                            <label class="flex items-center space-x-2 p-1 hover:bg-gray-100 rounded cursor-pointer filter-option-label">
+                                <input type="checkbox" class="filter-checkbox" value="${value}" ${activeColumnFilters.includes(value) ? 'checked' : ''}>
+                                <span class="text-sm text-gray-700">${truncateText(value, 40)}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="border-t my-1"></div>
+                    <div class="p-1"><button class="clear-filter-btn text-blue-500 hover:underline text-xs" data-filter-by="${filterBy}">Limpiar filtro</button></div>
+                `;
+
+                document.body.appendChild(dropdown);
+                const rect = header.getBoundingClientRect();
+                dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+                dropdown.style.left = `${rect.left + window.scrollX}px`;
+                currentFilterDropdown = dropdown;
+
+                // Lógica para el buscador dentro del filtro
+                const searchInput = dropdown.querySelector('.filter-search-input');
+                const labels = dropdown.querySelectorAll('.filter-option-label');
+                searchInput.addEventListener('input', () => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    labels.forEach(label => {
+                        const text = label.textContent.toLowerCase();
+                        const isVisible = text.includes(searchTerm);
+                        label.style.display = isVisible ? 'flex' : 'none';
+                    });
+                });
+
+                dropdown.addEventListener('change', e => {
+                    if (e.target.classList.contains('filter-checkbox')) {
+                        const checkedValues = Array.from(dropdown.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
+                        activeFilters[filterKey][filterBy] = checkedValues;
+                        
+                        header.classList.toggle('active', checkedValues.length > 0);
+
+                        const filteredData = applyAllFilters(dataProvider(), filterKey);
+                        renderFunc(document.getElementById(filterKey === 'main' ? 'licitacion-table-body' : 'historical-table-body'), filteredData, filterKey === 'historical');
+                    }
+                });
+
+                dropdown.querySelector('.clear-filter-btn').addEventListener('click', () => {
+                    activeFilters[filterKey][filterBy] = [];
+                    header.classList.remove('active');
+                    const filteredData = applyAllFilters(dataProvider(), filterKey);
+                    renderFunc(document.getElementById(filterKey === 'main' ? 'licitacion-table-body' : 'historical-table-body'), filteredData, filterKey === 'historical');
+                    if (currentFilterDropdown) currentFilterDropdown.remove();
+                });
+            });
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', (e) => {
+                if (currentFilterDropdown && !currentFilterDropdown.contains(e.target) && !e.target.closest('.filterable-header')) {
+                    currentFilterDropdown.remove();
+                    currentFilterDropdown = null;
+                }
+            }, true);
+        }
+        
+        function setupFiltering(inputId, dataProvider, renderFunc, isHistorical = false) {
+            const filterInput = document.getElementById(inputId);
+            const filterKey = isHistorical ? 'historical' : 'main';
+            const clearFilterBtn = document.getElementById(`clear-filter-btn-${filterKey}`);
+            filterInput.addEventListener('input', () => {
+                const filterText = filterInput.value.toLowerCase();
+                clearFilterBtn.classList.toggle('hidden', !filterText);
+                const filteredData = applyAllFilters(dataProvider(), filterKey);
+                renderFunc(document.getElementById(isHistorical ? 'historical-table-body' : 'licitacion-table-body'), filteredData, isHistorical);
+            });
+            clearFilterBtn.addEventListener('click', () => {
+                filterInput.value = ''; filterInput.dispatchEvent(new Event('input'));
+            });
+        }
+
+        function sortAndRenderTable(tableBody, data, isHistorical) {
+            // Lógica de ordenamiento corregida y definitiva:
+            // 1. Criterio principal: Fecha de presentación y apertura (descendente).
+            // 2. Criterio de desempate: Fecha de creación del registro (descendente).
+            data.sort((a, b) => {
+                try {
+                    // Normalizar fechas para evitar errores. Se usa una fecha muy antigua como fallback.
+                    const dateA = a.fechaPresentacionApertura ? new Date(a.fechaPresentacionApertura) : new Date(0);
+                    const dateB = b.fechaPresentacionApertura ? new Date(b.fechaPresentacionApertura) : new Date(0);
+
+                    // 1. Comparar por fecha de presentación y apertura (descendente).
+                    const dateComparison = dateB.getTime() - dateA.getTime();
+                    if (dateComparison !== 0) return dateComparison;
+
+                    // 2. Si las fechas son iguales, desempatar por fecha de creación (descendente).
+                    const timeB = b.createdAt?.toMillis() || 0;
+                    const timeA = a.createdAt?.toMillis() || 0;
+                    return timeB - timeA;
+                } catch (e) {
+                    return 0; // Fallback si alguna fecha no es válida
+                }
+            });
+
+            const filterKey = isHistorical ? 'historical' : 'main';
+            const filteredData = applyAllFilters(data, filterKey);
+            renderTable(tableBody, filteredData, isHistorical);
+        }
+
+        function openWebviewModal(url) {
+            webviewFrame.src = url;
+            openModal(webviewModal);
+        }
+
+        // =============================================
+        // MÓDULO: Gestión de licitaciones
+        // =============================================
+        
+        async function saveLicitacion(licitacionData) {
+            try {
+                await licitacionesCollectionRef.add({ 
+                    ...licitacionData, 
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
+                });
+                showAlert("Licitación guardada con éxito!", "success");
+            } catch (error) {
+                console.error("Error al guardar la licitación:", error);
+                showAlert(`Error al guardar: ${error.message}`, "error");
+            }
+        }
+
+        async function updateLicitacion(id, updateData, isHistorical) {
+            if (!id) {
+                console.error("ID no válido para actualización");
+                showAlert("Error interno: ID no válido", "error");
+                return;
+            }
+            
+            try {
+                const collectionRef = isHistorical ? historicalLicitacionesCollectionRef : licitacionesCollectionRef;
+                const licitacionDocRef = collectionRef.doc(id);
+                
+                const docSnapshot = await licitacionDocRef.get();
+                if (!docSnapshot.exists) {
+                    showAlert("El registro que intentas actualizar no existe", "error");
+                    return;
+                }
+                
+                await licitacionDocRef.update({ ...updateData, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                showAlert("Licitación actualizada con éxito!", "success");
+            } catch (error) {
+                console.error("Error al actualizar la licitación:", error);
+                showAlert(`Error al actualizar: ${error.message}`, "error");
+            }
+        }
+
+        async function deleteLicitacion(id, isHistorical) {
+            if (!id) {
+                console.error("ID no válido para eliminación");
+                showAlert("Error interno: ID no válido", "error");
+                return;
+            }
+            
+            try {
+                const collectionRef = isHistorical ? historicalLicitacionesCollectionRef : licitacionesCollectionRef;
+                const licitacionDocRef = collectionRef.doc(id);
+                
+                const docSnapshot = await licitacionDocRef.get();
+                if (!docSnapshot.exists) {
+                    showAlert("El registro que intentas eliminar no existe", "error");
+                    return;
+                }
+                
+                await licitacionDocRef.delete();
+                showAlert("Licitación eliminada con éxito!", "success");
+            } catch (error) {
+                console.error("Error al eliminar la licitación:", error);
+                showAlert(`Error al eliminar: ${error.message}`, "error");
+            }
+        }
+
+        function handleEditClick(button) {
+            requirePassword(() => {
+                const licitacionId = button.getAttribute('data-id');
+                const isHistorical = button.getAttribute('data-is-historical') === 'true';
+
+                if (!licitacionId) {
+                    console.error("ID de licitación no encontrado para edición");
+                    return;
+                }
+
+                currentEditIsHistorical = isHistorical;
+                const allData = isHistorical ? historicalLicitaciones : licitaciones;
+                const licitacionToEdit = allData.find(item => item.id === licitacionId);
+
+                if (!licitacionToEdit) {
+                    showAlert("No se pudo encontrar la licitación para editar", "error");
+                    return;
+                }
+
+                document.getElementById('edit-id').value = licitacionId;
+
+                // Set form values
+                document.getElementById('edit-licitacion-fechaPresentacionApertura').value = licitacionToEdit.fechaPresentacionApertura || '';
+                document.getElementById('edit-licitacion-fechaFallo').value = licitacionToEdit.fechaFallo || '';
+                document.getElementById('edit-licitacion-fechaEstimadaInicio').value = licitacionToEdit.fechaEstimadaInicio || '';
+                document.getElementById('edit-licitacion-linkComprasXM').value = licitacionToEdit.linkComprasXM || '';
+                document.getElementById('edit-licitacion-codigoExpediente').value = licitacionToEdit.codigoExpediente || '';
+                document.getElementById('edit-licitacion-descripcion').value = licitacionToEdit.descripcion || '';
+                document.getElementById('edit-licitacion-generalidades').value = licitacionToEdit.generalidades || '';
+                document.getElementById('edit-licitacion-monto').value = licitacionToEdit.monto || '';
+
+                // Set select values
+                $('#edit-licitacion-proyecto').val(licitacionToEdit.proyecto || '').trigger('change');
+                $('#edit-licitacion-nombre').val(licitacionToEdit.nombre || '').trigger('change');
+                $('#edit-licitacion-siglasDependencia').val(licitacionToEdit.siglasDependencia || '').trigger('change');
+                $('#edit-licitacion-procedimientoContratacion').val(licitacionToEdit.procedimientoContratacion || '').trigger('change');
+                $('#edit-licitacion-tipo').val(licitacionToEdit.tipo || '').trigger('change');
+                $('#edit-licitacion-anoPublicacion').val(licitacionToEdit.anoPublicacion || '').trigger('change');
+                $('#edit-licitacion-registradosInteres').val(licitacionToEdit.registradosInteres || '').trigger('change');
+                $('#edit-licitacion-nombreLicitantes').val(licitacionToEdit.nombreLicitantes || '').trigger('change');
+                $('#edit-licitacion-ganadorLicitacion').val(licitacionToEdit.ganadorLicitacion || '').trigger('change');
+
+                openModal(editModal);
+            });
+        }
+
+        function handleDeleteClick(button) {
+            requirePassword(() => {
+                licitacionToDeleteId = button.getAttribute('data-id');
+                licitacionToDeleteIsHistorical = button.getAttribute('data-is-historical') === 'true';
+                
+                if (!licitacionToDeleteId) {
+                    console.error("ID de licitación no encontrado para eliminación");
+                    return;
+                }
+                
+                openModal(confirmModal);
+            });
+        }
+
+        function showDetailsModal(licitacionItem) {
+            if (!licitacionItem) return;
+
+            const sourceLink = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM) 
+                ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline break-all">${licitacionItem.linkComprasXM}</a>` 
+                : `<p class="text-gray-700">${licitacionItem.linkComprasXM || 'N/A'}</p>`;
+
+            detailsModalContent.innerHTML = `
+                <div class="details-header">
+                    <h3 class="project">${licitacionItem.proyecto || 'Proyecto no especificado'}</h3>
+                    <p class="date">Código de expediente: ${licitacionItem.codigoExpediente || 'N/A'}</p>
+                </div>
+
+                <div class="details-section">
+                    <h4>Nombre de la licitación</h4>
+                    <p class="text-gray-800 text-base leading-relaxed">${licitacionItem.nombre || 'No especificado.'}</p>
+                </div>
+
+                <div class="details-section">
+                    <h4>Descripción</h4>
+                    <p class="text-gray-800 text-base leading-relaxed">${licitacionItem.descripcion || 'No hay descripción disponible.'}</p>
+                </div>
+
+                <div class="details-section">
+                    <h4>Generalidades del proyecto</h4>
+                    <p class="text-gray-800 text-base leading-relaxed">${licitacionItem.generalidades || 'No hay generalidades disponibles.'}</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="details-section">
+                        <h4>Siglas de la dependencia</h4>
+                        <p class="text-gray-700">${licitacionItem.siglasDependencia || 'N/A'}</p>
+                    </div>
+                    <div class="details-section">
+                        <h4>Procedimiento de contratación</h4>
+                        <p class="text-gray-700">${licitacionItem.procedimientoContratacion || 'N/A'}</p>
+                    </div>
+                    <div class="details-section">
+                        <h4>Tipo</h4>
+                        <p class="text-gray-700">${licitacionItem.tipo || 'N/A'}</p>
+                    </div>
+                    <div class="details-section">
+                        <h4>Año de publicación</h4>
+                        <p class="text-gray-700">${licitacionItem.anoPublicacion || 'N/A'}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+                    <div class="details-section">
+                        <h4>Fecha de presentación y apertura</h4>
+                        <p class="text-gray-700">${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</p>
+                    </div>
+                    <div class="details-section">
+                        <h4>Fecha de fallo</h4>
+                        <p class="text-gray-700">${formatDate(licitacionItem.fechaFallo) || 'N/A'}</p>
+                    </div>
+                    <div class="details-section">
+                        <h4>Fecha estimada de inicio</h4>
+                        <p class="text-gray-700">${formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A'}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="details-section">
+                        <h4>Registrados o manifestaron interés</h4>
+                        <p class="text-gray-700">${licitacionItem.registradosInteres || 'N/A'}</p>
+                    </div>
+                    <div class="details-section">
+                        <h4>Nombre de licitantes</h4>
+                        <p class="text-gray-700">${licitacionItem.nombreLicitantes || 'N/A'}</p>
+                    </div>
+                    <div class="details-section">
+                        <h4>Ganador de la licitación</h4>
+                        <p class="text-gray-700">${licitacionItem.ganadorLicitacion || 'N/A'}</p>
+                    </div>
+                    <div class="details-section">
+                        <h4>Monto</h4>
+                        <p class="text-gray-700">${licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A'}</p>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h4>Link de Compras XM</h4>
+                    ${sourceLink}
+                </div>
+            `;
+
+            openModal(viewDetailsModal);
+        }
+
+        function getTemplateDocRef() {
+            return {
+                ref: db.collection('config').doc('wordTemplate_default'),
+                type: 'default'
+            };
+        }
+
+        /**
+         * Genera un documento .docx a partir de una plantilla en Firebase Storage.
+         * @param {string} licitacionId - El ID del registro de la licitación.
+         * @param {boolean} isHistorical - Indica si el registro es del histórico.
+         */
+        async function generateDoc(licitacionId, isHistorical) {
+            // Módulo para manejar HTML en docxtemplater
+            const HTMLModule = {
+                name: "HTMLModule",
+                set: function(options) { this.options = options; },
+                get: function(scope, context) { if (scope.startsWith('@')) { return { _type: "html", value: context.scopeList[context.scopeList.length - 1] }; } },
+                render: function(part, scope) { if (part.type === "html") { return { value: part.value }; } }
+            };
+
+            // 1. Verificar que las librerías necesarias estén cargadas y cargar fallbacks si es necesario
+            let missingLibs = checkRequiredLibraries();
+            if (missingLibs.includes('PizZip') || missingLibs.includes('docxtemplater')) {
+                showAlert("Cargando librerías necesarias...", "info");
+                try {
+                    await loadFallbackLibraries(missingLibs);
+                    // Verificar nuevamente después de cargar los fallbacks
+                    missingLibs = checkRequiredLibraries();
+                    if (missingLibs.includes('PizZip') || missingLibs.includes('docxtemplater')) {
+                        const errorMessage = `No se pudieron cargar las librerías: ${missingLibs.join(', ')}. Verifique su conexión.`;
+                        console.error(errorMessage);
+                        return showAlert(errorMessage, "error");
+                    }
+                } catch (error) {
+                    const errorMessage = "Error al cargar librerías para generar documentos.";
+                    console.error(errorMessage, error);
+                    return showAlert(errorMessage, "error");
+                }
+            } else if (missingLibs.includes('saveAs')) {
+                 return showAlert("Error: La librería FileSaver.js no se cargó correctamente.", "error");
+            }
+
+            showAlert("Generando reporte...", "info");
+            const dataSet = isHistorical ? historicalLicitaciones : licitaciones;
+            const record = dataSet.find(item => item.id === licitacionId);
+
+            if (!record) {
+                return showAlert("No se encontró el registro de la licitación.", "error");
+            }
+
+            try {
+                // 2. Obtener la plantilla correcta desde Firestore
+                const { ref: templateDocRef, type: templateType } = getTemplateDocRef();
+                let templateDoc = await templateDocRef.get();
+
+                if (!templateDoc.exists || !templateDoc.data().templateData) {
+                    return showAlert("No se encontró la plantilla de licitaciones. Por favor, cárguela en la pestaña de Reportes.", "error");
+                }
+                const base64String = templateDoc.data().templateData;
+
+                // Convertir la plantilla de Base64 a un formato que docxtemplater pueda usar
+                const templateBlob = base64ToArrayBuffer(base64String);
+
+                // 3. Procesar la plantilla con docxtemplater
+                // Usamos PizZip directamente desde el objeto window
+                const zip = new PizZip(templateBlob);
+                const doc = new window.docxtemplater(zip, {
+                    modules: [HTMLModule], // Cargar el módulo HTML
+                    paragraphLoop: true,
+                    linebreaks: true
+                });
+
+                // 4. Mapeo de datos (asegurando que no haya valores nulos)
+                const dataForTemplate = {
+                    palabra_clave_0: record.proyecto || 'No especificado',
+                    palabra_clave_1: record.nombre || 'No especificado',
+                    palabra_clave_2: record.descripcion || 'No especificado',
+                    palabra_clave_3: record.generalidades || 'No especificado',
+                    palabra_clave_4: record.siglasDependencia || 'No especificado',
+                    palabra_clave_5: record.codigoExpediente || 'No especificado',
+                    palabra_clave_6: record.procedimientoContratacion || 'No especificado',
+                    palabra_clave_7: record.tipo || 'No especificado',
+                    palabra_clave_8: record.anoPublicacion || 'No especificado',
+                    palabra_clave_9: formatDate(record.fechaPresentacionApertura) || 'No especificado',
+                    palabra_clave_10: formatDate(record.fechaFallo) || 'No especificado',
+                    palabra_clave_11: formatDate(record.fechaEstimadaInicio) || 'No especificado',
+                    palabra_clave_12: record.registradosInteres || 'No especificado',
+                    palabra_clave_13: record.nombreLicitantes || 'No especificado',
+                    palabra_clave_14: record.ganadorLicitacion || 'No especificado',
+                    palabra_clave_15: record.monto ? '$' + Number(record.monto).toLocaleString('es-MX') : 'No especificado',
+                    palabra_clave_16: record.linkComprasXM || 'No especificado',
+                };
+
+                doc.setData(dataForTemplate);
+                doc.render();
+
+                // 5. Generar y descargar el archivo
+                const out = doc.getZip().generate({
+                    type: "blob",
+                    mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                });
+
+                const fileName = `Reporte-${(record.proyecto || 'Licitacion').replace(/ /g, '_')}.docx`;
+                saveAs(out, fileName);
+                showAlert("¡Reporte generado con éxito!", "success");
+
+            } catch (error) {
+                console.error("Error en docxtemplater:", error);
+                // Error mejorado para distinguir problemas de plantilla
+                if (error.properties && error.properties.errors) {
+                    showAlert("Error en la plantilla: " + error.properties.errors[0].message, "error");
+                } else {
+                    showAlert("Error al generar el reporte. Revise la consola.", "error");
+                }
+            }
+        }
+
+        // =============================================
+        // MÓDULO: Gestión de datos históricos
+        // =============================================
+        
+        async function deleteAllHistorical() {
+            const batch = db.batch();
+            historicalLicitaciones.forEach(licitacionItem => {
+                const ref = historicalLicitacionesCollectionRef.doc(licitacionItem.id);
+                batch.delete(ref);
+            });
+            await batch.commit(); 
+        }
+
+        async function importHistoricalData(data) {
+            try {
+                const batch = db.batch();
+                data.forEach(item => {
+                    const docRef = historicalLicitacionesCollectionRef.doc();
+                    batch.set(docRef, { ...item, importedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                });
+                await batch.commit();
+                showAlert(`Se han importado ${data.length} registros históricos.`, "success");
+                
+                updateDynamicSelectOptions();
+                renderTable(historicalTableBody, historicalLicitaciones, true);
+
+            } catch (error) {
+                console.error("Error al importar datos históricos:", error);
+                showAlert(`Error al importar: ${error.message}`, "error");
+            }
+        }
+
+        // =============================================================
+        // MÓDULO: Catálogos de opciones dinámicas (Actualizado)
+        // =============================================================
+
+        // Catálogo de proyectos
+        const catalogoProyectos = [
+            "TREN MAYA",
+            "TREN INTERURBANO MÉXICO-TOLUCA",
+            "TREN INTERURBANO MÉXICO-PACHUCA",
+            "TREN MÉXICO-QUERÉTARO",
+            "TREN SALTILLO-NUEVO LAREDO",
+            "TREN HERMOSILLO-NOGALES"
+        ];
+
+        // Catálogo de nombres de licitaciones
+        const catalogoNombres = [
+            "CONSTRUCCIÓN DE TRAMO FERROVIARIO",
+            "ESTUDIOS Y PROYECTOS DE INGENIERÍA",
+            "SUMINISTRO DE MATERIAL RODANTE",
+            "SUPERVISIÓN DE OBRA",
+            "MANTENIMIENTO DE VÍA FÉRREA",
+            "SEÑALIZACIÓN Y COMUNICACIONES"
+        ];
+
+        // Catálogo de siglas de dependencias
+        const catalogoSiglasDependencias = [
+            "SCT",
+            "FONATUR",
+            "SEDENA",
+            "SEMARNAT",
+            "SHCP",
+            "CFE"
+        ];
+
+        // Catálogo de procedimientos de contratación
+        const catalogoProcedimientosContratacion = [
+            "LICITACIÓN PÚBLICA",
+            "INVITACIÓN A TRES PERSONAS",
+            "ADJUDICACIÓN DIRECTA",
+            "CONCURSO ABIERTO",
+            "CONTRATO POR PUESTOS DE TRABAJO"
+        ];
+
+        // Catálogo de tipos
+        const catalogoTipos = [
+            "OBRA PÚBLICA",
+            "SERVICIOS",
+            "SUMINISTROS",
+            "SERVICIOS CONSULTORÍA",
+            "ARRENDAMIENTO"
+        ];
+
+        // Catálogo de años de publicación
+        const catalogoAnosPublicacion = [
+            "2023",
+            "2024",
+            "2025"
+        ];
+
+        // Catálogo de participantes
+        const catalogoParticipantes = [
+            "ICA",
+            "CARSO",
+            "PINFRA",
+            "ALSTOM",
+            "SIEMENS",
+            "BOMBARDIER",
+            "GCC",
+            "ACCIONA",
+            "OHL",
+            "TEYA"
+        ];
+
+        function updateDynamicSelectOptions() {
+            const allData = [...licitaciones, ...historicalLicitaciones];
+            
+            // Proyectos - combinar catálogo con datos existentes
+            const historicalProyectos = allData.map(c => c.proyecto).filter(Boolean).map(p => p.trim());
+            const combinedProyectos = [...new Set([...catalogoProyectos, ...historicalProyectos])].sort();
+            fieldOptions.proyectos = combinedProyectos;
+            updateSelectOptions('proyectos', fieldOptions.proyectos);
+        
+            // Nombres - combinar catálogo con datos existentes
+            const historicalNombres = allData.map(c => c.nombre).filter(Boolean).map(c => c.trim());
+            const combinedNombres = [...new Set([...catalogoNombres, ...historicalNombres])].sort();
+            fieldOptions.nombres = combinedNombres;
+            updateSelectOptions('nombres', fieldOptions.nombres);
+
+            // Siglas Dependencias - combinar catálogo con datos existentes
+            const historicalSiglasDependencias = allData.map(c => c.siglasDependencia).filter(Boolean).map(m => m.trim());
+            const combinedSiglasDependencias = [...new Set([...catalogoSiglasDependencias, ...historicalSiglasDependencias])].sort();
+            fieldOptions.siglasDependencias = combinedSiglasDependencias;
+            updateSelectOptions('siglasDependencias', fieldOptions.siglasDependencias);
+
+            // Procedimientos Contratación - combinar catálogo con datos existentes
+            const historicalProcedimientosContratacion = allData.map(c => c.procedimientoContratacion).filter(Boolean).map(s => s.trim());
+            const combinedProcedimientosContratacion = [...new Set([...catalogoProcedimientosContratacion, ...historicalProcedimientosContratacion])].sort();
+            fieldOptions.procedimientosContratacion = combinedProcedimientosContratacion;
+            updateSelectOptions('procedimientosContratacion', fieldOptions.procedimientosContratacion);
+
+            // Tipos - combinar catálogo con datos existentes
+            const historicalTipos = allData.map(c => c.tipo).filter(Boolean).map(s => s.trim());
+            const combinedTipos = [...new Set([...catalogoTipos, ...historicalTipos])].sort();
+            fieldOptions.tipos = combinedTipos;
+            updateSelectOptions('tipos', fieldOptions.tipos);
+
+            // Años Publicación - combinar catálogo con datos existentes
+            const historicalAnosPublicacion = allData.map(c => c.anoPublicacion).filter(Boolean).map(s => s.trim());
+            const combinedAnosPublicacion = [...new Set([...catalogoAnosPublicacion, ...historicalAnosPublicacion])].sort();
+            fieldOptions.anosPublicacion = combinedAnosPublicacion;
+            updateSelectOptions('anosPublicacion', fieldOptions.anosPublicacion);
+
+            // Registrados Interés - solo datos existentes
+            const historicalRegistradosInteres = allData.map(c => c.registradosInteres).filter(Boolean).map(s => s.trim());
+            const combinedRegistradosInteres = [...new Set([...catalogoParticipantes, ...historicalRegistradosInteres])].sort();
+            fieldOptions.registradosInteres = combinedRegistradosInteres;
+            updateSelectOptions('registradosInteres', fieldOptions.registradosInteres);
+
+            // Nombre Licitantes - solo datos existentes
+            const historicalNombreLicitantes = allData.map(c => c.nombreLicitantes).filter(Boolean).map(s => s.trim());
+            const combinedNombreLicitantes = [...new Set([...catalogoParticipantes, ...historicalNombreLicitantes])].sort();
+            fieldOptions.nombreLicitantes = combinedNombreLicitantes;
+            updateSelectOptions('nombreLicitantes', fieldOptions.nombreLicitantes);
+
+            // Ganadores Licitación - solo datos existentes
+            const historicalGanadoresLicitacion = allData.map(c => c.ganadorLicitacion).filter(Boolean).map(s => s.trim());
+            const combinedGanadoresLicitacion = [...new Set([...catalogoParticipantes, ...historicalGanadoresLicitacion])].sort();
+            fieldOptions.ganadoresLicitacion = combinedGanadoresLicitacion;
+            updateSelectOptions('ganadoresLicitacion', fieldOptions.ganadoresLicitacion);
+        }
+
+        function updateSelectOptions(field, options, selectedId = null) {
+            const fieldToSelectMap = {
+                'proyectos': ['licitacion-proyecto', 'edit-licitacion-proyecto'],
+                'nombres': ['licitacion-nombre', 'edit-licitacion-nombre'],
+                'siglasDependencias': ['licitacion-siglasDependencia', 'edit-licitacion-siglasDependencia'],
+                'procedimientosContratacion': ['licitacion-procedimientoContratacion', 'edit-licitacion-procedimientoContratacion'],
+                'tipos': ['licitacion-tipo', 'edit-licitacion-tipo'],
+                'anosPublicacion': ['licitacion-anoPublicacion', 'edit-licitacion-anoPublicacion'],
+                'registradosInteres': ['licitacion-registradosInteres', 'edit-licitacion-registradosInteres'],
+                'nombreLicitantes': ['licitacion-nombreLicitantes', 'edit-licitacion-nombreLicitantes'],
+                'ganadoresLicitacion': ['licitacion-ganadorLicitacion', 'edit-licitacion-ganadorLicitacion']
+            };
+
+            const normalizedOptions = options.map(opt => ({id: opt, text: opt}));
+            
+            if (fieldToSelectMap[field]) {
+                fieldToSelectMap[field].forEach(selectId => {
+                    const select = $(`#${selectId}`);
+                    if (select.length) {
+                        const currentValue = select.val();
+                        
+                        select.empty().select2({
+                            data: normalizedOptions,
+                            tags: true,
+                            placeholder: "Seleccione o escriba una opción",
+                            allowClear: true,
+                            width: '100%'
+                        });
+
+                        if (currentValue && normalizedOptions.some(o => o.id === currentValue)) {
+                            select.val(currentValue).trigger('change.select2');
+                        }
+                        else if (selectedId && normalizedOptions.some(o => o.id === selectedId)) {
+                            select.val(selectedId).trigger('change.select2');
+                        }
+                    }
+                });
+            }
+        }
+
+        async function findAndReplaceInDatabase(field, oldValue, newValue, activeFormId, formStateBeforeEdit) {
+            const fieldToDbFieldMap = {
+                'proyectos': 'proyecto', 
+                'nombres': 'nombre',
+                'siglasDependencias': 'siglasDependencia',
+                'procedimientosContratacion': 'procedimientoContratacion',
+                'tipos': 'tipo',
+                'anosPublicacion': 'anoPublicacion',
+                'registradosInteres': 'registradosInteres',
+                'nombreLicitantes': 'nombreLicitantes',
+                'ganadoresLicitacion': 'ganadorLicitacion'
+            };
+            
+            const dbField = fieldToDbFieldMap[field];
+            if (!dbField) return;
+            
+            try {
+                const licitacionesQuery = licitacionesCollectionRef.where(dbField, '==', oldValue);
+                const licitacionesSnapshot = await licitacionesQuery.get();
+                
+                const batch = db.batch();
+                licitacionesSnapshot.forEach(doc => {
+                    batch.update(doc.ref, { [dbField]: newValue });
+                });
+                
+                const historicalQuery = historicalLicitacionesCollectionRef.where(dbField, '==', oldValue);
+                const historicalSnapshot = await historicalQuery.get();
+                
+                historicalSnapshot.forEach(doc => {
+                    batch.update(doc.ref, { [dbField]: newValue });
+                });
+                
+                await batch.commit();
+                
+                // 1. Actualizar las opciones globales y redibujar los selects
+                fieldOptions[field] = [...new Set([...fieldOptions[field].filter(opt => opt !== oldValue), newValue])].sort();
+                updateSelectOptions(field, fieldOptions[field]);
+                
+                // 2. Restaurar el estado del formulario
+                if (formStateBeforeEdit) {
+                    restoreFormState(activeFormId, formStateBeforeEdit);
+                }
+
+                // 3. Asegurarse de que el campo editado tenga el nuevo valor seleccionado
+                if (activeSelectElement) {
+                    $(activeSelectElement).val(newValue).trigger('change.select2');
+                }
+                
+                showAlert(`Se actualizaron ${licitacionesSnapshot.size + historicalSnapshot.size} registros.`, "success");
+            } catch (error) {
+                console.error("Error al actualizar registros:", error);
+                showAlert("Error al actualizar registros existentes", "error");
+            }
+        }
+
+        function getFormState(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return null;
+            const state = {};
+            
+            // Guardar estado de inputs y textareas
+            $(form).find('input, textarea').each(function() {
+                const input = $(this);
+                const inputName = input.attr('name');
+                if (inputName) {
+                    state[inputName] = { value: input.val() };
+                }
+            });
+
+            // Guardar estado de selects (incluyendo tags)
+            $(form).find('select').each(function() {
+                const select = $(this);
+                const selectName = select.attr('name');
+                if (selectName) {
+                    const select2Data = select.select2('data') || [];
+                    state[selectName] = {
+                        value: select.val(),
+                        tags: select2Data.filter(item => item.element === undefined || $(item.element).data('select2-tag') === true)
+                    };
+                }
+            });
+            
+            return state;
+        }
+
+        function restoreFormState(formId, state) {
+            const form = document.getElementById(formId);
+            if (!form || !state) return;
+            
+            Object.entries(state).forEach(([fieldName, fieldState]) => {
+                const element = $(form).find(`[name="${fieldName}"]`);
+                if (element.is('select')) {
+                    // Restaurar tags para selects
+                    if (fieldState.tags) {
+                        fieldState.tags.forEach(tag => {
+                            if (!element.find(`option[value="${tag.id}"]`).length) {
+                                const newOption = new Option(tag.text, tag.id);
+                                $(newOption).attr('data-select2-tag', 'true'); // Marcar como etiqueta para la siguiente captura de estado.
+                                element.append(newOption);
+                            }
+                        });
+                    }
+                    element.val(fieldState.value).trigger('change.select2');
+                } else if(element.is('input') || element.is('textarea')) {
+                    element.val(fieldState.value);
+                }
+            });
+        }
+
+        function setupAddEditButtons() {
+            const buttonToFieldMap = {
+                'edit-proyecto-btn': 'proyectos',
+                'edit-nombre-btn': 'nombres',
+                'edit-descripcion-btn': 'descripcion',
+                'edit-generalidades-btn': 'generalidades',
+                'edit-siglasDependencia-btn': 'siglasDependencias',
+                'edit-codigoExpediente-btn': 'codigoExpediente',
+                'edit-procedimientoContratacion-btn': 'procedimientosContratacion',
+                'edit-tipo-btn': 'tipos',
+                'edit-anoPublicacion-btn': 'anosPublicacion',
+                'edit-registradosInteres-btn': 'registradosInteres',
+                'edit-nombreLicitantes-btn': 'nombreLicitantes',
+                'edit-ganadorLicitacion-btn': 'ganadoresLicitacion',
+                'edit-monto-btn': 'monto',
+                'edit-linkComprasXM-btn': 'linkComprasXM',
+                'edit-proyecto-edit-btn': 'proyectos',
+                'edit-nombre-edit-btn': 'nombres',
+                'edit-descripcion-edit-btn': 'descripcion',
+                'edit-generalidades-edit-btn': 'generalidades',
+                'edit-siglasDependencia-edit-btn': 'siglasDependencias',
+                'edit-codigoExpediente-edit-btn': 'codigoExpediente',
+                'edit-procedimientoContratacion-edit-btn': 'procedimientosContratacion',
+                'edit-tipo-edit-btn': 'tipos',
+                'edit-anoPublicacion-edit-btn': 'anosPublicacion',
+                'edit-registradosInteres-edit-btn': 'registradosInteres',
+                'edit-nombreLicitantes-edit-btn': 'nombreLicitantes',
+                'edit-ganadorLicitacion-edit-btn': 'ganadoresLicitacion',
+                'edit-monto-edit-btn': 'monto',
+                'edit-linkComprasXM-edit-btn': 'linkComprasXM'
+            };
+            
+            Object.entries(buttonToFieldMap).forEach(([buttonId, field]) => {
+                const button = document.getElementById(buttonId);
+                if (!button) return;
+
+                button.addEventListener('click', (e) => {
+                    let inputElement;
+                    
+                    if (['descripcion', 'generalidades', 'codigoExpediente', 'monto', 'linkComprasXM'].includes(field)) {
+                        inputElement = e.currentTarget.parentElement.querySelector('input') || 
+                                      e.currentTarget.parentElement.querySelector('textarea');
+                    } else {
+                        inputElement = e.currentTarget.parentElement.querySelector('select');
+                        activeSelectElement = inputElement;
+                    }
+                    
+                    const currentValue = inputElement.value;
+                        
+                    if (!currentValue) {
+                        return showAlert("Por favor, ingrese un valor para editar.", "warning");
+                    }
+                       
+                    currentEditingField = field;
+                    currentEditingValue = currentValue;
+                    editOptionInput.value = currentValue;
+                    editOptionInput.placeholder = `Edite la opción para ${field}`;
+                    openModalWithFocus(editOptionModal, editOptionInput);
+                });
+            });
+
+
+
+
+
+
+
+            confirmEditOptionBtn.addEventListener('click', () => {
+                const newValue = editOptionInput.value.trim();
+
+                if (!newValue || !currentEditingField || !currentEditingValue) {
+                    return;
+                }
+
+                closeModal(editOptionModal);
+                
+                const activeFormId = !licitacionModal.classList.contains('hidden') ? 'licitacion-form' : 
+                                     !editModal.classList.contains('hidden') ? 'edit-form' : null;
+                
+                const formStateBeforeEdit = activeFormId ? getFormState(activeFormId) : null;
+                requirePassword(async () => {
+                    try {
+                        if (['proyectos', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion'].includes(currentEditingField)) {
+                            await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue, activeFormId, formStateBeforeEdit);
+                        } else {
+                            // Lógica para campos de texto (no afecta a otros campos)
+                            let inputElement;
+                            if (currentEditingField === 'descripcion') {
+                                inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-descripcion' : 'edit-licitacion-descripcion');
+                            } else if (currentEditingField === 'generalidades') {
+                                inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-generalidades' : 'edit-licitacion-generalidades');
+                            } else if (currentEditingField === 'codigoExpediente') {
+                                inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-codigoExpediente' : 'edit-licitacion-codigoExpediente');
+                            } else if (currentEditingField === 'monto') {
+                                inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-monto' : 'edit-licitacion-monto');
+                            } else if (currentEditingField === 'linkComprasXM') {
+                                inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-linkComprasXM' : 'edit-licitacion-linkComprasXM');
+                            }
+                            
+                            if (inputElement) {
+                                inputElement.value = newValue;
+                            }
+                        }
+                    } catch (dbErr) {
+                        console.error('Error al actualizar la base de datos:', dbErr);
+                        showAlert("Error al actualizar la opción", "error");
+                    } finally {
+                        activeSelectElement = null; // Limpiar el elemento activo
+                    }
+                });
+            });
+            cancelEditOptionBtn.addEventListener('click', () => {
+                closeModal(editOptionModal);
+                activeSelectElement = null;
+            });
+        }
+
+        // =============================================
+        // MÓDULO: Autenticación y seguridad
+        // =============================================
+
+        function verifyPassword() {
+            const password = passwordInput.value;
+            
+            if (password === 'admin') {
+                closeModal(passwordModal); // Usar la función closeModal mejorada
+                passwordInput.value = '';
+                if (pendingAction) {
+                    pendingAction();
+                    pendingAction = null;
+                }
+            } else {
+                showAlert("Contraseña incorrecta", "error");
+                passwordInput.value = '';
+            }
+        }
+
+        function setupPasswordVerification() {
+            confirmPasswordBtn.addEventListener('click', verifyPassword);
+            cancelPasswordBtn.addEventListener('click', () => {
+                closeModal(passwordModal);
+                pendingAction = null;
+            });
+            
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    verifyPassword();
+                }
+            });
+        }
+
+        function requirePassword(action, isAsync = false) {
+            pendingAction = action;
+            openModal(passwordModal); // Se corregirá a openModalWithFocus más adelante
+            openModalWithFocus(passwordModal, passwordInput);
+            
+            if (isAsync) {
+                return new Promise((resolve, reject) => {
+                    const originalAction = pendingAction;
+                    pendingAction = async () => {
+                        try {
+                            const result = await originalAction();
+                            resolve(result);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                });
+            }
+        }
+
+        async function initializeAppWithAuth() {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userInfo.textContent = `Usuario Anónimo: ${userId.substring(0, 8)}...`;
+                    setupRealtimeListeners();
+                    showApp();
+                } else {
+                    try {
+                        await auth.signInAnonymously();
+                    } catch (error) {
+                        console.error("Error en autenticación anónima:", error);
+                        showAlert("Error de conexión. Algunas funciones pueden no estar disponibles.", "warning");
+                        // Mostrar la app de todos modos en modo offline
+                        showApp();
+                    }
+                }
+            });
+        }
+        
+        function setupRealtimeListeners() {
+            licitacionesCollectionRef.onSnapshot((snapshot) => {
+                licitaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                sortAndRenderTable(licitacionTableBody, licitaciones, false);
+                updateCharts();
+                updateDynamicSelectOptions();
+            }, (error) => console.error("Error en listener de licitaciones:", error));
+            
+            historicalLicitacionesCollectionRef.onSnapshot((snapshot) => {
+                historicalLicitaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
+                updateCharts();
+                updateDynamicSelectOptions();
+            }, (error) => console.error("Error en listener de histórico:", error));
+        }
+
+        // =============================================
+        // MÓDULO: Gráficos y reportes
+        // =============================================
+        
+        function updateCharts() {
+            const source = reportesDataSource.value;
+            let data = [];
+            if (source === 'licitaciones') data = licitaciones;
+            else if (source === 'historico') data = historicalLicitaciones;
+            else data = [...licitaciones, ...historicalLicitaciones];
+            
+            const proyectoCounts = {}, dependenciaCounts = {};
+        
+            if (dynamicChart) dynamicChart.destroy();
+
+            // Update dynamic chart
+            updateDynamicChart();
+        }
+
+        function updateDynamicChart() {
+            const source = reportesDataSource.value;
+            let data = [];
+            if (source === 'licitaciones') data = licitaciones;
+            else if (source === 'historico') data = historicalLicitaciones;
+            else data = [...licitaciones, ...historicalLicitaciones];
+            
+            const selectedVariable = dynamicChartVariable.value;
+            const variableCounts = {};
+            
+            data.forEach(licitacionItem => {
+                const value = licitacionItem[selectedVariable] || 'N/A';
+                variableCounts[value] = (variableCounts[value] || 0) + 1;
+            });
+            
+            // Update dynamic table
+            dynamicTableBody.innerHTML = '';
+            dynamicTableHeader.textContent = selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1);
+            
+            let total = 0;
+
+            Object.entries(variableCounts).forEach(([value, count]) => {
+                total += count;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${value}</td>
+                    <td>${count}</td>
+                `;
+                dynamicTableBody.appendChild(row);
+            });
+
+            // Add total row
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'bg-slate-200 font-bold';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>${total}</td>
+            `;
+            dynamicTableBody.appendChild(totalRow);
+            
+            // Update dynamic chart
+            if (dynamicChart) dynamicChart.destroy();
+            
+            const labels = Object.keys(variableCounts);
+            const chartData = Object.values(variableCounts);
+            
+            dynamicChart = new Chart(dynamicChartCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cantidad',
+                        data: chartData,
+                        backgroundColor: '#9C2348'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                        x: {
+                            ticks: {
+                                display: showChartLabels,
+                                maxRotation: showChartLabels ? 90 : 0,
+                                minRotation: showChartLabels ? 45 : 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // =============================================
+        // MÓDULO: Exportación/Importación
+        // =============================================
+
+        const exportHeaders = [
+            "No.", "Proyecto", "Nombre", "Siglas Dependencia", "Código Expediente", "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura", "Fecha Fallo", "Ganador", "Monto"
+        ];
+
+        function prepareExportData(data) {
+            return data.map((licitacionItem, index) => ({
+                "No.": index + 1, 
+                "Proyecto": licitacionItem.proyecto || "",
+                "Nombre": licitacionItem.nombre || "",
+                "Siglas Dependencia": licitacionItem.siglasDependencia || "",
+                "Código Expediente": licitacionItem.codigoExpediente || "",
+                "Procedimiento": licitacionItem.procedimientoContratacion || "",
+                "Tipo": licitacionItem.tipo || "",
+                "Año Publicación": licitacionItem.anoPublicacion || "",
+                "Fecha Apertura": formatDate(licitacionItem.fechaPresentacionApertura) || "",
+                "Fecha Fallo": formatDate(licitacionItem.fechaFallo) || "",
+                "Ganador": licitacionItem.ganadorLicitacion || "",
+                "Monto": licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : ""
+            }));
+        }
+
+        // =============================================
+        // MÓDULO: Migración de datos
+        // =============================================
+        
+        async function migrateLicitacionesToHistorical() {
+            try {
+                if (licitaciones.length === 0) {
+                    showAlert("No hay licitaciones para migrar.", "warning");
+                    return;
+                }
+                
+                const batch = db.batch();
+                const licitacionesCount = licitaciones.length;
+                
+                licitaciones.forEach(licitacionItem => {
+                    const historicalDocRef = historicalLicitacionesCollectionRef.doc();
+                    const { id, ...licitacionData } = licitacionItem;
+                    batch.set(historicalDocRef, { 
+                        ...licitacionData,
+                        migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        originalId: id
+                    });
+                });
+                
+                licitaciones.forEach(licitacionItem => {
+                    const licitacionDocRef = licitacionesCollectionRef.doc(licitacionItem.id);
+                    batch.delete(licitacionDocRef);
+                });
+                
+                await batch.commit();
+                
+                licitaciones = [];
+                sortAndRenderTable(licitacionTableBody, licitaciones, false);
+                
+                showAlert(`Se migraron ${licitacionesCount} licitaciones al histórico.`, "success");
+            } catch (error) {
+                console.error("Error al migrar licitaciones:", error);
+                showAlert(`Error al migrar: ${error.message}`, "error");
+            }
+        }
+
+        function handleRowDoubleClick(e, isHistorical) {
+            const row = e.target.closest('tr');
+            if (!row || e.target.closest('button') || e.target.closest('.link-cell')) {
+                return; // No hacer nada si se hace clic en un botón o en el enlace
+            }
+            const licitacionId = row.querySelector('.edit-btn')?.dataset.id;
+            if (!licitacionId) return;
+
+            const data = isHistorical ? historicalLicitaciones : licitaciones;
+            const licitacionItem = data.find(item => item.id === licitacionId);
+            showDetailsModal(licitacionItem);
+        }
+
+        function handleGenerateDocClick(button) {
+            const licitacionId = button.dataset.id;
+            const isHistorical = button.dataset.isHistorical === 'true';
+            // Llamada directa a la función de generación de documento, sin contraseña.
+            generateDoc(licitacionId, isHistorical);
+        }
+
+        // =============================================
+        // MÓDULO: Configuración de eventos
+        // =============================================
+        
+        function setupEventListeners() {
+            setupTabs();
+            setupColumnFilters('main-table-header', () => licitaciones, renderTable, 'main');
+            setupColumnFilters('historical-table-header', () => historicalLicitaciones, renderTable, 'historical');
+            setupFiltering('filter-input-main', () => licitaciones, renderTable, false);
+            setupFiltering('filter-input-historical', () => historicalLicitaciones, renderTable, true);
+            setupAddEditButtons();
+            setupPasswordVerification();
+            
+            reportesDataSource.addEventListener('change', updateCharts);
+            dynamicChartVariable.addEventListener('change', updateDynamicChart);
+            
+            toggleLabelsBtn.addEventListener('click', () => {
+                showChartLabels = !showChartLabels;
+                toggleLabelsBtn.classList.toggle('bg-primary', showChartLabels);
+                toggleLabelsBtn.classList.toggle('text-white', showChartLabels);
+                updateDynamicChart();
+            });
+            
+            addLicitacionBtn.addEventListener('click', () => {
+                // Clear form
+                licitacionForm.reset();
+                $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion').val(null).trigger('change');
+
+                // Establecer la fecha de hoy DESPUÉS de resetear el formulario
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('licitacion-fechaPresentacionApertura').value = today;
+                document.getElementById('licitacion-fechaFallo').value = today;
+                document.getElementById('licitacion-fechaEstimadaInicio').value = today;
+                
+                openModalWithFocus(licitacionModal, document.getElementById('licitacion-proyecto'));
+            });
+            
+            closeModalBtn.addEventListener('click', () => closeModal(licitacionModal));
+            
+            licitacionForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (!licitacionForm.checkValidity()) {
+                    return showAlert("Por favor, complete todos los campos obligatorios.", "warning");
+                }
+                
+                const formData = new FormData(licitacionForm);
+                const licitacionData = Object.fromEntries(formData.entries());
+                
+                saveLicitacion(licitacionData);
+                closeModal(licitacionModal);
+            });
+            
+            closeEditModalBtn.addEventListener('click', () => closeModal(editModal));
+            
+            editForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!editForm.checkValidity()) {
+                    return showAlert("Por favor, complete todos los campos obligatorios.", "warning");
+                }
+                
+                const formData = new FormData(editForm);
+                const updateData = Object.fromEntries(formData.entries());
+                const id = document.getElementById('edit-id').value;
+                
+                await updateLicitacion(id, updateData, currentEditIsHistorical);
+                closeModal(editModal);
+            });
+
+            let licitacionToDeleteId = null;
+            let licitacionToDeleteIsHistorical = false;
+
+            function handleDeleteClick(button) {
+                requirePassword(() => {
+                    licitacionToDeleteId = button.dataset.id;
+                    licitacionToDeleteIsHistorical = button.dataset.isHistorical === 'true';
+                    openModal(confirmModal);
+                });
+            }
+
+            licitacionTableBody.addEventListener('click', e => {
+                const target = e.target.closest('button');
+                if (!target) return;
+                if (target.classList.contains('edit-btn')) handleEditClick(target);
+                if (target.classList.contains('delete-btn')) handleDeleteClick(target);
+                if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
+            });
+
+            uploadTemplateBtn.addEventListener('click', () => openModal(templateUploadModal));
+            closeTemplateUploadModalBtn.addEventListener('click', () => closeModal(templateUploadModal));
+
+            document.querySelectorAll('.upload-template-type-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const templateType = e.currentTarget.dataset.templateType;
+                    uploadTemplateFile(templateType);
+                });
+            });
+
+            function uploadTemplateFile(templateType) {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.docx';
+                fileInput.style.display = 'none';
+
+                fileInput.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        requirePassword(async () => {
+                            showAlert(`Subiendo plantilla para '${templateType}'...`, "info");
+                            const reader = new FileReader();
+                            reader.onload = async (event) => {
+                                const base64String = event.target.result;
+                                try {
+                                    const docRef = db.collection('config').doc(`wordTemplate_${templateType}`);
+                                    await docRef.set({ templateData: base64String, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                                    showAlert(`¡Plantilla para '${templateType}' actualizada con éxito!`, "success");
+                                    closeModal(templateUploadModal); // Cierra el modal de plantillas al terminar
+                                } catch (dbError) {
+                                    console.error("Error al guardar plantilla en Firestore:", dbError);
+                                    showAlert("Error al guardar la plantilla.", "error");
+                                }
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    }
+                };
+                document.body.appendChild(fileInput);
+                fileInput.click();
+                document.body.removeChild(fileInput);
+            }
+
+        licitacionTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, false));
+
+            historicalTableBody.addEventListener('click', e => {
+                const target = e.target.closest('button');
+                if (!target) return;
+                if (target.classList.contains('edit-btn')) handleEditClick(target);
+                if (target.classList.contains('delete-btn')) handleDeleteClick(target);
+                if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
+            });
+
+        historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
+
+            cancelDeleteBtn.addEventListener('click', () => {
+                closeModal(confirmModal);
+                licitacionToDeleteId = null;
+            });
+            
+            confirmDeleteBtn.addEventListener('click', async () => {
+                if (licitacionToDeleteId) {
+                    await deleteLicitacion(licitacionToDeleteId, licitacionToDeleteIsHistorical);
+                    closeModal(confirmModal);
+                }
+            });
+
+            historicalFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    importHistoricalBtn.classList.remove('hidden');
+                    importHistoricalBtn.disabled = false;
+                } else {
+                    importHistoricalBtn.classList.add('hidden');
+                    importHistoricalBtn.disabled = true;
+                }
+            });
+
+            importHistoricalBtn.addEventListener('click', () => {
+                requirePassword(async () => {
+                    const file = historicalFileInput.files[0];
+                    if (!file) {
+                        showAlert("Por favor, selecciona un archivo Excel primero.", "warning");
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        try {
+                            const workbook = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+                            const sheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[sheetName];
+                            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                            
+                            if (jsonData.length === 0) return showAlert("El archivo no contiene datos válidos.", "warning");
+
+                            const processedData = jsonData.map(row => {
+                                const mapKeys = (obj, keyMap) => Object.keys(obj).reduce((acc, key) => {
+                                    const newKey = keyMap[key.toLowerCase().trim()] || key.toLowerCase().trim();
+                                    acc[newKey] = obj[key];
+                                    return acc;
+                                }, {});
+
+                                const keyMapping = { 
+                                    'no.': 'no', 
+                                    'proyecto': 'proyecto',
+                                    'nombre': 'nombre',
+                                    'descripcion': 'descripcion',
+                                    'generalidades': 'generalidades',
+                                    'siglas dependencia': 'siglasDependencia',
+                                    'código expediente': 'codigoExpediente',
+                                    'procedimiento contratación': 'procedimientoContratacion',
+                                    'tipo': 'tipo',
+                                    'año publicación': 'anoPublicacion',
+                                    'fecha presentación apertura': 'fechaPresentacionApertura',
+                                    'fecha fallo': 'fechaFallo',
+                                    'fecha estimada inicio': 'fechaEstimadaInicio',
+                                    'registrados interés': 'registradosInteres',
+                                    'nombre licitantes': 'nombreLicitantes',
+                                    'ganador licitación': 'ganadorLicitacion',
+                                    'monto': 'monto',
+                                    'link compras xm': 'linkComprasXM'
+                                };
+                                const mappedRow = mapKeys(row, keyMapping);
+
+                                // Procesamiento robusto de fecha
+                                let fechaPresentacionApertura = mappedRow.fechaPresentacionApertura;
+                                let fechaFallo = mappedRow.fechaFallo;
+                                let fechaEstimadaInicio = mappedRow.fechaEstimadaInicio;
+                                
+                                // Función para procesar fechas
+                                const processDate = (fecha) => {
+                                    if (fecha instanceof Date) {
+                                        const year = fecha.getFullYear();
+                                        const month = (fecha.getMonth() + 1).toString().padStart(2, '0');
+                                        const day = fecha.getDate().toString().padStart(2, '0');
+                                        return `${year}-${month}-${day}`;
+                                    } else if (typeof fecha === 'number') {
+                                        const excelEpoch = new Date(1900, 0, 1);
+                                        const jsDate = new Date(excelEpoch.getTime() + (fecha - 2) * 24 * 60 * 60 * 1000);
+                                        const year = jsDate.getFullYear();
+                                        const month = (jsDate.getMonth() + 1).toString().padStart(2, '0');
+                                        const day = jsDate.getDate().toString().padStart(2, '0');
+                                        return `${year}-${month}-${day}`;
+                                    } else if (typeof fecha === 'string') {
+                                        if (fecha.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+                                            const [day, month, year] = fecha.split('/');
+                                            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                                        } else if (fecha.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
+                                            return fecha;
+                                        } else {
+                                            try {
+                                                const parsedDate = new Date(fecha);
+                                                if (!isNaN(parsedDate)) {
+                                                    const year = parsedDate.getFullYear();
+                                                    const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0');
+                                                    const day = parsedDate.getDate().toString().padStart(2, '0');
+                                                    return `${year}-${month}-${day}`;
+                                                } else {
+                                                    return '';
+                                                }
+                                            } catch (e) {
+                                                return '';
+                                            }
+                                        }
+                                    } else {
+                                        return '';
+                                    }
+                                };
+
+                                return {
+                                    proyecto: mappedRow.proyecto || '',
+                                    nombre: mappedRow.nombre || '',
+                                    descripcion: mappedRow.descripcion || '',
+                                    generalidades: mappedRow.generalidades || '',
+                                    siglasDependencia: mappedRow.siglasDependencia || '',
+                                    codigoExpediente: mappedRow.codigoExpediente || '',
+                                    procedimientoContratacion: mappedRow.procedimientoContratacion || '',
+                                    tipo: mappedRow.tipo || '',
+                                    anoPublicacion: mappedRow.anoPublicacion || '',
+                                    fechaPresentacionApertura: processDate(fechaPresentacionApertura),
+                                    fechaFallo: processDate(fechaFallo),
+                                    fechaEstimadaInicio: processDate(fechaEstimadaInicio),
+                                    registradosInteres: mappedRow.registradosInteres || '',
+                                    nombreLicitantes: mappedRow.nombreLicitantes || '',
+                                    ganadorLicitacion: mappedRow.ganadorLicitacion || '',
+                                    monto: mappedRow.monto || '',
+                                    linkComprasXM: mappedRow.linkComprasXM || ''
+                                };
+                            });
+
+                            if (processedData.length === 0) return showAlert("El archivo Excel está vacío o no es válido.", "warning");
+                            
+                            let replace = false;
+                            if (historicalLicitaciones.length > 0) {
+                                openModal(replaceHistoricalModal);
+                                await new Promise(resolve => {
+                                    confirmReplaceBtn.onclick = () => {
+                                        replace = true;
+                                        closeModal(replaceHistoricalModal);
+                                        resolve();
+                                    };
+                                    cancelReplaceBtn.onclick = () => {
+                                        replace = false;
+                                        closeModal(replaceHistoricalModal);
+                                        resolve();
+                                    };
+                                });
+                                if (replace) {
+                                    await deleteAllHistorical();
+                                }
+                            }
+                            await importHistoricalData(processedData);
+                            historicalFileInput.value = '';
+                            importHistoricalBtn.disabled = true;
+                            importHistoricalBtn.classList.add('hidden');
+                        
+                        } catch (error) {
+                            console.error("Error al procesar el archivo:", error);
+                            showAlert("Error al procesar el archivo. Asegúrese de que es un Excel válido.", "error");
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                });
+            });
+
+            downloadExcelBtn.addEventListener('click', () => {
+                if (licitaciones.length === 0) return showAlert("No hay datos para descargar.", "warning");
+                const data = prepareExportData(licitaciones);
+                const ws = XLSX.utils.json_to_sheet(data, { header: exportHeaders });
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Licitaciones");
+                XLSX.writeFile(wb, "licitaciones.xlsx");
+            });
+            
+            document.getElementById('download-historical-excel-btn').addEventListener('click', () => {
+                // Obtener los datos actualmente filtrados en la tabla
+                const filteredData = applyAllFilters(historicalLicitaciones, 'historical');
+
+                if (filteredData.length === 0) return showAlert("No hay datos en la tabla para descargar.", "warning");
+                const dataToExport = prepareExportData(filteredData);
+                const ws = XLSX.utils.json_to_sheet(dataToExport, { header: exportHeaders });
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Histórico Filtrado");
+                XLSX.writeFile(wb, "licitaciones_historicas.xlsx");
+            });
+            
+            closeWebviewBtn.addEventListener('click', () => {
+                webviewFrame.src = 'about:blank';
+                closeModal(webviewModal);
+            });
+            
+            migrateLicitacionBtn.addEventListener('click', () => {
+                requirePassword(() => openModal(migrateModal));
+            });
+            
+            cancelMigrateBtn.addEventListener('click', () => closeModal(migrateModal));
+            
+            confirmMigrateBtn.addEventListener('click', async () => {
+                try {
+                    await migrateLicitacionesToHistorical();
+                    closeModal(migrateModal);
+                } catch (error) {
+                    console.error("Error en migración:", error);
+                    showAlert("Error durante la migración: " + error.message, "error");
+                }
+            });
+
+            closeDetailsModalBtn.addEventListener('click', () => closeModal(viewDetailsModal));
+        }
+
+        // =============================================
+        // MÓDULO: Inicialización
+        // =============================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Asignar elementos del DOM una vez que la página esté cargada
+            loader = document.getElementById('loader');
+            appContainer = document.getElementById('app');
+            userInfo = document.getElementById('user-info');
+            tabsContainer = document.getElementById('tabs');
+            tabContents = document.querySelectorAll('.tab-content');
+            addLicitacionBtn = document.getElementById('add-licitacion-btn');
+            downloadExcelBtn = document.getElementById('download-excel-btn');
+            migrateLicitacionBtn = document.getElementById('migrate-licitacion-btn');
+            licitacionTableBody = document.getElementById('licitacion-table-body');
+            noLicitacionMessage = document.getElementById('no-licitacion-message');
+            historicalTableBody = document.getElementById('historical-table-body');
+            noHistoricalMessage = document.getElementById('no-historical-message');
+            historicalFileInput = document.getElementById('historical-file-input');
+            historicalFileName = document.getElementById('file-name');
+            importHistoricalBtn = document.getElementById('import-historical-btn');
+            reportesDataSource = document.getElementById('reportes-data-source');
+            dynamicChartCanvas = document.getElementById('dynamicChart');
+            dynamicChartVariable = document.getElementById('dynamic-chart-variable');
+            toggleLabelsBtn = document.getElementById('toggle-labels-btn');
+            dynamicTableBody = document.getElementById('dynamic-table-body');
+            dynamicTableHeader = document.getElementById('dynamic-table-header');
+            licitacionModal = document.getElementById('licitacion-modal');
+            licitacionForm = document.getElementById('licitacion-form');
+            closeModalBtn = document.getElementById('close-modal-btn');
+            editModal = document.getElementById('edit-modal');
+            editForm = document.getElementById('edit-form');
+            closeEditModalBtn = document.getElementById('close-edit-modal-btn');
+            confirmModal = document.getElementById('confirm-modal');
+            cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            replaceHistoricalModal = document.getElementById('replace-historical-modal');
+            cancelReplaceBtn = document.getElementById('cancel-replace-btn');
+            confirmReplaceBtn = document.getElementById('confirm-replace-btn');
+            editOptionModal = document.getElementById('edit-option-modal');
+            editOptionInput = document.getElementById('edit-option-input');
+            cancelEditOptionBtn = document.getElementById('cancel-edit-option-btn');
+            confirmEditOptionBtn = document.getElementById('confirm-edit-option-btn');
+            passwordModal = document.getElementById('password-modal');
+            passwordInput = document.getElementById('password-input');
+            cancelPasswordBtn = document.getElementById('cancel-password-btn');
+            confirmPasswordBtn = document.getElementById('confirm-password-btn');
+            webviewModal = document.getElementById('webview-modal');
+            webviewFrame = document.getElementById('webview-frame');
+            closeWebviewBtn = document.getElementById('close-webview-btn');
+            migrateModal = document.getElementById('migrate-modal');
+            cancelMigrateBtn = document.getElementById('cancel-migrate-btn');
+            confirmMigrateBtn = document.getElementById('confirm-migrate-btn');
+            uploadTemplateBtn = document.getElementById('upload-template-btn');
+            viewDetailsModal = document.getElementById('view-details-modal');
+            templateUploadModal = document.getElementById('template-upload-modal');
+            closeTemplateUploadModalBtn = document.getElementById('close-template-upload-modal-btn');
+            closeDetailsModalBtn = document.getElementById('close-details-modal-btn');
+            detailsModalContent = document.getElementById('details-modal-content');
+
+            // Inicializar la autenticación y los listeners
+            initializeAppWithAuth();
+            setupEventListeners();
+
+            // Configurar Select2 para los selects
+            $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion, #edit-licitacion-proyecto, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo, #edit-licitacion-anoPublicacion, #edit-licitacion-registradosInteres, #edit-licitacion-nombreLicitantes, #edit-licitacion-ganadorLicitacion').each(function() {
+                 $(this).select2({
+                     tags: true,
+                     placeholder: "Seleccione o escriba una opción",
+                     allowClear: true,
+                     width: '100%'
+                 });
+             });
+
+            // Mejora de UX: Auto-foco en el buscador de Select2 al abrirlo.
+            $(document).on('select2:open', () => {
+                // Usamos un pequeño timeout para asegurar que el campo de búsqueda ya es visible.
+                setTimeout(() => document.querySelector('.select2-search__field').focus(), 50);
+            });
+            
+             // Set current date as default
+             const today = new Date().toISOString().split('T')[0];
+             document.getElementById('licitacion-fechaPresentacionApertura').value = today;
+             document.getElementById('licitacion-fechaFallo').value = today;
+             document.getElementById('licitacion-fechaEstimadaInicio').value = today;
+        });
+
+        // Iniciar la aplicación
+        // La inicialización ahora ocurre dentro del listener DOMContentLoaded
+
+    </script>
+</body> 
+</html>
