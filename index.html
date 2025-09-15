@@ -459,6 +459,7 @@
             font-size: 1.125rem;
             font-weight: 600;
             color: var(--primary-color);
+            text-align: center;
             margin-bottom: 0.75rem;
         }
 
@@ -512,6 +513,11 @@
         .formatted-content u {
             text-decoration: underline;
         }
+        
+        .details-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .details-table th, .details-table td { border: 1px solid #e5e7eb; padding: 0.75rem; text-align: left; vertical-align: top; }
+        .details-table th { background-color: var(--primary-color); font-weight: 600; color: white; }
+
 
         /* Clase para bloquear el scroll del body cuando un modal está abierto */
         body.modal-open {
@@ -1172,7 +1178,7 @@
                 <i class="fa-solid fa-times-circle fa-lg"></i>
             </button>
             <div class="flex items-center space-x-4 mb-6">
-                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjx0ZXh0IHg9IjEwIiB5PSIzNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSI+U0lTVEVNQSBERSBMSUNJVEFDSU9ORVM8L3RleHQ+PC9zdmc+" alt="Logo Sistema Licitaciones" class="h-16 w-auto">
+                <img src="https://github.com/SAGB-JCM/Gesti-n-de-Licitaciones/blob/main/icono_licitaciones.png?raw=true" alt="Logo Sistema Licitaciones" class="h-16 w-auto">
                 <h3 class="text-2xl font-bold text-primary">Detalle de la Licitación</h3>
             </div>
             <div class="licitacion-form-container">
@@ -1365,6 +1371,12 @@
             if (!html) return '';
             const doc = new DOMParser().parseFromString(html, 'text/html');
             return doc.body.textContent || "";
+        }
+
+        function formatTextWithLineBreaks(text) {
+            if (!text) return 'N/A';
+            // Escapa HTML para seguridad y luego reemplaza saltos de línea
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;').replace(/\n/g, '<br>');
         }
 
         function formatLongDate(dateString) {
@@ -1861,81 +1873,95 @@
             const sourceLink = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM) 
                 ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline break-all">${licitacionItem.linkComprasXM}</a>` 
                 : `<p class="text-gray-700">${licitacionItem.linkComprasXM || 'N/A'}</p>`;
-
+        
             detailsModalContent.innerHTML = `
                 <div class="details-header">
                     <h3 class="project">${licitacionItem.proyecto || 'Proyecto no especificado'}</h3>
+                    <p class="date">${licitacionItem.siglasDependencia || 'Dependencia no especificada'}</p>
                     <p class="date">Código de expediente: ${licitacionItem.codigoExpediente || 'N/A'}</p>
+                    <p class="date">Fecha de presentación y apertura: ${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</p>
+                </div>
+        
+                <div class="details-section">
+                    <h4>Información General de la Licitación</h4>
+                    <table class="details-table">
+                        <tbody>
+                            <tr>
+                                <th>Nombre</th>
+                                <td>${licitacionItem.nombre || 'No especificado.'}</td>
+                            </tr>
+                            <tr>
+                                <th>Descripción</th>
+                                <td class="formatted-content">${formatTextWithLineBreaks(licitacionItem.descripcion)}</td>
+                            </tr>
+                            <tr>
+                                <th>Generalidades del Proyecto</th>
+                                <td class="formatted-content">${formatTextWithLineBreaks(licitacionItem.generalidades)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <div class="details-section">
-                    <h4>Nombre de la licitación</h4>
-                    <p class="text-gray-800 text-base leading-relaxed">${licitacionItem.nombre || 'No especificado.'}</p>
+                    <h4>Detalles de Contratación</h4>
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th>Procedimiento de Contratación</th>
+                                <th>Tipo</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${licitacionItem.procedimientoContratacion || 'N/A'}</td>
+                                <td>${licitacionItem.tipo || 'N/A'}</td>
+                                <td>${licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-
+        
                 <div class="details-section">
-                    <h4>Descripción</h4>
-                    <p class="text-gray-800 text-base leading-relaxed">${licitacionItem.descripcion || 'No hay descripción disponible.'}</p>
+                    <h4>Cronología del Proceso</h4>
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha de Presentación y Apertura</th>
+                                <th>Fecha de Fallo</th>
+                                <th>Fecha Estimada de Inicio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</td>
+                                <td>${formatDate(licitacionItem.fechaFallo) || 'N/A'}</td>
+                                <td>${formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-
+        
                 <div class="details-section">
-                    <h4>Generalidades del proyecto</h4>
-                    <p class="text-gray-800 text-base leading-relaxed">${licitacionItem.generalidades || 'No hay generalidades disponibles.'}</p>
+                    <h4>Participantes en el Proceso</h4>
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th>Registrados o manifestaron interés</th>
+                                <th>Nombre de licitantes</th>
+                                <th>Ganador de la licitación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatTextWithLineBreaks(licitacionItem.registradosInteres)}</td>
+                                <td>${formatTextWithLineBreaks(licitacionItem.nombreLicitantes)}</td>
+                                <td>${formatTextWithLineBreaks(licitacionItem.ganadorLicitacion)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <div class="details-section">
-                        <h4>Siglas de la dependencia</h4>
-                        <p class="text-gray-700">${licitacionItem.siglasDependencia || 'N/A'}</p>
-                    </div>
-                    <div class="details-section">
-                        <h4>Procedimiento de contratación</h4>
-                        <p class="text-gray-700">${licitacionItem.procedimientoContratacion || 'N/A'}</p>
-                    </div>
-                    <div class="details-section">
-                        <h4>Tipo</h4>
-                        <p class="text-gray-700">${licitacionItem.tipo || 'N/A'}</p>
-                    </div>
-                    <div class="details-section">
-                        <h4>Año de publicación</h4>
-                        <p class="text-gray-700">${licitacionItem.anoPublicacion || 'N/A'}</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-                    <div class="details-section">
-                        <h4>Fecha de presentación y apertura</h4>
-                        <p class="text-gray-700">${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</p>
-                    </div>
-                    <div class="details-section">
-                        <h4>Fecha de fallo</h4>
-                        <p class="text-gray-700">${formatDate(licitacionItem.fechaFallo) || 'N/A'}</p>
-                    </div>
-                    <div class="details-section">
-                        <h4>Fecha estimada de inicio</h4>
-                        <p class="text-gray-700">${formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A'}</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <div class="details-section">
-                        <h4>Registrados o manifestaron interés</h4>
-                        <p class="text-gray-700">${licitacionItem.registradosInteres || 'N/A'}</p>
-                    </div>
-                    <div class="details-section">
-                        <h4>Nombre de licitantes</h4>
-                        <p class="text-gray-700">${licitacionItem.nombreLicitantes || 'N/A'}</p>
-                    </div>
-                    <div class="details-section">
-                        <h4>Ganador de la licitación</h4>
-                        <p class="text-gray-700">${licitacionItem.ganadorLicitacion || 'N/A'}</p>
-                    </div>
-                    <div class="details-section">
-                        <h4>Monto</h4>
-                        <p class="text-gray-700">${licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A'}</p>
-                    </div>
-                </div>
-
+        
                 <div class="details-section">
                     <h4>Link de Compras XM</h4>
                     ${sourceLink}
@@ -1944,7 +1970,6 @@
 
             openModal(viewDetailsModal);
         }
-
         function getTemplateDocRef() {
             return {
                 ref: db.collection('config').doc('wordTemplate_default'),
