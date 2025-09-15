@@ -2452,56 +2452,61 @@
         function updateDynamicSelectOptions() {
             const allData = [...licitaciones, ...historicalLicitaciones];
             
-            // Proyectos - combinar catálogo con datos existentes
-            const historicalProyectos = allData.map(c => c.proyecto).filter(Boolean).map(p => p.trim());
+            // Función de ayuda para procesar opciones de forma segura
+            const getUniqueTrimmedOptions = (data, field) => {
+                return data.map(item => item[field])
+                           .filter(Boolean) // Elimina nulos o undefined
+                           .map(value => String(value).trim()); // Convierte a string y luego aplica trim
+            };
+
+            // Proyectos
+            const historicalProyectos = getUniqueTrimmedOptions(allData, 'proyecto');
             const combinedProyectos = [...new Set([...catalogoProyectos, ...historicalProyectos])].sort();
             fieldOptions.proyectos = combinedProyectos;
             updateSelectOptions('proyectos', fieldOptions.proyectos);
         
-            // Nombres - combinar catálogo con datos existentes
-            const historicalNombres = allData.map(c => c.nombre).filter(Boolean).map(c => c.trim());
+            // Nombres
+            const historicalNombres = getUniqueTrimmedOptions(allData, 'nombre');
             const combinedNombres = [...new Set([...catalogoNombres, ...historicalNombres])].sort();
             fieldOptions.nombres = combinedNombres;
             updateSelectOptions('nombres', fieldOptions.nombres);
 
-            // Siglas Dependencias - combinar catálogo con datos existentes
-            const historicalSiglasDependencias = allData.map(c => c.siglasDependencia).filter(Boolean).map(m => m.trim());
+            // Siglas Dependencias
+            const historicalSiglasDependencias = getUniqueTrimmedOptions(allData, 'siglasDependencia');
             const combinedSiglasDependencias = [...new Set([...catalogoSiglasDependencias, ...historicalSiglasDependencias])].sort();
             fieldOptions.siglasDependencias = combinedSiglasDependencias;
             updateSelectOptions('siglasDependencias', fieldOptions.siglasDependencias);
 
-            // Procedimientos Contratación - combinar catálogo con datos existentes
-            const historicalProcedimientosContratacion = allData.map(c => c.procedimientoContratacion).filter(Boolean).map(s => s.trim());
+            // Procedimientos Contratación
+            const historicalProcedimientosContratacion = getUniqueTrimmedOptions(allData, 'procedimientoContratacion');
             const combinedProcedimientosContratacion = [...new Set([...catalogoProcedimientosContratacion, ...historicalProcedimientosContratacion])].sort();
             fieldOptions.procedimientosContratacion = combinedProcedimientosContratacion;
             updateSelectOptions('procedimientosContratacion', fieldOptions.procedimientosContratacion);
 
-            // Tipos - combinar catálogo con datos existentes
-            const historicalTipos = allData.map(c => c.tipo).filter(Boolean).map(s => s.trim());
+            // Tipos
+            const historicalTipos = getUniqueTrimmedOptions(allData, 'tipo');
             const combinedTipos = [...new Set([...catalogoTipos, ...historicalTipos])].sort();
             fieldOptions.tipos = combinedTipos;
             updateSelectOptions('tipos', fieldOptions.tipos);
 
-            // Años Publicación - combinar catálogo con datos existentes
-            const historicalAnosPublicacion = allData.map(c => c.anoPublicacion).filter(Boolean).map(s => s.trim());
+            // Años Publicación
+            const historicalAnosPublicacion = getUniqueTrimmedOptions(allData, 'anoPublicacion');
             const combinedAnosPublicacion = [...new Set([...catalogoAnosPublicacion, ...historicalAnosPublicacion])].sort();
             fieldOptions.anosPublicacion = combinedAnosPublicacion;
             updateSelectOptions('anosPublicacion', fieldOptions.anosPublicacion);
 
-            // Registrados Interés - solo datos existentes
-            const historicalRegistradosInteres = allData.map(c => c.registradosInteres).filter(Boolean).map(s => s.trim());
+            // Registrados Interés, Nombre Licitantes y Ganadores (usando la misma lógica)
+            const historicalRegistradosInteres = getUniqueTrimmedOptions(allData, 'registradosInteres');
             const combinedRegistradosInteres = [...new Set([...catalogoParticipantes, ...historicalRegistradosInteres])].sort();
             fieldOptions.registradosInteres = combinedRegistradosInteres;
             updateSelectOptions('registradosInteres', fieldOptions.registradosInteres);
 
-            // Nombre Licitantes - solo datos existentes
-            const historicalNombreLicitantes = allData.map(c => c.nombreLicitantes).filter(Boolean).map(s => s.trim());
+            const historicalNombreLicitantes = getUniqueTrimmedOptions(allData, 'nombreLicitantes');
             const combinedNombreLicitantes = [...new Set([...catalogoParticipantes, ...historicalNombreLicitantes])].sort();
             fieldOptions.nombreLicitantes = combinedNombreLicitantes;
             updateSelectOptions('nombreLicitantes', fieldOptions.nombreLicitantes);
 
-            // Ganadores Licitación - solo datos existentes
-            const historicalGanadoresLicitacion = allData.map(c => c.ganadorLicitacion).filter(Boolean).map(s => s.trim());
+            const historicalGanadoresLicitacion = getUniqueTrimmedOptions(allData, 'ganadorLicitacion');
             const combinedGanadoresLicitacion = [...new Set([...catalogoParticipantes, ...historicalGanadoresLicitacion])].sort();
             fieldOptions.ganadoresLicitacion = combinedGanadoresLicitacion;
             updateSelectOptions('ganadoresLicitacion', fieldOptions.ganadoresLicitacion);
@@ -3238,25 +3243,32 @@
                                     return acc;
                                 }, {});
 
-                                const keyMapping = { 
-                                    'no.': 'no', 
+                                const keyMapping = {
+                                    'no.': 'no',
                                     'proyecto': 'proyecto',
                                     'nombre': 'nombre',
-                                    'descripcion': 'descripcion',
+                                    'descripción': 'descripcion', // Con acento
+                                    'descripcion': 'descripcion', // Sin acento
                                     'generalidades': 'generalidades',
                                     'siglas dependencia': 'siglasDependencia',
                                     'código expediente': 'codigoExpediente',
+                                    'procedimiento': 'procedimientoContratacion', // Nombre corto
                                     'procedimiento contratación': 'procedimientoContratacion',
                                     'tipo': 'tipo',
                                     'año publicación': 'anoPublicacion',
+                                    'fecha apertura': 'fechaPresentacionApertura', // Nombre corto
                                     'fecha presentación apertura': 'fechaPresentacionApertura',
                                     'fecha fallo': 'fechaFallo',
                                     'fecha estimada inicio': 'fechaEstimadaInicio',
+                                    'participantes': 'registradosInteres', // Nombre corto
                                     'registrados interés': 'registradosInteres',
+                                    'licitantes': 'nombreLicitantes', // Nombre corto
                                     'nombre licitantes': 'nombreLicitantes',
+                                    'ganador': 'ganadorLicitacion', // Nombre corto
                                     'ganador licitación': 'ganadorLicitacion',
                                     'monto': 'monto',
-                                    'link compras xm': 'linkComprasXM'
+                                    'link compras xm': 'linkComprasXM',
+                                    'link': 'linkComprasXM' // Alias común para el link
                                 };
                                 const mappedRow = mapKeys(row, keyMapping);
 
