@@ -523,6 +523,18 @@
         .details-table th, .details-table td { border: 1px solid #e5e7eb; padding: 0.75rem; text-align: left; vertical-align: top; }
         .details-table th { background-color: var(--accent-color); font-weight: 600; color: white; }
 
+        /* Estilo para que las columnas de la tabla de participantes tengan el mismo ancho */
+        .details-table.equal-cols th, .details-table.equal-cols td {
+            width: 33.33%;
+        }
+
+        /* Estilo para resaltar la fecha de fallo en el modal de detalles */
+        .highlight-fallo {
+            background-color: #fefce8; /* bg-yellow-50 */
+            border: 1px solid var(--secondary-color);
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
 
         /* Clase para bloquear el scroll del body cuando un modal está abierto */
         body.modal-open {
@@ -1637,8 +1649,8 @@
                 row.dataset.expediente = licitacionItem.codigoExpediente || 'N/A';
                 row.dataset.apertura = formatDate(licitacionItem.fechaPresentacionApertura);
                 row.dataset.fallo = formatDate(licitacionItem.fechaFallo);
-
-
+                row.dataset.ganador = licitacionItem.ganadorLicitacion || 'N/A';
+                row.dataset.monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
                 
                 const linkCell = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM)
                     ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline" title="${licitacionItem.linkComprasXM}"><i class="fa-solid fa-link"></i></a>`
@@ -2074,7 +2086,7 @@
                             <tr>
                                 <td>${licitacionItem.procedimientoContratacion || 'N/A'}</td>
                                 <td>${licitacionItem.tipo || 'N/A'}</td>
-                                <td>${licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A'}</td>
+                                <td class="highlight-fallo">${licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A'}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -2093,7 +2105,7 @@
                         <tbody>
                             <tr>
                                 <td>${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</td>
-                                <td>${formatDate(licitacionItem.fechaFallo) || 'N/A'}</td>
+                                <td class="highlight-fallo">${formatDate(licitacionItem.fechaFallo) || 'N/A'}</td> 
                                 <td>${formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A'}</td>
                             </tr>
                         </tbody>
@@ -2102,7 +2114,7 @@
         
                 <div class="details-section">
                     <h4>Participantes en el Proceso</h4>
-                    <table class="details-table">
+                    <table class="details-table equal-cols">
                         <thead>
                             <tr>
                                 <th>Registrados o manifestaron interés</th>
@@ -2114,7 +2126,7 @@
                             <tr>
                                 <td>${formatTextWithLineBreaks(licitacionItem.registradosInteres)}</td>
                                 <td>${formatTextWithLineBreaks(licitacionItem.nombreLicitantes)}</td>
-                                <td>${formatTextWithLineBreaks(licitacionItem.ganadorLicitacion)}</td>
+                                <td class="highlight-fallo">${formatTextWithLineBreaks(licitacionItem.ganadorLicitacion)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -3591,6 +3603,13 @@
             });
 
             closeDetailsModalBtn.addEventListener('click', () => closeModal(viewDetailsModal));
+
+            // Cierre del modal de detalles al hacer clic fuera
+            viewDetailsModal.addEventListener('click', (e) => {
+                if (e.target === viewDetailsModal) {
+                    closeModal(viewDetailsModal);
+                }
+            });
         }
 
         function setupQuickViewTooltip() {
@@ -3598,7 +3617,7 @@
                 const row = e.target.closest('tr[data-quickview="true"]');
                 if (!row) return;
 
-                const { proyecto, dependencia, expediente, apertura, fallo } = row.dataset;
+                const { proyecto, dependencia, expediente, apertura, fallo, ganador, monto } = row.dataset;
 
                 quickViewTooltip.innerHTML = `
                     <p><strong>Proyecto:</strong> ${truncateText(proyecto, 40)}</p>
@@ -3606,6 +3625,8 @@
                     <p><strong>Expediente:</strong> ${expediente}</p>
                     <p><strong>F. Apertura:</strong> ${apertura}</p>
                     <p><strong>F. Fallo:</strong> ${fallo}</p>
+                    ${ganador !== 'N/A' ? `<p><strong>Ganador:</strong> ${truncateText(ganador, 40)}</p>` : ''}
+                    ${monto !== 'N/A' ? `<p><strong>Monto:</strong> ${monto}</p>` : ''}
                 `;
                 quickViewTooltip.classList.add('visible');
             };
