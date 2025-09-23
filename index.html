@@ -584,18 +584,13 @@
 
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
 
-            <main id="tab-content-licitaciones" class="tab-content">
+            <main id="tab-content-licitaciones" class="tab-content hidden">
                 <section class="bg-white p-6 rounded-xl shadow-md mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div class="text-center md:text-left">
                         <h3 class="text-xl font-semibold text-slate-800">Gestión de Licitaciones</h3>
                         <p class="text-slate-500">Registra nuevas licitaciones y haz su seguimiento.</p>
                     </div>
-                    <div class="flex items-center gap-6">
-                        <button id="add-licitacion-btn" class="bg-success hover:bg-success-dark text-white font-bold py-4 px-8 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center space-x-3">
-                            <i class="fa-solid fa-plus h-6 w-6"></i>
-                            <span>Registrar Nueva Licitación</span>
-                        </button>
-                    </div>
+                    <!-- El botón de agregar licitación se ha movido a la pestaña de Histórico -->
                 </section>
                 
                 <section id="licitacion-log">
@@ -653,7 +648,7 @@
                 </section>
             </main>
 
-            <div id="tab-content-historico" class="tab-content hidden">
+            <div id="tab-content-historico" class="tab-content">
                 <section id="historical-log">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Registro Histórico</h2>
@@ -665,6 +660,10 @@
                                     <i class="fa-solid fa-times-circle"></i>
                                 </button>
                             </div>
+                            <button id="add-licitacion-btn" class="bg-success hover:bg-success-dark text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Agregar Licitación</span>
+                            </button>
                             <button id="download-historical-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap">
                                 <i class="fa-solid fa-file-excel"></i>
                                 <span>Descargar Excel</span>
@@ -789,7 +788,7 @@
                         <div class="form-field">
                             <label for="licitacion-nombre">Nombre</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-nombre" name="nombre" required></select>
+                                <select id="licitacion-nombre" name="nombre"></select>
                                 <button type="button" id="edit-nombre-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -817,7 +816,7 @@
                         <div class="form-field">
                             <label for="licitacion-siglasDependencia">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-siglasDependencia" name="siglasDependencia" required></select>
+                                <select id="licitacion-siglasDependencia" name="siglasDependencia"></select>
                                 <button type="button" id="edit-siglasDependencia-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -825,12 +824,12 @@
                         </div>
                         <div class="form-field">
                             <label for="licitacion-codigoExpediente">Código De Expediente</label>
-                            <input type="text" id="licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="text" id="licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                         <div class="form-field">
                             <label for="licitacion-procedimientoContratacion">Procedimiento de Contratación</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-procedimientoContratacion" name="procedimientoContratacion" required></select>
+                                <select id="licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
                                 <button type="button" id="edit-procedimientoContratacion-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -839,7 +838,7 @@
                         <div class="form-field">
                             <label for="licitacion-tipo">Tipo</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-tipo" name="tipo" required></select>
+                                <select id="licitacion-tipo" name="tipo"></select>
                                 <button type="button" id="edit-tipo-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -853,20 +852,20 @@
                         <div class="form-field">
                             <label for="licitacion-anoPublicacion">Año De Publicación</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-anoPublicacion" name="anoPublicacion" required></select>
+                                <select id="licitacion-anoPublicacion" name="anoPublicacion"></select>
                             </div>
                         </div>
                         <div class="form-field">
                             <label for="licitacion-fechaPresentacionApertura">Fecha De Presentación Y Apertura De Proposiciones</label>
-                            <input type="date" id="licitacion-fechaPresentacionApertura" name="fechaPresentacionApertura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="date" id="licitacion-fechaPresentacionApertura" name="fechaPresentacionApertura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                         <div class="form-field">
                             <label for="licitacion-fechaFallo">Fecha De Fallo</label>
-                            <input type="date" id="licitacion-fechaFallo" name="fechaFallo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="date" id="licitacion-fechaFallo" name="fechaFallo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                         <div class="form-field">
                             <label for="licitacion-fechaEstimadaInicio">Fecha Estimada De Inicio De Contrato</label>
-                            <input type="date" id="licitacion-fechaEstimadaInicio" name="fechaEstimadaInicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="date" id="licitacion-fechaEstimadaInicio" name="fechaEstimadaInicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -876,7 +875,7 @@
                         <div class="form-field">
                             <label for="licitacion-registradosInteres">Registrados o Manifestaron interés por participar</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-registradosInteres" name="registradosInteres" required></select>
+                                <select id="licitacion-registradosInteres" name="registradosInteres"></select>
                                 <button type="button" id="edit-registradosInteres-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -885,7 +884,7 @@
                         <div class="form-field">
                             <label for="licitacion-nombreLicitantes">Nombre del o de los licitantes o cotizantes</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-nombreLicitantes" name="nombreLicitantes" required></select>
+                                <select id="licitacion-nombreLicitantes" name="nombreLicitantes"></select>
                                 <button type="button" id="edit-nombreLicitantes-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -894,7 +893,7 @@
                         <div class="form-field">
                             <label for="licitacion-ganadorLicitacion">Ganador De La Licitación</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-ganadorLicitacion" name="ganadorLicitacion" required></select>
+                                <select id="licitacion-ganadorLicitacion" name="ganadorLicitacion"></select>
                                 <button type="button" id="edit-ganadorLicitacion-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -902,7 +901,7 @@
                         </div>
                         <div class="form-field">
                             <label for="licitacion-monto">Monto</label>
-                            <input type="number" id="licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="number" id="licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -912,7 +911,7 @@
                         <div class="form-field sm:col-span-2">
                             <label for="licitacion-linkComprasXM">Link Compras XM</label>
                             <div class="flex-with-buttons">
-                                <input type="url" id="licitacion-linkComprasXM" name="linkComprasXM" placeholder="https://compras.xm.com/licitacion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                                <input type="url" id="licitacion-linkComprasXM" name="linkComprasXM" placeholder="https://compras.xm.com/licitacion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                                 <button type="button" id="edit-linkComprasXM-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -953,7 +952,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-nombre">Nombre</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-nombre" name="nombre" required></select>
+                                <select id="edit-licitacion-nombre" name="nombre"></select>
                                 <button type="button" id="edit-nombre-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -981,7 +980,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-siglasDependencia">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-siglasDependencia" name="siglasDependencia" required></select>
+                                <select id="edit-licitacion-siglasDependencia" name="siglasDependencia"></select>
                                 <button type="button" id="edit-siglasDependencia-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -989,12 +988,12 @@
                         </div>
                         <div class="form-field">
                             <label for="edit-licitacion-codigoExpediente">Código De Expediente</label>
-                            <input type="text" id="edit-licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="text" id="edit-licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                         <div class="form-field">
                             <label for="edit-licitacion-procedimientoContratacion">Procedimiento de Contratación</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-procedimientoContratacion" name="procedimientoContratacion" required></select>
+                                <select id="edit-licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
                                 <button type="button" id="edit-procedimientoContratacion-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1003,7 +1002,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-tipo">Tipo</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-tipo" name="tipo" required></select>
+                                <select id="edit-licitacion-tipo" name="tipo"></select>
                                 <button type="button" id="edit-tipo-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1017,20 +1016,20 @@
                         <div class="form-field">
                             <label for="edit-licitacion-anoPublicacion">Año De Publicación</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-anoPublicacion" name="anoPublicacion" required></select>
+                                <select id="edit-licitacion-anoPublicacion" name="anoPublicacion"></select>
                             </div>
                         </div>
                         <div class="form-field">
                             <label for="edit-licitacion-fechaPresentacionApertura">Fecha De Presentación Y Apertura De Proposiciones</label>
-                            <input type="date" id="edit-licitacion-fechaPresentacionApertura" name="fechaPresentacionApertura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="date" id="edit-licitacion-fechaPresentacionApertura" name="fechaPresentacionApertura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                         <div class="form-field">
                             <label for="edit-licitacion-fechaFallo">Fecha De Fallo</label>
-                            <input type="date" id="edit-licitacion-fechaFallo" name="fechaFallo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="date" id="edit-licitacion-fechaFallo" name="fechaFallo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                         <div class="form-field">
                             <label for="edit-licitacion-fechaEstimadaInicio">Fecha Estimada De Inicio De Contrato</label>
-                            <input type="date" id="edit-licitacion-fechaEstimadaInicio" name="fechaEstimadaInicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="date" id="edit-licitacion-fechaEstimadaInicio" name="fechaEstimadaInicio" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -1040,7 +1039,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-registradosInteres">Registrados o Manifestaron interés por participar</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-registradosInteres" name="registradosInteres" required></select>
+                                <select id="edit-licitacion-registradosInteres" name="registradosInteres"></select>
                                 <button type="button" id="edit-registradosInteres-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1049,7 +1048,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-nombreLicitantes">Nombre del o de los licitantes o cotizantes</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-nombreLicitantes" name="nombreLicitantes" required></select>
+                                <select id="edit-licitacion-nombreLicitantes" name="nombreLicitantes"></select>
                                 <button type="button" id="edit-nombreLicitantes-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1058,7 +1057,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-ganadorLicitacion">Ganador De La Licitación</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-ganadorLicitacion" name="ganadorLicitacion" required></select>
+                                <select id="edit-licitacion-ganadorLicitacion" name="ganadorLicitacion"></select>
                                 <button type="button" id="edit-ganadorLicitacion-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1066,7 +1065,7 @@
                         </div>
                         <div class="form-field">
                             <label for="edit-licitacion-monto">Monto</label>
-                            <input type="number" id="edit-licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                            <input type="number" id="edit-licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -1076,7 +1075,7 @@
                         <div class="form-field sm:col-span-2">
                             <label for="edit-licitacion-linkComprasXM">Link Compras XM</label>
                             <div class="flex-with-buttons">
-                                <input type="url" id="edit-licitacion-linkComprasXM" name="linkComprasXM" placeholder="https://compras.xm.com/licitacion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
+                                <input type="url" id="edit-licitacion-linkComprasXM" name="linkComprasXM" placeholder="https://compras.xm.com/licitacion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                                 <button type="button" id="edit-linkComprasXM-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1743,9 +1742,10 @@
         // MÓDULO: Gestión de licitaciones
         // =============================================
         
-        async function saveLicitacion(licitacionData) {
+        async function saveLicitacion(licitacionData, isHistorical = false) {
             try {
-                await licitacionesCollectionRef.add({ 
+                const collectionRef = isHistorical ? historicalLicitacionesCollectionRef : licitacionesCollectionRef;
+                await collectionRef.add({ 
                     ...licitacionData, 
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp() 
@@ -3097,7 +3097,7 @@
                 const formData = new FormData(licitacionForm);
                 const licitacionData = Object.fromEntries(formData.entries());
                 
-                saveLicitacion(licitacionData);
+                saveLicitacion(licitacionData, true); // Guardar directamente en el histórico
                 closeModal(licitacionModal);
             });
             
