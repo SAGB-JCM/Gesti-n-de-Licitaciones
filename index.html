@@ -84,6 +84,13 @@
             transform: translateY(-2px);
         }
 
+        /* Estilo para resaltar el indicador de la semana actual */
+        .indicator-card.current-week-highlight {
+            border-bottom: 3px solid var(--primary-color);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            background-color: #fcfdff;
+        }
+
         .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
         .modal-leave { animation: fadeOut 0.3s ease-in forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -649,10 +656,6 @@
                                 <i class="fa-solid fa-file-excel"></i>
                                 <span>Descargar Excel</span>
                             </button>
-                            <button id="migrate-licitacion-btn" class="migrate-btn bg-accent hover:bg-accent-dark text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap">
-                                <i class="fa-solid fa-database"></i>
-                                <span>Migrar a Histórico</span>
-                            </button>
                         </div>
                     </div>
                     <div class="bg-white rounded-xl shadow-md table-container">
@@ -692,26 +695,26 @@
             <div id="tab-content-historico" class="tab-content">
                 <section id="dashboard-historico" class="mb-8">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold text-primary">Radar de Fechas de Fallo (Haz clic para filtrar)</h2>
+                        <h2 class="text-xl font-bold text-primary">Radar de Fechas de Fallo</h2>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <!-- Semana -2 -->
-                        <div id="fallo-indicator-minus-2" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200">
+                        <div id="fallo-indicator-minus-2" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
                             <div class="bg-secondary/10 p-2 rounded-full"><i class="fa-solid fa-angles-left text-secondary text-xl"></i></div>
                             <div><p id="fallo-label-minus-2" class="text-sm text-slate-500">Fallo (Semana -2)</p><p id="fallo-count-minus-2" class="text-2xl font-bold text-secondary">0</p></div>
                         </div>
                         <!-- Semana -1 -->
-                        <div id="fallo-indicator-minus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200">
+                        <div id="fallo-indicator-minus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
                             <div class="bg-secondary/10 p-2 rounded-full"><i class="fa-solid fa-angle-left text-secondary text-xl"></i></div>
                             <div><p id="fallo-label-minus-1" class="text-sm text-slate-500">Fallo (Semana -1)</p><p id="fallo-count-minus-1" class="text-2xl font-bold text-secondary">0</p></div>
                         </div>
                         <!-- Semana Actual -->
-                        <div id="fallo-indicator-current" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200">
+                        <div id="fallo-indicator-current" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200 current-week-highlight" title="Hacer clic para Ver">
                             <div class="bg-primary/10 p-2 rounded-full"><i class="fa-solid fa-calendar-week text-primary text-xl"></i></div>
-                            <div><p id="fallo-label-current" class="text-sm text-slate-500">Fallo (Semana Actual)</p><p id="fallo-count-current" class="text-2xl font-bold text-primary">0</p></div>
+                            <div><p id="fallo-label-current" class="text-sm text-slate-500 font-medium">Semana Actual</p><p id="fallo-count-current" class="text-2xl font-bold text-primary">0</p></div>
                         </div>
                         <!-- Semana +1 -->
-                        <div id="fallo-indicator-plus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200">
+                        <div id="fallo-indicator-plus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
                             <div class="bg-accent/10 p-2 rounded-full"><i class="fa-solid fa-angle-right text-accent text-xl"></i></div>
                             <div><p id="fallo-label-plus-1" class="text-sm text-slate-500">Fallo (Semana +1)</p><p id="fallo-count-plus-1" class="text-2xl font-bold text-accent">0</p></div>
                         </div>
@@ -1209,17 +1212,6 @@
         </div>
     </div>
 
-    <div id="migrate-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
-            <h3 class="text-xl font-bold text-primary mb-4">Migrar Licitaciones</h3>
-            <p class="text-slate-600 mb-6">¿Está seguro de que desea migrar todas las licitaciones al Histórico? Esta acción no se puede deshacer.</p>
-            <div class="flex justify-center space-x-4">
-                <button id="cancel-migrate-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
-                <button id="confirm-migrate-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Migrar</button>
-            </div>
-        </div>
-    </div>
-
     <div id="template-upload-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md mx-4">
             <div class="flex justify-between items-center mb-6">
@@ -1363,7 +1355,7 @@
         const licitacionesCollectionRef = db.collection("licitaciones");
         const historicalLicitacionesCollectionRef = db.collection("historicalLicitaciones");
 
-        // Variables de estado de la aplicación        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, downloadExcelBtn, migrateLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, migrateModal, cancelMigrateBtn, confirmMigrateBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
+        // Variables de estado de la aplicación        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, downloadExcelBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
         
         let currentEditIsHistorical = false;
         let quickViewTooltip;
@@ -1646,7 +1638,7 @@
 
             document.getElementById('fallo-label-minus-2').textContent = weeks.minus2.label;
             document.getElementById('fallo-label-minus-1').textContent = weeks.minus1.label;
-            document.getElementById('fallo-label-current').textContent = weeks.current.label;
+            // La etiqueta de la semana actual ahora es estática, pero podrías añadir la fecha en otro lugar si es necesario.
             document.getElementById('fallo-label-plus-1').textContent = weeks.plus1.label;
 
             document.getElementById('fallo-count-minus-2').textContent = counts.minus2;
@@ -3275,46 +3267,9 @@
         }
 
         // =============================================
-        // MÓDULO: Migración de datos
+        // MÓDULO: Links clickeables y generar docx
         // =============================================
         
-        async function migrateLicitacionesToHistorical() {
-            try {
-                if (licitaciones.length === 0) {
-                    showAlert("No hay licitaciones para migrar.", "warning");
-                    return;
-                }
-                
-                const batch = db.batch();
-                const licitacionesCount = licitaciones.length;
-                
-                licitaciones.forEach(licitacionItem => {
-                    const historicalDocRef = historicalLicitacionesCollectionRef.doc();
-                    const { id, ...licitacionData } = licitacionItem;
-                    batch.set(historicalDocRef, { 
-                        ...licitacionData,
-                        migratedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        originalId: id
-                    });
-                });
-                
-                licitaciones.forEach(licitacionItem => {
-                    const licitacionDocRef = licitacionesCollectionRef.doc(licitacionItem.id);
-                    batch.delete(licitacionDocRef);
-                });
-                
-                await batch.commit();
-                
-                licitaciones = [];
-                sortAndRenderTable(licitacionTableBody, licitaciones, false);
-                
-                showAlert(`Se migraron ${licitacionesCount} licitaciones al histórico.`, "success");
-            } catch (error) {
-                console.error("Error al migrar licitaciones:", error);
-                showAlert(`Error al migrar: ${error.message}`, "error");
-            }
-        }
-
         function handleRowDoubleClick(e, isHistorical) {
             const row = e.target.closest('tr');
             if (!row || e.target.closest('button') || e.target.closest('.link-cell')) {
@@ -3679,22 +3634,6 @@
                 webviewFrame.src = 'about:blank';
                 closeModal(webviewModal);
             });
-            
-            migrateLicitacionBtn.addEventListener('click', () => {
-                requirePassword(() => openModal(migrateModal));
-            });
-            
-            cancelMigrateBtn.addEventListener('click', () => closeModal(migrateModal));
-            
-            confirmMigrateBtn.addEventListener('click', async () => {
-                try {
-                    await migrateLicitacionesToHistorical();
-                    closeModal(migrateModal);
-                } catch (error) {
-                    console.error("Error en migración:", error);
-                    showAlert("Error durante la migración: " + error.message, "error");
-                }
-            });
 
             closeDetailsModalBtn.addEventListener('click', () => closeModal(viewDetailsModal));
 
@@ -3801,7 +3740,6 @@
             tabContents = document.querySelectorAll('.tab-content');
             addLicitacionBtn = document.getElementById('add-licitacion-btn');
             downloadExcelBtn = document.getElementById('download-excel-btn');
-            migrateLicitacionBtn = document.getElementById('migrate-licitacion-btn');
             licitacionTableBody = document.getElementById('licitacion-table-body');
             noLicitacionMessage = document.getElementById('no-licitacion-message');
             historicalTableBody = document.getElementById('historical-table-body');
@@ -3837,9 +3775,6 @@
             webviewModal = document.getElementById('webview-modal');
             webviewFrame = document.getElementById('webview-frame');
             closeWebviewBtn = document.getElementById('close-webview-btn');
-            migrateModal = document.getElementById('migrate-modal');
-            cancelMigrateBtn = document.getElementById('cancel-migrate-btn');
-            confirmMigrateBtn = document.getElementById('confirm-migrate-btn');
             uploadTemplateBtn = document.getElementById('upload-template-btn');
             viewDetailsModal = document.getElementById('view-details-modal');
             templateUploadModal = document.getElementById('template-upload-modal');
