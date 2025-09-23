@@ -79,6 +79,11 @@
         .bg-danger { background-color: var(--danger-color); }
         .hover\:bg-danger-dark:hover { background-color: #DC2626; }
         
+        .indicator-card.active-filter {
+            box-shadow: 0 0 0 2px var(--primary-color), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
         .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
         .modal-leave { animation: fadeOut 0.3s ease-in forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -651,26 +656,26 @@
             <div id="tab-content-historico" class="tab-content">
                 <section id="dashboard-historico" class="mb-8">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold text-primary">Radar de Fechas de Fallo</h2>
+                        <h2 class="text-xl font-bold text-primary">Radar de Fechas de Fallo (Haz clic para filtrar)</h2>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <!-- Semana -2 -->
-                        <div class="bg-white p-4 rounded-xl shadow-md flex items-center space-x-3">
+                        <div id="fallo-indicator-minus-2" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200">
                             <div class="bg-secondary/10 p-2 rounded-full"><i class="fa-solid fa-angles-left text-secondary text-xl"></i></div>
                             <div><p id="fallo-label-minus-2" class="text-sm text-slate-500">Fallo (Semana -2)</p><p id="fallo-count-minus-2" class="text-2xl font-bold text-secondary">0</p></div>
                         </div>
                         <!-- Semana -1 -->
-                        <div class="bg-white p-4 rounded-xl shadow-md flex items-center space-x-3">
+                        <div id="fallo-indicator-minus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200">
                             <div class="bg-secondary/10 p-2 rounded-full"><i class="fa-solid fa-angle-left text-secondary text-xl"></i></div>
                             <div><p id="fallo-label-minus-1" class="text-sm text-slate-500">Fallo (Semana -1)</p><p id="fallo-count-minus-1" class="text-2xl font-bold text-secondary">0</p></div>
                         </div>
                         <!-- Semana Actual -->
-                        <div class="bg-white p-4 rounded-xl shadow-md flex items-center space-x-3">
+                        <div id="fallo-indicator-current" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200">
                             <div class="bg-primary/10 p-2 rounded-full"><i class="fa-solid fa-calendar-week text-primary text-xl"></i></div>
                             <div><p id="fallo-label-current" class="text-sm text-slate-500">Fallo (Semana Actual)</p><p id="fallo-count-current" class="text-2xl font-bold text-primary">0</p></div>
                         </div>
                         <!-- Semana +1 -->
-                        <div class="bg-white p-4 rounded-xl shadow-md flex items-center space-x-3">
+                        <div id="fallo-indicator-plus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200">
                             <div class="bg-accent/10 p-2 rounded-full"><i class="fa-solid fa-angle-right text-accent text-xl"></i></div>
                             <div><p id="fallo-label-plus-1" class="text-sm text-slate-500">Fallo (Semana +1)</p><p id="fallo-count-plus-1" class="text-2xl font-bold text-accent">0</p></div>
                         </div>
@@ -1321,6 +1326,7 @@
         let currentFilterDropdown = null;
         let activeSelectElement = null;
         let openModalCount = 0; // Contador para modales anidados
+        let activeFalloDashboardFilter = null; // Para el filtro del radar de fallo
 
         // =============================================
         // MÓDULO: Utilidades
@@ -1648,6 +1654,17 @@
                 const matchesSearch = searchText === '' || Object.values(item).some(value => 
                     String(value).toLowerCase().includes(searchText)
                 );
+
+                // 0. Check fallo dashboard filter (only for historical table)
+                if (filterKey === 'historical' && activeFalloDashboardFilter) {
+                    const falloDate = new Date(item.fechaFallo + 'T00:00:00');
+                    if (isNaN(falloDate) || 
+                        falloDate < activeFalloDashboardFilter.start || 
+                        falloDate > activeFalloDashboardFilter.end) {
+                        return false;
+                    }
+                }
+
                 if (!matchesSearch) return false;
 
                 // 2. Check column filters
@@ -3539,6 +3556,33 @@
             closeDetailsModalBtn.addEventListener('click', () => closeModal(viewDetailsModal));
         }
 
+        function setupFalloDashboardFilter() {
+            const indicators = {
+                'minus-2': document.getElementById('fallo-indicator-minus-2'),
+                'minus-1': document.getElementById('fallo-indicator-minus-1'),
+                'current': document.getElementById('fallo-indicator-current'),
+                'plus-1': document.getElementById('fallo-indicator-plus-1')
+            };
+
+            Object.entries(indicators).forEach(([key, element]) => {
+                element.addEventListener('click', () => {
+                    document.querySelectorAll('.indicator-card').forEach(card => card.classList.remove('active-filter'));
+
+                    if (activeFalloDashboardFilter && activeFalloDashboardFilter.key === key) {
+                        // Si se hace clic en el filtro ya activo, se desactiva.
+                        activeFalloDashboardFilter = null;
+                    } else {
+                        // Activar nuevo filtro
+                        const period = getMonthlyPeriod(key === 'minus-2' ? -2 : key === 'minus-1' ? -1 : key === 'current' ? 0 : 1);
+                        activeFalloDashboardFilter = { key: key, start: period.start, end: period.end };
+                        element.classList.add('active-filter');
+                    }
+                    // Re-renderizar la tabla de histórico con el filtro (o sin él)
+                    sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
+                });
+            });
+        }
+
         // =============================================
         // MÓDULO: Inicialización
         // =============================================
@@ -3602,6 +3646,7 @@
             // Inicializar la autenticación y los listeners
             initializeAppWithAuth();
             setupEventListeners();
+            setupFalloDashboardFilter();
 
             // Configurar Select2 para los selects
             $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion, #edit-licitacion-proyecto, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo, #edit-licitacion-anoPublicacion, #edit-licitacion-registradosInteres, #edit-licitacion-nombreLicitantes, #edit-licitacion-ganadorLicitacion').each(function() {
