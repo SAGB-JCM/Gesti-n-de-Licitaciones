@@ -1619,7 +1619,7 @@
 
             document.getElementById('fallo-label-minus-2').textContent = weeks.minus2.label;
             document.getElementById('fallo-label-minus-1').textContent = weeks.minus1.label;
-            // La etiqueta de la semana actual ahora es estática, pero podrías añadir la fecha en otro lugar si es necesario.
+            document.getElementById('fallo-label-current').textContent = `${weeks.current.label} (Semana Actual)`;
             document.getElementById('fallo-label-plus-1').textContent = weeks.plus1.label;
 
             document.getElementById('fallo-count-minus-2').textContent = counts.minus2;
