@@ -633,25 +633,10 @@
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
 
             <main id="tab-content-licitaciones" class="tab-content hidden">
-                <section class="bg-white p-6 rounded-xl shadow-md mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div class="text-center md:text-left">
-                        <h3 class="text-xl font-semibold text-slate-800">Gestión de Licitaciones</h3>
-                        <p class="text-slate-500">Registra nuevas licitaciones y haz su seguimiento.</p>
-                    </div>
-                    <!-- El botón de agregar licitación se ha movido a la pestaña de Histórico -->
-                </section>
-                
                 <section id="licitacion-log">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Registro de Licitaciones</h2>
                         <div class="flex items-center space-x-2">
-                            <div class="relative w-full">
-                                <input type="text" id="filter-input-main" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                                <button id="clear-filter-btn-main" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden">
-                                    <i class="fa-solid fa-times-circle"></i>
-                                </button>
-                            </div>
                             <button id="download-excel-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap">
                                 <i class="fa-solid fa-file-excel"></i>
                                 <span>Descargar Excel</span>
@@ -1355,7 +1340,7 @@
         const licitacionesCollectionRef = db.collection("licitaciones");
         const historicalLicitacionesCollectionRef = db.collection("historicalLicitaciones");
 
-        // Variables de estado de la aplicación        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, downloadExcelBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
+        // Variables de estado de la aplicación        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
         
         let currentEditIsHistorical = false;
         let quickViewTooltip;
@@ -1883,15 +1868,17 @@
         
         function setupFiltering(inputId, dataProvider, renderFunc, isHistorical = false) {
             const filterInput = document.getElementById(inputId);
+            if (!filterInput) return; // Si el input no existe, no hacer nada.
+
             const filterKey = isHistorical ? 'historical' : 'main';
             const clearFilterBtn = document.getElementById(`clear-filter-btn-${filterKey}`);
             filterInput.addEventListener('input', () => {
                 const filterText = filterInput.value.toLowerCase();
-                clearFilterBtn.classList.toggle('hidden', !filterText);
+                if (clearFilterBtn) clearFilterBtn.classList.toggle('hidden', !filterText);
                 const filteredData = applyAllFilters(dataProvider(), filterKey);
                 renderFunc(document.getElementById(isHistorical ? 'historical-table-body' : 'licitacion-table-body'), filteredData, isHistorical);
             });
-            clearFilterBtn.addEventListener('click', () => {
+            if (clearFilterBtn) clearFilterBtn.addEventListener('click', () => {
                 filterInput.value = ''; filterInput.dispatchEvent(new Event('input'));
             });
         }
@@ -3298,7 +3285,6 @@
             setupTabs();
             setupColumnFilters('main-table-header', () => licitaciones, renderTable, 'main');
             setupColumnFilters('historical-table-header', () => historicalLicitaciones, renderTable, 'historical');
-            setupFiltering('filter-input-main', () => licitaciones, renderTable, false);
             setupFiltering('filter-input-historical', () => historicalLicitaciones, renderTable, true);
             setupQuickViewTooltip();
             setupAddEditButtons();
@@ -3608,15 +3594,6 @@
                     reader.readAsArrayBuffer(file);
                 });
             });
-
-            downloadExcelBtn.addEventListener('click', () => {
-                if (licitaciones.length === 0) return showAlert("No hay datos para descargar.", "warning");
-                const data = prepareExportData(licitaciones);
-                const ws = XLSX.utils.json_to_sheet(data, { header: exportHeaders });
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Licitaciones");
-                XLSX.writeFile(wb, "licitaciones.xlsx");
-            });
             
             document.getElementById('download-historical-excel-btn').addEventListener('click', () => {
                 // Obtener los datos actualmente filtrados en la tabla
@@ -3739,7 +3716,6 @@
             tabsContainer = document.getElementById('tabs');
             tabContents = document.querySelectorAll('.tab-content');
             addLicitacionBtn = document.getElementById('add-licitacion-btn');
-            downloadExcelBtn = document.getElementById('download-excel-btn');
             licitacionTableBody = document.getElementById('licitacion-table-body');
             noLicitacionMessage = document.getElementById('no-licitacion-message');
             historicalTableBody = document.getElementById('historical-table-body');
