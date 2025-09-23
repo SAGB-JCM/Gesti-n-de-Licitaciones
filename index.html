@@ -1243,6 +1243,40 @@
         </div>
     </div>
 
+    <!-- Contenedor para la Alerta de Fechas de Fallo -->
+    <div id="fallo-alert-container" class="hidden fixed bottom-4 right-4 w-full max-w-sm z-40">
+        <div class="bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="p-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-bell text-primary text-xl"></i>
+                    </div>
+                    <div class="ml-3 w-0 flex-1 pt-0.5">
+                        <p class="text-sm font-bold text-slate-800">Notificaciones de Fallo</p>
+                        <div id="fallo-alert-content" class="mt-2 space-y-2">
+                            <!-- El contenido se generará dinámicamente -->
+                        </div>
+                    </div>
+                    <div class="ml-4 flex-shrink-0 flex">
+                        <button id="close-fallo-alert-btn" class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            <span class="sr-only">Cerrar</span>
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        #fallo-alert-container.alert-enter { animation: slideInUp 0.5s ease-out forwards; }
+        #fallo-alert-container.alert-leave { animation: slideOutDown 0.5s ease-in forwards; }
+
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideOutDown { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); } }
+    </style>
+
+
     <div id="view-details-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-details-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
@@ -1628,6 +1662,10 @@
             document.getElementById('fallo-count-minus-1').textContent = counts.minus1;
             document.getElementById('fallo-count-current').textContent = counts.current;
             document.getElementById('fallo-count-plus-1').textContent = counts.plus1;
+
+            // Una vez actualizados los contadores, revisamos si mostramos la alerta inicial
+            // Se usa un setTimeout para asegurar que el resto de la UI se haya cargado
+            setTimeout(() => checkAndShowFalloAlert(counts), 500);
         }
 
         // =============================================
@@ -3178,6 +3216,56 @@
             }));
         }
 
+        /**
+         * Muestra una alerta sutil si hay fechas de fallo próximas.
+         * Se ejecuta solo una vez por carga de página.
+         */
+        let falloAlertShown = false;
+        function checkAndShowFalloAlert(counts) {
+            if (falloAlertShown) return; // Asegura que solo se muestre una vez
+
+            const alertContainer = document.getElementById('fallo-alert-container');
+            const alertContent = document.getElementById('fallo-alert-content');
+            alertContent.innerHTML = '';
+
+            const alerts = [];
+
+            if (counts.minus1 > 0) {
+                alerts.push({
+                    message: `Hay <strong>${counts.minus1}</strong> licitacion(es) con fallo la semana pasada.`,
+                    target: 'fallo-indicator-minus-1'
+                });
+            }
+            if (counts.current > 0) {
+                alerts.push({
+                    message: `Hay <strong>${counts.current}</strong> licitacion(es) con fallo esta semana.`,
+                    target: 'fallo-indicator-current'
+                });
+            }
+            if (counts.plus1 > 0) {
+                alerts.push({
+                    message: `Hay <strong>${counts.plus1}</strong> licitacion(es) con fallo la próxima semana.`,
+                    target: 'fallo-indicator-plus-1'
+                });
+            }
+
+            if (alerts.length > 0) {
+                alerts.forEach(alert => {
+                    const item = document.createElement('div');
+                    item.className = 'text-sm text-slate-600 flex justify-between items-center';
+                    item.innerHTML = `
+                        <p>${alert.message}</p>
+                        <button data-target="${alert.target}" class="view-fallo-btn ml-2 text-xs font-bold text-primary hover:underline whitespace-nowrap">Ver</button>
+                    `;
+                    alertContent.appendChild(item);
+                });
+
+                alertContainer.classList.remove('hidden', 'alert-leave');
+                alertContainer.classList.add('alert-enter');
+                falloAlertShown = true;
+            }
+        }
+
         // =============================================
         // MÓDULO: Migración de datos
         // =============================================
@@ -3608,6 +3696,24 @@
             viewDetailsModal.addEventListener('click', (e) => {
                 if (e.target === viewDetailsModal) {
                     closeModal(viewDetailsModal);
+                }
+            });
+
+            // Eventos para la nueva alerta de fallos
+            document.getElementById('close-fallo-alert-btn').addEventListener('click', () => {
+                const container = document.getElementById('fallo-alert-container');
+                container.classList.remove('alert-enter');
+                container.classList.add('alert-leave');
+            });
+
+            document.getElementById('fallo-alert-content').addEventListener('click', (e) => {
+                if (e.target.classList.contains('view-fallo-btn')) {
+                    const targetId = e.target.dataset.target;
+                    const indicator = document.getElementById(targetId);
+                    if (indicator) {
+                        indicator.click(); // Simula el clic en el indicador del dashboard
+                        document.getElementById('close-fallo-alert-btn').click(); // Cierra la alerta
+                    }
                 }
             });
         }
