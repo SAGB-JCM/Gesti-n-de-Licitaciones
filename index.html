@@ -528,6 +528,30 @@
         body.modal-open {
             overflow: hidden;
         }
+
+        /* Estilos para el tooltip de vista rápida */
+        #quick-view-tooltip {
+            position: fixed;
+            display: none;
+            background-color: #1f2937; /* bg-gray-800 */
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+            pointer-events: none; /* Para que no interfiera con el cursor */
+            font-size: 0.8rem;
+            line-height: 1.5;
+            max-width: 350px;
+            transition: opacity 0.2s ease-in-out;
+            opacity: 0;
+        }
+        #quick-view-tooltip.visible {
+            display: block;
+            opacity: 1;
+        }
+        #quick-view-tooltip strong { color: #a6802d; } /* text-secondary */
+        #quick-view-tooltip p { margin-bottom: 0.25rem; }
     </style>
     
     <script>
@@ -960,6 +984,9 @@
         </div>
     </div>
 
+    <!-- Tooltip para vista rápida en tablas -->
+    <div id="quick-view-tooltip"></div>
+
     <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-edit-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
@@ -1302,7 +1329,7 @@
         let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, downloadExcelBtn, migrateLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, reportesDataSource, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, migrateModal, cancelMigrateBtn, confirmMigrateBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
         
         let currentEditIsHistorical = false;
-        
+        let quickViewTooltip;
         let fieldOptions = {
             proyectos: [],
             nombres: [],
@@ -1603,6 +1630,15 @@
             data.forEach((licitacionItem, index) => {
                 const row = document.createElement('tr');
                 row.className = 'bg-white border-b hover:bg-gray-50';
+                // Añadir atributos de datos para el tooltip de vista rápida
+                row.dataset.quickview = 'true';
+                row.dataset.proyecto = licitacionItem.proyecto || 'N/A';
+                row.dataset.dependencia = licitacionItem.siglasDependencia || 'N/A';
+                row.dataset.expediente = licitacionItem.codigoExpediente || 'N/A';
+                row.dataset.apertura = formatDate(licitacionItem.fechaPresentacionApertura);
+                row.dataset.fallo = formatDate(licitacionItem.fechaFallo);
+
+
                 
                 const linkCell = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM)
                     ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline" title="${licitacionItem.linkComprasXM}"><i class="fa-solid fa-link"></i></a>`
@@ -1829,13 +1865,13 @@
 
         function sortAndRenderTable(tableBody, data, isHistorical) {
             // Lógica de ordenamiento corregida y definitiva:
-            // 1. Criterio principal: Fecha de presentación y apertura (descendente).
+            // 1. Criterio principal: Fecha de fallo (descendente).
             // 2. Criterio de desempate: Fecha de creación del registro (descendente).
             data.sort((a, b) => {
                 try {
                     // Normalizar fechas para evitar errores. Se usa una fecha muy antigua como fallback.
-                    const dateA = a.fechaPresentacionApertura ? new Date(a.fechaPresentacionApertura) : new Date(0);
-                    const dateB = b.fechaPresentacionApertura ? new Date(b.fechaPresentacionApertura) : new Date(0);
+                    const dateA = a.fechaFallo ? new Date(a.fechaFallo) : new Date(0);
+                    const dateB = b.fechaFallo ? new Date(b.fechaFallo) : new Date(0);
 
                     // 1. Comparar por fecha de presentación y apertura (descendente).
                     const dateComparison = dateB.getTime() - dateA.getTime();
@@ -1843,7 +1879,7 @@
 
                     // 2. Si las fechas son iguales, desempatar por fecha de creación (descendente).
                     const timeB = b.createdAt?.toMillis() || 0;
-                    const timeA = a.createdAt?.toMillis() || 0;
+                    const timeA = a.createdAt?.toMillis() || 0; // Si las fechas de fallo son iguales, desempatar por fecha de creación (descendente).
                     return timeB - timeA;
                 } catch (e) {
                     return 0; // Fallback si alguna fecha no es válida
@@ -3201,6 +3237,7 @@
             setupColumnFilters('historical-table-header', () => historicalLicitaciones, renderTable, 'historical');
             setupFiltering('filter-input-main', () => licitaciones, renderTable, false);
             setupFiltering('filter-input-historical', () => historicalLicitaciones, renderTable, true);
+            setupQuickViewTooltip();
             setupAddEditButtons();
             setupPasswordVerification();
             
@@ -3556,6 +3593,41 @@
             closeDetailsModalBtn.addEventListener('click', () => closeModal(viewDetailsModal));
         }
 
+        function setupQuickViewTooltip() {
+            const showTooltip = (e) => {
+                const row = e.target.closest('tr[data-quickview="true"]');
+                if (!row) return;
+
+                const { proyecto, dependencia, expediente, apertura, fallo } = row.dataset;
+
+                quickViewTooltip.innerHTML = `
+                    <p><strong>Proyecto:</strong> ${truncateText(proyecto, 40)}</p>
+                    <p><strong>Dependencia:</strong> ${dependencia}</p>
+                    <p><strong>Expediente:</strong> ${expediente}</p>
+                    <p><strong>F. Apertura:</strong> ${apertura}</p>
+                    <p><strong>F. Fallo:</strong> ${fallo}</p>
+                `;
+                quickViewTooltip.classList.add('visible');
+            };
+
+            const hideTooltip = () => {
+                quickViewTooltip.classList.remove('visible');
+            };
+
+            const moveTooltip = (e) => {
+                if (quickViewTooltip.classList.contains('visible')) {
+                    quickViewTooltip.style.left = `${e.clientX + 15}px`;
+                    quickViewTooltip.style.top = `${e.clientY + 15}px`;
+                }
+            };
+
+            [licitacionTableBody, historicalTableBody].forEach(tbody => {
+                tbody.addEventListener('mouseover', showTooltip);
+                tbody.addEventListener('mouseout', hideTooltip);
+                tbody.addEventListener('mousemove', moveTooltip);
+            });
+        }
+
         function setupFalloDashboardFilter() {
             const indicators = {
                 'minus-2': document.getElementById('fallo-indicator-minus-2'),
@@ -3643,6 +3715,7 @@
             closeDetailsModalBtn = document.getElementById('close-details-modal-btn');
             detailsModalContent = document.getElementById('details-modal-content');
 
+            quickViewTooltip = document.getElementById('quick-view-tooltip');
             // Inicializar la autenticación y los listeners
             initializeAppWithAuth();
             setupEventListeners();
