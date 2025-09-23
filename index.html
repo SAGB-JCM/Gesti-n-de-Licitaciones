@@ -111,7 +111,7 @@
 
         /* Estilo específico para la altura de la tabla de histórico */
         #historical-table-container {
-            max-height: 510px; /* <-- Puedes ajustar este valor a tu preferencia */
+            max-height: 440px; /* <-- Puedes ajustar este valor a tu preferencia */
         }
         
         .table-container::-webkit-scrollbar {
@@ -601,7 +601,7 @@
 
     <div id="app" class="min-h-screen hidden">
 
-        <header class="bg-primary shadow-lg sticky top-0 z-10">
+        <header class="bg-primary shadow-lg sticky top-0 z-30">
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
                     <img src="https://github.com/SAGB-JCM/Gesti-n-de-Licitaciones/blob/main/icono_licitaciones.png?raw=true" alt="Logo Sistema Licitaciones" class="h-16 w-auto">
@@ -611,7 +611,7 @@
             </div>
         </header>
 
-        <div class="bg-white shadow-sm sticky top-[56px] z-10">
+        <div class="bg-white shadow-sm sticky top-[56px] z-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div id="tabs" class="border-b border-gray-200">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
@@ -784,14 +784,6 @@
                                 <i class="fa-solid fa-file-word"></i>
                                 <span>Cargar Plantilla Word</span>
                             </button>
-                            <div class="flex items-center space-x-2">
-                                <label for="reportes-data-source" class="block text-sm font-medium text-gray-700">Fuente de datos:</label>
-                                <select id="reportes-data-source" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
-                                    <option value="historico">Histórico</option>
-                                    <option value="licitaciones">Licitaciones</option>
-                                    <option value="combinado">Licitaciones + Histórico</option>
-                                </select>
-                            </div>
                         </div>
                     </div>
 
@@ -1371,8 +1363,7 @@
         const licitacionesCollectionRef = db.collection("licitaciones");
         const historicalLicitacionesCollectionRef = db.collection("historicalLicitaciones");
 
-        // Variables de estado de la aplicación
-        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, downloadExcelBtn, migrateLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, reportesDataSource, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, migrateModal, cancelMigrateBtn, confirmMigrateBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
+        // Variables de estado de la aplicación        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, downloadExcelBtn, migrateLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, migrateModal, cancelMigrateBtn, confirmMigrateBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
         
         let currentEditIsHistorical = false;
         let quickViewTooltip;
@@ -2078,6 +2069,33 @@
         function showDetailsModal(licitacionItem) {
             if (!licitacionItem) return;
 
+            // --- INICIO: Lógica para la tabla de participantes inteligente ---
+            const interesados = (licitacionItem.registradosInteres || '').split('\n').map(s => s.trim()).filter(Boolean);
+            const licitantes = (licitacionItem.nombreLicitantes || '').split('\n').map(s => s.trim()).filter(Boolean);
+            const ganadores = (licitacionItem.ganadorLicitacion || '').split('\n').map(s => s.trim()).filter(Boolean);
+
+            const maxRows = Math.max(interesados.length, licitantes.length, ganadores.length);
+            let participantesTbody = '';
+
+            if (maxRows === 0) {
+                participantesTbody = `
+                    <tr>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td class="highlight-fallo">N/A</td>
+                    </tr>`;
+            } else {
+                for (let i = 0; i < maxRows; i++) {
+                    participantesTbody += `
+                        <tr>
+                            <td>${interesados[i] || '—'}</td>
+                            <td>${licitantes[i] || '—'}</td>
+                            <td class="highlight-fallo">${ganadores[i] || '—'}</td>
+                        </tr>`;
+                }
+            }
+            // --- FIN: Lógica para la tabla de participantes inteligente ---
+
             const sourceLink = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM) 
                 ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline break-all">${licitacionItem.linkComprasXM}</a>` 
                 : `<p class="text-gray-700">${licitacionItem.linkComprasXM || 'N/A'}</p>`;
@@ -2161,11 +2179,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>${formatTextWithLineBreaks(licitacionItem.registradosInteres)}</td>
-                                <td>${formatTextWithLineBreaks(licitacionItem.nombreLicitantes)}</td>
-                                <td class="highlight-fallo">${formatTextWithLineBreaks(licitacionItem.ganadorLicitacion)}</td>
-                            </tr>
+                            ${participantesTbody}
                         </tbody>
                     </table>
                 </div>
@@ -3093,27 +3107,20 @@
         // =============================================
         
         function updateCharts() {
-            const source = reportesDataSource.value;
-            let data = [];
-            if (source === 'licitaciones') data = licitaciones;
-            else if (source === 'historico') data = historicalLicitaciones;
-            else data = [...licitaciones, ...historicalLicitaciones];
-            
+            // La fuente de datos ahora es siempre 'historico'
+            let data = historicalLicitaciones;
             const proyectoCounts = {}, dependenciaCounts = {};
         
-            if (dynamicChart) dynamicChart.destroy();
+            // Verificación robusta: Asegurarse de que dynamicChart es una instancia de Chart antes de destruirla.
+            if (dynamicChart && typeof dynamicChart.destroy === 'function') dynamicChart.destroy();
 
             // Update dynamic chart
             updateDynamicChart();
         }
 
         function updateDynamicChart() {
-            const source = reportesDataSource.value;
-            let data = [];
-            if (source === 'licitaciones') data = licitaciones;
-            else if (source === 'historico') data = historicalLicitaciones;
-            else data = [...licitaciones, ...historicalLicitaciones];
-            
+            // La fuente de datos ahora es siempre 'historico'
+            let data = historicalLicitaciones || [];
             const selectedVariable = dynamicChartVariable.value;
             const variableCounts = {};
             
@@ -3149,7 +3156,8 @@
             dynamicTableBody.appendChild(totalRow);
             
             // Update dynamic chart
-            if (dynamicChart) dynamicChart.destroy();
+            // Verificación robusta: Asegurarse de que dynamicChart es una instancia de Chart antes de destruirla.
+            if (dynamicChart && typeof dynamicChart.destroy === 'function') dynamicChart.destroy();
             
             const labels = Object.keys(variableCounts);
             const chartData = Object.values(variableCounts);
@@ -3340,8 +3348,6 @@
             setupQuickViewTooltip();
             setupAddEditButtons();
             setupPasswordVerification();
-            
-            reportesDataSource.addEventListener('change', updateCharts);
             dynamicChartVariable.addEventListener('change', updateDynamicChart);
             
             toggleLabelsBtn.addEventListener('click', () => {
@@ -3803,7 +3809,6 @@
             historicalFileInput = document.getElementById('historical-file-input');
             historicalFileName = document.getElementById('file-name');
             importHistoricalBtn = document.getElementById('import-historical-btn');
-            reportesDataSource = document.getElementById('reportes-data-source');
             dynamicChartCanvas = document.getElementById('dynamicChart');
             dynamicChartVariable = document.getElementById('dynamic-chart-variable');
             toggleLabelsBtn = document.getElementById('toggle-labels-btn');
