@@ -550,25 +550,35 @@
 
         /* Estilos para el tooltip de vista rápida */
         #quick-view-tooltip {
-            position: fixed;
-            display: none;
-            background-color: #1f2937; /* bg-gray-800 */
-            color: white;
+            position: fixed; /* Flota sobre toda la página */
+            display: none;   /* Oculto por defecto */
+            background-color: #ffffff; /* Fondo blanco */
+            color: #374151; /* Texto oscuro (gray-700) */
             padding: 0.75rem 1rem;
             border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb; /* Borde sutil (gray-200) */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
             z-index: 100;
             pointer-events: none; /* Para que no interfiera con el cursor */
-            font-size: 0.8rem;
+            font-size: 0.9rem; /* Tamaño de fuente mejorado */
             line-height: 1.5;
             max-width: 350px;
             transition: opacity 0.2s ease-in-out;
             opacity: 0;
         }
+
         #quick-view-tooltip.visible {
             display: block;
             opacity: 1;
         }
+
+        #quick-view-tooltip strong { color: var(--primary-color); } /* Títulos en color primario */
+        #quick-view-tooltip p { margin-bottom: 0.25rem; }
+        #quick-view-tooltip .monto-highlight { 
+            font-size: 1.1rem; font-weight: 700; color: var(--secondary-color); 
+            text-align: right; border-top: 1px solid #e5e7eb; padding-top: 0.5rem; margin-top: 0.5rem;
+        }
+
         /* Estilo para resaltar el texto de búsqueda */
         .highlight {
             background-color: #fef9c3; /* Tailwind yellow-100 */
@@ -1665,12 +1675,13 @@
                 row.className = 'bg-white border-b hover:bg-gray-50';
                 // Añadir atributos de datos para el tooltip de vista rápida
                 row.dataset.quickview = 'true';
+                row.dataset.nombre = licitacionItem.nombre || 'N/A';
                 row.dataset.proyecto = licitacionItem.proyecto || 'N/A';
                 row.dataset.dependencia = licitacionItem.siglasDependencia || 'N/A';
                 row.dataset.expediente = licitacionItem.codigoExpediente || 'N/A';
                 row.dataset.apertura = formatDate(licitacionItem.fechaPresentacionApertura);
-                row.dataset.fallo = formatDate(licitacionItem.fechaFallo);
-                row.dataset.ganador = licitacionItem.ganadorLicitacion || 'N/A';
+                row.dataset.fallo = licitacionItem.fechaFallo || ''; // Guardar fecha en formato YYYY-MM-DD
+                row.dataset.ganador = licitacionItem.ganadorLicitacion || '';
                 row.dataset.monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
                 
                 const linkCell = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM)
@@ -3688,27 +3699,32 @@
 
         function setupQuickViewTooltip() {
             const showTooltip = (e) => {
-                const row = e.target.closest('tr[data-quickview="true"]');
+                const row = e.target.closest('tr[data-quickview="true"]'); // Asegurarse de que el tooltip solo se active en las filas correctas
                 if (!row) return;
-
-                const { proyecto, dependencia, expediente, apertura, fallo, ganador, monto } = row.dataset;
-
+        
+                const { proyecto, nombre, ganador, monto, fallo } = row.dataset;
+        
+                // Función auxiliar para mostrar el valor o un guion si está vacío
+                const displayValue = (value, formatter = v => v) => {
+                    return (value && value.trim() !== '' && value !== 'N/A') ? formatter(value) : '-';
+                };
+        
+                // Construcción del contenido del tooltip usando la función auxiliar
                 quickViewTooltip.innerHTML = `
                     <p><strong>Proyecto:</strong> ${truncateText(proyecto, 40)}</p>
-                    <p><strong>Dependencia:</strong> ${dependencia}</p>
-                    <p><strong>Expediente:</strong> ${expediente}</p>
-                    <p><strong>F. Apertura:</strong> ${apertura}</p>
-                    <p><strong>F. Fallo:</strong> ${fallo}</p>
-                    ${ganador !== 'N/A' ? `<p><strong>Ganador:</strong> ${truncateText(ganador, 40)}</p>` : ''}
-                    ${monto !== 'N/A' ? `<p><strong>Monto:</strong> ${monto}</p>` : ''}
+                    <p><strong>Nombre:</strong> ${truncateText(nombre, 40)}</p>
+                    <p><strong>Ganador:</strong> ${displayValue(truncateText(ganador, 40))}</p>
+                    <p class="text-xs text-gray-400 mt-2">Fallo: ${displayValue(fallo, formatLongDate)}</p>
+                    <div class="monto-highlight">${displayValue(monto)}</div>
                 `;
+        
                 quickViewTooltip.classList.add('visible');
             };
-
+        
             const hideTooltip = () => {
                 quickViewTooltip.classList.remove('visible');
             };
-
+        
             const moveTooltip = (e) => {
                 if (quickViewTooltip.classList.contains('visible')) {
                     quickViewTooltip.style.left = `${e.clientX + 15}px`;
@@ -3716,7 +3732,7 @@
                 }
             };
 
-            [licitacionTableBody, historicalTableBody].forEach(tbody => {
+            [historicalTableBody].forEach(tbody => { // Aplicar solo a la tabla de licitaciones
                 tbody.addEventListener('mouseover', showTooltip);
                 tbody.addEventListener('mouseout', hideTooltip);
                 tbody.addEventListener('mousemove', moveTooltip);
