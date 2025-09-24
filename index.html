@@ -405,7 +405,7 @@
         }
         
         .dynamic-table th {
-            background-color: var(--primary-color);
+            background-color: var(--accent-color);
             color: white;
             font-weight: 600;
         }
@@ -3180,7 +3180,7 @@
                     datasets: [{
                         label: 'Cantidad',
                         data: chartData,
-                        backgroundColor: '#9C2348'
+                        backgroundColor: '#1E5B4F'
                     }]
                 },
                 options: {
@@ -3240,6 +3240,7 @@
          * Se ejecuta solo una vez por carga de página.
          */
         let falloAlertShown = false;
+        let falloAlertTimeout; // Variable para el temporizador
         function checkAndShowFalloAlert(counts) {
             if (falloAlertShown) return; // Asegura que solo se muestre una vez
 
@@ -3282,6 +3283,9 @@
                 alertContainer.classList.remove('hidden', 'alert-leave');
                 alertContainer.classList.add('alert-enter');
                 falloAlertShown = true;
+
+                // Iniciar temporizador para cerrar automáticamente la alerta
+                startFalloAlertTimeout();
             }
         }
 
@@ -3660,6 +3664,16 @@
                 container.classList.add('alert-leave');
             });
 
+            // Detener el temporizador si el usuario pasa el mouse sobre la alerta
+            document.getElementById('fallo-alert-container').addEventListener('mouseenter', () => {
+                clearTimeout(falloAlertTimeout);
+            });
+
+            // Reanudar el temporizador si el usuario saca el mouse de la alerta
+            document.getElementById('fallo-alert-container').addEventListener('mouseleave', () => {
+                startFalloAlertTimeout();
+            });
+
             document.getElementById('fallo-alert-content').addEventListener('click', (e) => {
                 if (e.target.classList.contains('view-fallo-btn')) {
                     const targetId = e.target.dataset.target;
@@ -3748,6 +3762,18 @@
                 });
             });
         }
+
+        function startFalloAlertTimeout() {
+            // Limpiar cualquier temporizador existente antes de iniciar uno nuevo
+            clearTimeout(falloAlertTimeout);
+            // Iniciar el temporizador para cerrar la alerta después de 15 segundos
+            falloAlertTimeout = setTimeout(() => {
+                // Simula un clic en el botón de cerrar si no hay interacción
+                const closeBtn = document.getElementById('close-fallo-alert-btn');
+                if (closeBtn) closeBtn.click();
+            }, 15000); // 15000 milisegundos = 15 segundos
+        }
+
 
         // =============================================
         // MÓDULO: Inicialización
