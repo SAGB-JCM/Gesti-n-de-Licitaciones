@@ -3702,7 +3702,7 @@
                 const row = e.target.closest('tr[data-quickview="true"]'); // Asegurarse de que el tooltip solo se active en las filas correctas
                 if (!row) return;
         
-                const { proyecto, nombre, ganador, monto, fallo } = row.dataset;
+                const { dependencia, proyecto, nombre, ganador, monto, fallo } = row.dataset;
         
                 // Función auxiliar para mostrar el valor o un guion si está vacío
                 const displayValue = (value, formatter = v => v) => {
@@ -3711,6 +3711,7 @@
         
                 // Construcción del contenido del tooltip usando la función auxiliar
                 quickViewTooltip.innerHTML = `
+                    <p><strong>Dependencia:</strong> ${truncateText(dependencia, 40)}</p>
                     <p><strong>Proyecto:</strong> ${truncateText(proyecto, 40)}</p>
                     <p><strong>Nombre:</strong> ${truncateText(nombre, 40)}</p>
                     <p><strong>Ganador:</strong> ${displayValue(truncateText(ganador, 40))}</p>
