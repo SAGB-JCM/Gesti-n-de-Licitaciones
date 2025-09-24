@@ -569,6 +569,11 @@
             display: block;
             opacity: 1;
         }
+        /* Estilo para resaltar el texto de búsqueda */
+        .highlight {
+            background-color: #fef9c3; /* Tailwind yellow-100 */
+            border-radius: 2px;
+        }
         #quick-view-tooltip strong { color: #a6802d; } /* text-secondary */
         #quick-view-tooltip p { margin-bottom: 0.25rem; }
     </style>
@@ -1382,6 +1387,17 @@
             setTimeout(() => { alertContainer.remove(); }, 3000);
         }
 
+        //Función para resaltar texto
+        function highlightText(text, searchTerm) {
+            if (!searchTerm || typeof text !== 'string') {
+                return text;
+            }
+            // Escapar caracteres especiales en el término de búsqueda para la expresión regular
+            const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(${escapedSearchTerm})`, 'gi');
+            return text.replace(regex, `<span class="highlight">$1</span>`);
+        }
+
         function openModal(modal) {
             modal.classList.remove('hidden', 'modal-leave');
             modal.classList.add('modal-enter');
@@ -1640,6 +1656,10 @@
             tableBody.innerHTML = '';
             noDataMessage.classList.toggle('hidden', data.length > 0);
 
+            const filterKey = isHistorical ? 'historical' : 'main';
+            const searchInput = document.getElementById(`filter-input-${filterKey}`);
+            const searchText = searchInput ? searchInput.value.trim() : '';
+
             data.forEach((licitacionItem, index) => {
                 const row = document.createElement('tr');
                 row.className = 'bg-white border-b hover:bg-gray-50';
@@ -1657,24 +1677,26 @@
                     ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline" title="${licitacionItem.linkComprasXM}"><i class="fa-solid fa-link"></i></a>`
                     : `<span class="text-slate-400" title="No hay link válido"><i class="fa-solid fa-link-slash"></i></span>`;
 
+                const applyHighlight = (text) => highlightText(String(text), searchText);
+
                 row.innerHTML = `
-                    <td class="py-4 px-6">${index + 1}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.proyecto, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.nombre, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.descripcion, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.generalidades, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.siglasDependencia, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.codigoExpediente, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.procedimientoContratacion, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.tipo, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.anoPublicacion, 30)}</td>
-                    <td class="py-4 px-6">${formatDate(licitacionItem.fechaPresentacionApertura)}</td>
-                    <td class="py-4 px-6">${formatDate(licitacionItem.fechaFallo)}</td>
-                    <td class="py-4 px-6">${formatDate(licitacionItem.fechaEstimadaInicio)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.registradosInteres, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.nombreLicitantes, 30)}</td>
-                    <td class="py-4 px-6">${truncateText(licitacionItem.ganadorLicitacion, 30)}</td>
-                    <td class="py-4 px-6">${licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A'}</td>
+                    <td class="py-4 px-6">${applyHighlight(index + 1)}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.proyecto, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.nombre, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.descripcion, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.generalidades, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.siglasDependencia, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.codigoExpediente, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.procedimientoContratacion, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.tipo, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.anoPublicacion, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(formatDate(licitacionItem.fechaPresentacionApertura))}</td>
+                    <td class="py-4 px-6">${applyHighlight(formatDate(licitacionItem.fechaFallo))}</td>
+                    <td class="py-4 px-6">${applyHighlight(formatDate(licitacionItem.fechaEstimadaInicio))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.registradosInteres, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.nombreLicitantes, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.ganadorLicitacion, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A')}</td>
                     <td class="py-4 px-6 text-center">${linkCell}</td>
                     <td class="py-4 px-6 flex space-x-2">
                         <button data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="generate-doc-btn text-blue-600 hover:text-blue-800" title="Generar Reporte Individual">
@@ -2052,6 +2074,11 @@
 
         function showDetailsModal(licitacionItem) {
             if (!licitacionItem) return;
+
+            // Ocultar el tooltip de vista rápida al abrir el modal de detalles
+            if (quickViewTooltip) {
+                quickViewTooltip.classList.remove('visible');
+            }
 
             // --- INICIO: Lógica para la tabla de participantes inteligente ---
             const interesados = (licitacionItem.registradosInteres || '').split('\n').map(s => s.trim()).filter(Boolean);
