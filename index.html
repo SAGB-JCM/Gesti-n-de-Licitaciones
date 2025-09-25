@@ -724,6 +724,9 @@
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Licitaciones Registradas</h2>
                         <div class="flex items-center space-x-2">
+                            <div id="filtered-total-amount-container" class="text-sm font-medium text-slate-500 mr-4 flex items-center gap-x-2">
+                                <!-- El contenido se generará dinámicamente -->
+                            </div>
                             <div class="relative w-full">
                                 <input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                                 <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
@@ -1662,9 +1665,21 @@
             setTimeout(() => checkAndShowFalloAlert(counts), 500);
         }
 
+        /**
+         * Actualiza el indicador visual con la suma de los montos de los datos filtrados.
+         * @param {Array} filteredData - Los datos actualmente visibles en la tabla.
+         */
+        function updateFilteredTotalAmount(filteredData) {
+            const totalAmount = filteredData.reduce((sum, item) => sum + (Number(item.monto) || 0), 0);
+            const formattedAmount = '$' + totalAmount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const container = document.getElementById('filtered-total-amount-container');
+            if (container) container.innerHTML = `<span>Monto:</span> <strong class="text-primary font-semibold">${formattedAmount}</strong>`;
+        }
+
         // =============================================
         // MÓDULO: Interfaz de usuario
         // =============================================
+
 
         function renderTable(tableBody, data, isHistorical = false) {
             const noDataMessage = isHistorical ? noHistoricalMessage : noLicitacionMessage;
@@ -1731,6 +1746,11 @@
                 
                 tableBody.appendChild(row);
             });
+
+            // Después de renderizar la tabla, actualiza el monto total si es la tabla histórica.
+            if (isHistorical) {
+                updateFilteredTotalAmount(data);
+            }
         }
 
         function applyAllFilters(data, filterKey) {
@@ -3656,8 +3676,20 @@
                             const workbook = XLSX.read(e.target.result, { type: 'array', cellDates: true });
                             const sheetName = workbook.SheetNames[0];
                             const worksheet = workbook.Sheets[sheetName];
-                            const jsonData = XLSX.utils.sheet_to_json(worksheet);
                             
+                            // --- INICIO: Detección inteligente de la fila de encabezado ---
+                            let jsonData;
+                            const firstCell = worksheet['A1'];
+                            // Comprueba si la celda A1 existe y contiene el título del reporte.
+                            if (firstCell && typeof firstCell.v === 'string' && firstCell.v.includes('Seguimiento de Licitaciones')) {
+                                // Si tiene el título, ignora la primera fila y empieza a leer desde la segunda (índice 1).
+                                jsonData = XLSX.utils.sheet_to_json(worksheet, { range: 1 });
+                            } else {
+                                // Si no tiene el título, procesa el archivo de forma normal.
+                                jsonData = XLSX.utils.sheet_to_json(worksheet);
+                            }
+                            // --- FIN: Detección inteligente de la fila de encabezado ---
+
                             if (jsonData.length === 0) return showAlert("El archivo no contiene datos válidos.", "warning");
 
                             const processedData = jsonData.map(row => {
@@ -3757,7 +3789,9 @@
                                     registradosInteres: mappedRow.registradosInteres || '',
                                     nombreLicitantes: mappedRow.nombreLicitantes || '',
                                     ganadorLicitacion: mappedRow.ganadorLicitacion || '',
-                                    monto: mappedRow.monto || '',
+                                    // Si el monto es "N/A" (texto del excel exportado), se convierte a '' para que sea un valor falsy.
+                                    // Si es un número, se mantiene. Si no, se trata como vacío.
+                                    monto: mappedRow.monto === "N/A" ? '' : mappedRow.monto || '',
                                     linkComprasXM: mappedRow.linkComprasXM || ''
                                 };
                             });
