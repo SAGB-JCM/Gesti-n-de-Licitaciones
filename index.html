@@ -2087,11 +2087,11 @@
         function showDetailsModal(licitacionItem) {
             if (!licitacionItem) return;
 
-            // Ocultar el tooltip de vista rápida al abrir el modal de detalles
+            // Ocultar el tooltip de vista rápida al abrir el modal de detalles.
             if (quickViewTooltip) {
                 quickViewTooltip.classList.remove('visible');
             }
-
+ 
             // --- INICIO: Lógica para la tabla de participantes inteligente ---
             const interesados = (licitacionItem.registradosInteres || '').split('\n').map(s => s.trim()).filter(Boolean);
             const licitantes = (licitacionItem.nombreLicitantes || '').split('\n').map(s => s.trim()).filter(Boolean);
