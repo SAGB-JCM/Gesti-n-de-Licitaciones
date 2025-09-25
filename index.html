@@ -405,7 +405,7 @@
         }
         
         .dynamic-table th {
-            background-color: var(--accent-color);
+            background-color: var(--primary-color);
             color: white;
             font-weight: 600;
         }
@@ -3216,6 +3216,21 @@
                                 display: showChartLabels,
                                 maxRotation: showChartLabels ? 90 : 0,
                                 minRotation: showChartLabels ? 45 : 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    const category = context.label;
+                                    const stats = variableStats[category];
+                                    const amount = stats ? stats.sum : 0;
+                                    const formattedAmount = '$' + amount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                    return `${label}: ${value} (Monto: ${formattedAmount})`;
+                                }
                             }
                         }
                     }
