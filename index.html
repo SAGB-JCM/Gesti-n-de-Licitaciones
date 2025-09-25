@@ -743,7 +743,6 @@
                                 <span>Descargar Excel</span>
                             </button>
                             <label for="historical-file-input" class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg shadow-sm transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap"><i class="fa-solid fa-file-upload"></i><span>Subir Excel</span><input type="file" id="historical-file-input" class="hidden" accept=".xlsx, .xls"></label>
-                            <button id="import-historical-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-200 ease-in-out hidden items-center space-x-2 whitespace-nowrap" disabled><i class="fa-solid fa-database"></i><span>Subir Excel</span></button>
                         </div>
                     </div>
                     <div id="historical-table-container" class="bg-white rounded-xl shadow-md table-container">
@@ -1359,6 +1358,7 @@
         const historicalLicitacionesCollectionRef = db.collection("historicalLicitaciones");
 
         // Variables de estado de la aplicación        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
+        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
         
         let currentEditIsHistorical = false;
         let quickViewTooltip;
@@ -3653,23 +3653,9 @@
 
             historicalFileInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
-                if (file) {
-                    importHistoricalBtn.classList.remove('hidden');
-                    importHistoricalBtn.disabled = false;
-                } else {
-                    importHistoricalBtn.classList.add('hidden');
-                    importHistoricalBtn.disabled = true;
-                }
-            });
+                if (!file) return;
 
-            importHistoricalBtn.addEventListener('click', () => {
                 requirePassword(async () => {
-                    const file = historicalFileInput.files[0];
-                    if (!file) {
-                        showAlert("Por favor, selecciona un archivo Excel primero.", "warning");
-                        return;
-                    }
-                    
                     const reader = new FileReader();
                     reader.onload = async (e) => {
                         try {
@@ -3698,6 +3684,12 @@
                                     acc[newKey] = obj[key];
                                     return acc;
                                 }, {});
+
+                                // Función para limpiar espacios en blanco si el valor es un string
+                                const trimIfString = (value) => {
+                                    if (typeof value === 'string') return value.trim();
+                                    return value;
+                                };
 
                                 const keyMapping = {
                                     'no.': 'no',
@@ -3774,25 +3766,25 @@
                                 };
 
                                 return {
-                                    proyecto: mappedRow.proyecto || '',
-                                    nombre: mappedRow.nombre || '',
-                                    descripcion: mappedRow.descripcion || '',
-                                    generalidades: mappedRow.generalidades || '',
-                                    siglasDependencia: mappedRow.siglasDependencia || '',
-                                    codigoExpediente: mappedRow.codigoExpediente || '',
-                                    procedimientoContratacion: mappedRow.procedimientoContratacion || '',
-                                    tipo: mappedRow.tipo || '',
-                                    anoPublicacion: mappedRow.anoPublicacion || '',
+                                    proyecto: trimIfString(mappedRow.proyecto) || '',
+                                    nombre: trimIfString(mappedRow.nombre) || '',
+                                    descripcion: trimIfString(mappedRow.descripcion) || '',
+                                    generalidades: trimIfString(mappedRow.generalidades) || '',
+                                    siglasDependencia: trimIfString(mappedRow.siglasDependencia) || '',
+                                    codigoExpediente: trimIfString(mappedRow.codigoExpediente) || '',
+                                    procedimientoContratacion: trimIfString(mappedRow.procedimientoContratacion) || '',
+                                    tipo: trimIfString(mappedRow.tipo) || '',
+                                    anoPublicacion: trimIfString(mappedRow.anoPublicacion) || '',
                                     fechaPresentacionApertura: processDate(fechaPresentacionApertura),
                                     fechaFallo: processDate(fechaFallo),
                                     fechaEstimadaInicio: processDate(fechaEstimadaInicio),
-                                    registradosInteres: mappedRow.registradosInteres || '',
-                                    nombreLicitantes: mappedRow.nombreLicitantes || '',
-                                    ganadorLicitacion: mappedRow.ganadorLicitacion || '',
+                                    registradosInteres: trimIfString(mappedRow.registradosInteres) || '',
+                                    nombreLicitantes: trimIfString(mappedRow.nombreLicitantes) || '',
+                                    ganadorLicitacion: trimIfString(mappedRow.ganadorLicitacion) || '',
                                     // Si el monto es "N/A" (texto del excel exportado), se convierte a '' para que sea un valor falsy.
                                     // Si es un número, se mantiene. Si no, se trata como vacío.
                                     monto: mappedRow.monto === "N/A" ? '' : mappedRow.monto || '',
-                                    linkComprasXM: mappedRow.linkComprasXM || ''
+                                    linkComprasXM: trimIfString(mappedRow.linkComprasXM) || ''
                                 };
                             });
 
@@ -3819,9 +3811,6 @@
                             }
                             await importHistoricalData(processedData);
                             historicalFileInput.value = '';
-                            importHistoricalBtn.disabled = true;
-                            importHistoricalBtn.classList.add('hidden');
-                        
                         } catch (error) {
                             console.error("Error al procesar el archivo:", error);
                             showAlert("Error al procesar el archivo. Asegúrese de que es un Excel válido.", "error");
@@ -3855,8 +3844,10 @@
                 const day = String(today.getDate()).padStart(2, '0');
                 const month = String(today.getMonth() + 1).padStart(2, '0'); // Enero es 0
                 const year = today.getFullYear();
-                const formattedDate = `${day}-${month}-${year}`;
-                const fileName = `Seguimiento de Licitaciones - ${formattedDate}.xlsx`;
+                const hours = String(today.getHours()).padStart(2, '0');
+                const minutes = String(today.getMinutes()).padStart(2, '0');
+                const formattedDateTime = `${day}-${month}-${year}_${hours}h${minutes}m`;
+                const fileName = `Seguimiento de Licitaciones - ${formattedDateTime}.xlsx`;
 
                 XLSX.utils.book_append_sheet(wb, ws, "Seguimiento de Licitaciones");
 
@@ -4023,7 +4014,6 @@
             noHistoricalMessage = document.getElementById('no-historical-message');
             historicalFileInput = document.getElementById('historical-file-input');
             historicalFileName = document.getElementById('file-name');
-            importHistoricalBtn = document.getElementById('import-historical-btn');
             dynamicChartCanvas = document.getElementById('dynamicChart');
             dynamicChartVariable = document.getElementById('dynamic-chart-variable');
             toggleLabelsBtn = document.getElementById('toggle-labels-btn');
