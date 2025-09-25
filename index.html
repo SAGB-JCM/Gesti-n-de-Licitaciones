@@ -811,6 +811,7 @@
                                         <tr>
                                             <th id="dynamic-table-header">Variable</th>
                                             <th>Total</th>
+                                            <th>Monto</th>
                                         </tr>
                                     </thead>
                                     <tbody id="dynamic-table-body">
@@ -3144,26 +3145,34 @@
             // La fuente de datos ahora es siempre 'historico'
             let data = historicalLicitaciones || [];
             const selectedVariable = dynamicChartVariable.value;
-            const variableCounts = {};
+            const variableStats = {};
             
             data.forEach(licitacionItem => {
                 const value = licitacionItem[selectedVariable] || 'N/A';
-                variableCounts[value] = (variableCounts[value] || 0) + 1;
+                if (!variableStats[value]) {
+                    variableStats[value] = { count: 0, sum: 0 };
+                }
+                variableStats[value].count++;
+                const monto = parseFloat(licitacionItem.monto) || 0;
+                variableStats[value].sum += monto;
             });
             
             // Update dynamic table
             dynamicTableBody.innerHTML = '';
             dynamicTableHeader.textContent = selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1);
             
-            let total = 0;
+            let totalCount = 0;
+            let totalSum = 0;
 
-            Object.entries(variableCounts).forEach(([value, count]) => {
-                total += count;
+            Object.entries(variableStats).forEach(([value, stats]) => {
+                totalCount += stats.count;
+                totalSum += stats.sum;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${value}</td>
-                    <td>${count}</td>
+                    <td>${stats.count}</td>
+                    <td>${'$' + stats.sum.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 `;
                 dynamicTableBody.appendChild(row);
             });
@@ -3173,7 +3182,8 @@
             totalRow.className = 'bg-slate-200 font-bold';
             totalRow.innerHTML = `
                 <td>Total</td>
-                <td>${total}</td>
+                <td>${totalCount}</td>
+                <td>${'$' + totalSum.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             `;
             dynamicTableBody.appendChild(totalRow);
             
@@ -3181,8 +3191,8 @@
             // Verificación robusta: Asegurarse de que dynamicChart es una instancia de Chart antes de destruirla.
             if (dynamicChart && typeof dynamicChart.destroy === 'function') dynamicChart.destroy();
             
-            const labels = Object.keys(variableCounts);
-            const chartData = Object.values(variableCounts);
+            const labels = Object.keys(variableStats);
+            const chartData = Object.values(variableStats).map(stat => stat.count);
             
             dynamicChart = new Chart(dynamicChartCanvas, {
                 type: 'bar',
