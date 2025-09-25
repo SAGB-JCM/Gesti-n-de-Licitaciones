@@ -574,9 +574,15 @@
 
         #quick-view-tooltip strong { color: var(--primary-color); } /* Títulos en color primario */
         #quick-view-tooltip p { margin-bottom: 0.25rem; }
+        #quick-view-tooltip .fallo-monto-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-top: 1px solid #e5e7eb; padding-top: 0.5rem; margin-top: 0.5rem;
+        }
         #quick-view-tooltip .monto-highlight { 
             font-size: 1.1rem; font-weight: 700; color: var(--primary-color); 
-            text-align: right; border-top: 1px solid #e5e7eb; padding-top: 0.5rem; margin-top: 0.5rem;
+            text-align: right;
         }
 
         /* Estilo para resaltar el texto de búsqueda */
@@ -3736,14 +3742,16 @@
         
                 // Construcción del contenido del tooltip usando la función auxiliar
                 quickViewTooltip.innerHTML = `
-                    <p><strong>Dependencia:</strong> ${truncateText(dependencia, 80)}</p>
-                    <p><strong>Proyecto:</strong> ${truncateText(proyecto, 80)}</p>
-                    <p><strong>Nombre:</strong> ${truncateText(nombre, 80)}</p>
-                    <p><strong>Procedimiento:</strong> ${displayValue(truncateText(procedimiento, 80))}</p>
-                    <p><strong>Tipo:</strong> ${displayValue(truncateText(tipo, 80))}</p>
-                    <p><strong>Ganador:</strong> ${displayValue(truncateText(ganador, 80))}</p>
-                    <p class="text-sm text-gray-500 mt-2"><strong>Fallo:</strong> ${displayValue(fallo, formatLongDate)}</p>
-                    <div class="monto-highlight">${displayValue(monto)}</div>
+                    <p><strong>Dependencia:</strong> ${truncateText(dependencia, 100)}</p>
+                    <p><strong>Proyecto:</strong> ${truncateText(proyecto, 100)}</p>
+                    <p><strong>Nombre:</strong> ${truncateText(nombre, 100)}</p>
+                    <p><strong>Procedimiento:</strong> ${displayValue(truncateText(procedimiento, 100))}</p>
+                    <p><strong>Tipo:</strong> ${displayValue(truncateText(tipo, 100))}</p>
+                    <p><strong>Ganador:</strong> ${displayValue(truncateText(ganador, 100))}</p>
+                    <div class="fallo-monto-container">
+                        <p class="text-sm text-gray-500 m-0"><strong>Fallo:</strong> ${displayValue(fallo, formatLongDate)}</p>
+                        <div class="monto-highlight">${displayValue(monto)}</div>
+                    </div>
                 `;
         
                 quickViewTooltip.classList.add('visible');
