@@ -3681,8 +3681,17 @@
                 const dataToExport = prepareExportData(filteredData);
                 const ws = XLSX.utils.json_to_sheet(dataToExport, { header: exportHeaders });
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Histórico Filtrado");
-                XLSX.writeFile(wb, "licitaciones_historicas.xlsx");
+                XLSX.utils.book_append_sheet(wb, ws, "Licitaciones");
+                
+                // Generar nombre de archivo con fecha actual
+                const today = new Date();
+                const day = String(today.getDate()).padStart(2, '0');
+                const month = String(today.getMonth() + 1).padStart(2, '0'); // Enero es 0
+                const year = today.getFullYear();
+                const formattedDate = `${day}-${month}-${year}`;
+                const fileName = `Seguimiento de Licitaciones - ${formattedDate}.xlsx`;
+
+                XLSX.writeFile(wb, fileName);
             });
             
             closeWebviewBtn.addEventListener('click', () => {
