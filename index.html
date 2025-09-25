@@ -22,8 +22,8 @@
     <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- js-xlsx para leer archivos de Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- xlsx-js-style para leer y dar formato a archivos de Excel -->
+    <script src="https://unpkg.com/xlsx-js-style/dist/xlsx.min.js"></script>
     
     <!-- Select2 for searchable dropdown -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -1685,10 +1685,10 @@
                 row.dataset.dependencia = licitacionItem.siglasDependencia || 'N/A';
                 row.dataset.expediente = licitacionItem.codigoExpediente || 'N/A';
                 row.dataset.apertura = formatDate(licitacionItem.fechaPresentacionApertura);
-                row.dataset.fallo = licitacionItem.fechaFallo || ''; // Guardar fecha en formato YYYY-MM-DD
-                row.dataset.procedimiento = licitacionItem.procedimientoContratacion || '';
-                row.dataset.tipo = licitacionItem.tipo || '';
-                row.dataset.ganador = licitacionItem.ganadorLicitacion || '';
+                row.dataset.fallo = licitacionItem.fechaFallo || 'N/A'; // Guardar fecha en formato YYYY-MM-DD
+                row.dataset.procedimiento = licitacionItem.procedimientoContratacion || 'N/A';
+                row.dataset.tipo = licitacionItem.tipo || 'N/A';
+                row.dataset.ganador = licitacionItem.ganadorLicitacion || 'N/A';
                 row.dataset.monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
                 
                 const linkCell = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM)
@@ -3255,26 +3255,156 @@
         ];
 
         function prepareExportData(data) {
-            return data.map((licitacionItem, index) => ({
-                "No.": index + 1, 
-                "Proyecto": licitacionItem.proyecto || "",
-                "Nombre": licitacionItem.nombre || "",
-                "Descripción": licitacionItem.descripcion || "",
-                "Generalidades": licitacionItem.generalidades || "",
-                "Siglas Dependencia": licitacionItem.siglasDependencia || "",
-                "Código Expediente": licitacionItem.codigoExpediente || "",
-                "Procedimiento": licitacionItem.procedimientoContratacion || "",
-                "Tipo": licitacionItem.tipo || "",
-                "Año Publicación": licitacionItem.anoPublicacion || "",
-                "Fecha Apertura": formatDate(licitacionItem.fechaPresentacionApertura) || "",
-                "Fecha Fallo": formatDate(licitacionItem.fechaFallo) || "",
-                "Fecha Estimada Inicio": formatDate(licitacionItem.fechaEstimadaInicio) || "",
-                "Participantes": licitacionItem.registradosInteres || "",
-                "Licitantes": licitacionItem.nombreLicitantes || "",
-                "Ganador": licitacionItem.ganadorLicitacion || "",
-                "Monto": licitacionItem.monto ? Number(licitacionItem.monto) : "", // Exportar como número para Excel
-                "Link Compras XM": licitacionItem.linkComprasXM || ""
-            }));
+            return data.map((licitacionItem, index) => {
+                const fallback = (value) => value || "N/A";
+                return {
+                    "No.": index + 1,
+                    "Proyecto": fallback(licitacionItem.proyecto),
+                    "Nombre": fallback(licitacionItem.nombre),
+                    "Descripción": fallback(licitacionItem.descripcion),
+                    "Generalidades": fallback(licitacionItem.generalidades),
+                    "Siglas Dependencia": fallback(licitacionItem.siglasDependencia),
+                    "Código Expediente": fallback(licitacionItem.codigoExpediente),
+                    "Procedimiento": fallback(licitacionItem.procedimientoContratacion),
+                    "Tipo": fallback(licitacionItem.tipo),
+                    "Año Publicación": fallback(licitacionItem.anoPublicacion),
+                    "Fecha Apertura": fallback(formatDate(licitacionItem.fechaPresentacionApertura)),
+                    "Fecha Fallo": fallback(formatDate(licitacionItem.fechaFallo)),
+                    "Fecha Estimada Inicio": fallback(formatDate(licitacionItem.fechaEstimadaInicio)),
+                    "Participantes": fallback(licitacionItem.registradosInteres),
+                    "Licitantes": fallback(licitacionItem.nombreLicitantes),
+                    "Ganador": fallback(licitacionItem.ganadorLicitacion),
+                    "Monto": licitacionItem.monto ? Number(licitacionItem.monto) : "N/A", // Exportar como número o "N/A"
+                    "Link Compras XM": fallback(licitacionItem.linkComprasXM)
+                };
+            });
+        }
+
+        /**
+         * Aplica formato profesional a una hoja de cálculo de Excel antes de descargarla.
+         * @param {object} ws - La hoja de cálculo (worksheet) de la librería XLSX.
+         * @param {Array<object>} data - Los datos que se van a exportar, para calcular dimensiones.
+         */
+        function applyExcelFormatting(ws, data) {
+            // 1. Definir estilos
+            const fontStyle = { name: "Noto Sans", sz: 11 };
+            const borderStyle = { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } };
+
+            const titleStyle = {
+                font: { ...fontStyle, bold: true, sz: 12, color: { rgb: "000000" } }, // Fuente negra
+                alignment: { vertical: "center" }
+            };
+
+            const totalAmountStyle = {
+                font: { ...fontStyle, bold: true, color: { rgb: "333333" } },
+                fill: { fgColor: { rgb: "FFD700" } }, // Fondo dorado/amarillo llamativo
+                alignment: { vertical: "center", horizontal: "right" },
+                numFmt: "$#,##0.00" // Formato de moneda
+            };
+
+            const headerStyle = {
+                font: { ...fontStyle, bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "1E5B4F" } }, // Color primario de la app
+                alignment: { horizontal: "center", vertical: "center" },
+                border: borderStyle
+            };
+
+            const cellStyle = {
+                font: fontStyle,
+                border: borderStyle
+            };
+
+            const centeredCellStyle = {
+                ...cellStyle,
+                alignment: { horizontal: "center", vertical: "center" }
+            };
+
+            const rightAlignedCellStyle = {
+                ...cellStyle,
+                alignment: { horizontal: "right", vertical: "center" }
+            };
+
+            const currencyCellStyle = {
+                ...rightAlignedCellStyle,
+                numFmt: "$#,##0.00"
+            };
+
+            // 2. Añadir fila de título en la parte superior
+            const today = new Date();
+            const longDate = today.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const titleText = `Seguimiento de Licitaciones de Proyectos Ferroviarios al ${longDate}`;
+            
+            // Insertar el título en A1. La hoja ya viene con los datos y encabezados.
+            XLSX.utils.sheet_add_aoa(ws, [[titleText]], { origin: "A1" }); // El título va en la celda A1
+
+            // 3. Calcular y añadir la suma de montos en la celda Q1
+            const numCols = exportHeaders.length;
+            const montoColIndex = exportHeaders.indexOf("Monto");
+            if (montoColIndex !== -1) {
+                const totalMonto = data.reduce((sum, row) => sum + (Number(row.Monto) || 0), 0);
+                const totalCellRef = XLSX.utils.encode_cell({ r: 0, c: montoColIndex -1 }); // Celda P1 para la etiqueta
+                const totalValueCellRef = XLSX.utils.encode_cell({ r: 0, c: montoColIndex }); // Celda Q1 para el valor
+                
+                XLSX.utils.sheet_add_aoa(ws, [["Monto Total:"]], { origin: totalCellRef });
+                XLSX.utils.sheet_add_aoa(ws, [[totalMonto]], { origin: totalValueCellRef });
+                
+                ws[totalValueCellRef].s = totalAmountStyle;
+                ws[totalCellRef].s = { font: { bold: true }, alignment: { horizontal: "right", vertical: "center" } };
+            }
+
+            // 4. Aplicar estilos y ajustar dimensiones
+            const numRows = data.length;
+
+            // Aplicar altura a la fila del título
+            if (!ws['!rows']) ws['!rows'] = [];
+            ws['!rows'][0] = { hpt: 30 }; // Altura en puntos
+
+            // Aplicar altura a la fila de encabezados
+            ws['!rows'][1] = { hpt: 20 }; // Fila 2 (índice 1) para los encabezados
+
+            // Definir columnas con alineación especial
+            const centeredColumns = ["No.", "Código Expediente", "Tipo", "Año Publicación", "Fecha Apertura", "Fecha Fallo", "Fecha Estimada Inicio"];
+            const centeredColumnIndices = centeredColumns.map(header => exportHeaders.indexOf(header));
+            const montoColumnIndex = exportHeaders.indexOf("Monto");
+
+            // Recorrer y aplicar estilos a encabezados y celdas de datos
+            for (let R = 1; R <= numRows + 1; ++R) { // El bucle empieza en la fila de encabezados (R=1, que es la Fila 2 en Excel)
+                for (let C = 0; C < numCols; ++C) {
+                    const cell_address = { c: C, r: R };
+                    const cell_ref = XLSX.utils.encode_cell(cell_address);
+                    if (!ws[cell_ref]) continue;
+
+                    if (R === 1) { // Fila de encabezados (Fila 2 en Excel)
+                        ws[cell_ref].s = headerStyle;
+                    } else { // Filas de datos
+                        if (centeredColumnIndices.includes(C)) {
+                            ws[cell_ref].s = centeredCellStyle;
+                        } else if (C === montoColumnIndex) {
+                            // Si el valor es un número, aplicar formato de moneda. Si no (ej. "N/A"), solo alinear a la derecha.
+                            if (typeof ws[cell_ref].v === 'number') {
+                                ws[cell_ref].s = currencyCellStyle;
+                            } else {
+                                ws[cell_ref].s = rightAlignedCellStyle;
+                            }
+                        } else {
+                            ws[cell_ref].s = cellStyle;
+                        }
+                    }
+                }
+            }
+            
+            // Aplicar estilo al título (celda A1) y fusionar celdas
+            if (ws['A1']) {
+                ws['A1'].s = titleStyle;
+            }
+
+            // 5. Ajustar el ancho de las columnas automáticamente
+            ws['!cols'] = [
+                { wch: 5 }, // Columna A (No.)
+                ...Array(exportHeaders.length - 1).fill({ wpx: 130 }) // Resto de columnas
+            ];
+
+            return ws;
         }
 
         /**
@@ -3381,12 +3511,6 @@
                 licitacionForm.reset();
                 $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion').val(null).trigger('change');
 
-                // Establecer la fecha de hoy DESPUÉS de resetear el formulario
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('licitacion-fechaPresentacionApertura').value = today;
-                document.getElementById('licitacion-fechaFallo').value = today;
-                document.getElementById('licitacion-fechaEstimadaInicio').value = today;
-                
                 openModalWithFocus(licitacionModal, document.getElementById('licitacion-proyecto'));
             });
             
@@ -3679,10 +3803,19 @@
 
                 if (filteredData.length === 0) return showAlert("No hay datos en la tabla para descargar.", "warning");
                 const dataToExport = prepareExportData(filteredData);
-                const ws = XLSX.utils.json_to_sheet(dataToExport, { header: exportHeaders });
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Licitaciones");
                 
+                // Crear la hoja de cálculo directamente con los datos y encabezados, pero dejando espacio para el título.
+                // 1. Crear un array de arrays, empezando con los encabezados.
+                const sheetData = [exportHeaders];
+                // 2. Añadir los datos de cada fila.
+                dataToExport.forEach(item => sheetData.push(Object.values(item)));
+                // 3. Crear la hoja a partir de este array, insertándola desde la celda A2.
+                const ws = XLSX.utils.aoa_to_sheet(sheetData, { origin: "A2" });
+
+                // Aplicar todo el formato
+                applyExcelFormatting(ws, dataToExport); // Llamada corregida, sin reasignación
+
+                const wb = XLSX.utils.book_new();
                 // Generar nombre de archivo con fecha actual
                 const today = new Date();
                 const day = String(today.getDate()).padStart(2, '0');
@@ -3690,6 +3823,8 @@
                 const year = today.getFullYear();
                 const formattedDate = `${day}-${month}-${year}`;
                 const fileName = `Seguimiento de Licitaciones - ${formattedDate}.xlsx`;
+
+                XLSX.utils.book_append_sheet(wb, ws, "Seguimiento de Licitaciones");
 
                 XLSX.writeFile(wb, fileName);
             });
