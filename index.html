@@ -696,7 +696,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Radar de Fechas de Fallo</h2>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                         <!-- Semana -2 -->
                         <div id="fallo-indicator-minus-2" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
                             <div class="bg-secondary/10 p-2 rounded-full"><i class="fa-solid fa-angles-left text-secondary text-xl"></i></div>
@@ -716,6 +716,11 @@
                         <div id="fallo-indicator-plus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
                             <div class="bg-accent/10 p-2 rounded-full"><i class="fa-solid fa-angle-right text-accent text-xl"></i></div>
                             <div><p id="fallo-label-plus-1" class="text-sm text-slate-500">Fallo (Semana +1)</p><p id="fallo-count-plus-1" class="text-2xl font-bold text-accent">0</p></div>
+                        </div>
+                        <!-- Semana +2 -->
+                        <div id="fallo-indicator-plus-2" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
+                            <div class="bg-accent/10 p-2 rounded-full"><i class="fa-solid fa-angles-right text-accent text-xl"></i></div>
+                            <div><p id="fallo-label-plus-2" class="text-sm text-slate-500">Fallo (Semana +2)</p><p id="fallo-count-plus-2" class="text-2xl font-bold text-accent">0</p></div>
                         </div>
                     </div>
                 </section>
@@ -1572,49 +1577,30 @@
         }
 
         /**
-         * Calcula períodos mensuales fijos (1-7, 8-14, 15-21, 22-fin) relativos a la fecha actual.
-         * @param {number} offset - El desplazamiento de períodos (-2, -1, 0, 1, etc.).
+         * Calcula semanas tradicionales (Dom-Sáb) relativas a la fecha actual.
+         * @param {number} offset - El desplazamiento de semanas (-2, -1, 0, 1, etc.).
          * @returns {{start: Date, end: Date, label: string}} Objeto con las fechas de inicio/fin y una etiqueta descriptiva.
          */
         function getMonthlyPeriod(offset = 0) {
             const today = new Date();
-            const currentYear = today.getFullYear();
-            const currentMonth = today.getMonth(); // 0-11
-            const currentDay = today.getDate();
+            // Nos movemos a la semana objetivo. El offset ahora representa semanas completas.
+            today.setDate(today.getDate() + (offset * 7));
 
-            const periodBoundaries = [1, 8, 15, 22];
-            let currentPeriodIndex = periodBoundaries.findIndex(day => currentDay < day) - 1;
-            if (currentPeriodIndex === -2) { // Si es >= 22
-                currentPeriodIndex = 3;
-            }
+            // Calculamos el inicio de la semana (domingo).
+            // getDay() devuelve 0 para domingo, 1 para lunes, etc.
+            const dayOfWeek = today.getDay();
+            const startDate = new Date(today);
+            startDate.setDate(today.getDate() - dayOfWeek);
+            startDate.setUTCHours(0, 0, 0, 0); // Normalizar al inicio del día UTC
 
-            // El índice global del período (considerando 4 períodos por mes)
-            let globalPeriodIndex = currentMonth * 4 + currentPeriodIndex + offset;
-
-            // Calcular el año, mes y período de destino
-            const targetYear = currentYear + Math.floor(globalPeriodIndex / 48);
-            globalPeriodIndex %= 48;
-            if (globalPeriodIndex < 0) globalPeriodIndex += 48;
-
-            const targetMonth = Math.floor(globalPeriodIndex / 4);
-            const targetPeriodIndex = globalPeriodIndex % 4;
-
-            // Calcular las fechas de inicio y fin del período de destino
-            const startDay = periodBoundaries[targetPeriodIndex];
-            let endDay;
-
-            if (targetPeriodIndex < 3) {
-                endDay = periodBoundaries[targetPeriodIndex + 1] - 1;
-            } else { // Último período del mes
-                // El día 0 del siguiente mes nos da el último día del mes actual
-                endDay = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
-            }
-
-            const startDate = new Date(Date.UTC(targetYear, targetMonth, startDay));
-            const endDate = new Date(Date.UTC(targetYear, targetMonth, endDay, 23, 59, 59, 999));
+            // Calculamos el fin de la semana (sábado).
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+            endDate.setUTCHours(23, 59, 59, 999); // Normalizar al final del día UTC
 
             // Formatear la etiqueta
-            const options = { month: 'short', day: 'numeric', timeZone: 'UTC' };
+            // Usamos 'short' para el día de la semana para que sea más claro (Dom, Sáb)
+            const options = { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' };
             const startLabel = startDate.toLocaleDateString('es-ES', options);
             const endLabel = endDate.toLocaleDateString('es-ES', options);
             const label = `${startLabel} - ${endLabel}`;
@@ -1631,9 +1617,10 @@
                 minus1: getMonthlyPeriod(-1),
                 current: getMonthlyPeriod(0),
                 plus1: getMonthlyPeriod(1),
+                plus2: getMonthlyPeriod(2),
             };
 
-            const counts = { minus2: 0, minus1: 0, current: 0, plus1: 0 };
+            const counts = { minus2: 0, minus1: 0, current: 0, plus1: 0, plus2: 0 };
 
             historicalLicitaciones.forEach(licitacion => {
                 if (licitacion.fechaFallo) {
@@ -1646,19 +1633,22 @@
                         else if (falloDate >= weeks.minus1.start && falloDate <= weeks.minus1.end) counts.minus1++;
                         else if (falloDate >= weeks.current.start && falloDate <= weeks.current.end) counts.current++;
                         else if (falloDate >= weeks.plus1.start && falloDate <= weeks.plus1.end) counts.plus1++;
+                        else if (falloDate >= weeks.plus2.start && falloDate <= weeks.plus2.end) counts.plus2++;
                     } catch (e) { /* Ignorar fechas inválidas */ }
                 }
             });
 
             document.getElementById('fallo-label-minus-2').textContent = weeks.minus2.label;
             document.getElementById('fallo-label-minus-1').textContent = weeks.minus1.label;
-            document.getElementById('fallo-label-current').textContent = `${weeks.current.label} (Semana Actual)`;
+            document.getElementById('fallo-label-current').innerHTML = `${weeks.current.label} <span class="font-normal text-slate-400">(Actual)</span>`;
             document.getElementById('fallo-label-plus-1').textContent = weeks.plus1.label;
+            document.getElementById('fallo-label-plus-2').textContent = weeks.plus2.label;
 
             document.getElementById('fallo-count-minus-2').textContent = counts.minus2;
             document.getElementById('fallo-count-minus-1').textContent = counts.minus1;
             document.getElementById('fallo-count-current').textContent = counts.current;
             document.getElementById('fallo-count-plus-1').textContent = counts.plus1;
+            document.getElementById('fallo-count-plus-2').textContent = counts.plus2;
 
             // Una vez actualizados los contadores, revisamos si mostramos la alerta inicial
             // Se usa un setTimeout para asegurar que el resto de la UI se haya cargado
@@ -3460,6 +3450,12 @@
                     target: 'fallo-indicator-plus-1'
                 });
             }
+            if (counts.plus2 > 0) {
+                alerts.push({
+                    message: `Hay <strong>${counts.plus2}</strong> licitacion(es) con fallo en 2 semanas.`,
+                    target: 'fallo-indicator-plus-2'
+                });
+            }
 
             if (alerts.length > 0) {
                 alerts.forEach(alert => {
@@ -3949,7 +3945,8 @@
                 'minus-2': document.getElementById('fallo-indicator-minus-2'),
                 'minus-1': document.getElementById('fallo-indicator-minus-1'),
                 'current': document.getElementById('fallo-indicator-current'),
-                'plus-1': document.getElementById('fallo-indicator-plus-1')
+                'plus-1': document.getElementById('fallo-indicator-plus-1'),
+                'plus-2': document.getElementById('fallo-indicator-plus-2')
             };
 
             Object.entries(indicators).forEach(([key, element]) => {
@@ -3974,7 +3971,15 @@
                         }
                     } else {
                         // Activar nuevo filtro
-                        const period = getMonthlyPeriod(key === 'minus-2' ? -2 : key === 'minus-1' ? -1 : key === 'current' ? 0 : 1);
+                        const offsetMap = {
+                            'minus-2': -2,
+                            'minus-1': -1,
+                            'current': 0,
+                            'plus-1': 1,
+                            'plus-2': 2
+                        };
+                        const offset = offsetMap[key];
+                        const period = getMonthlyPeriod(offset);
                         activeFalloDashboardFilter = { key: key, start: period.start, end: period.end };
                         element.classList.add('active-filter');
                     }
