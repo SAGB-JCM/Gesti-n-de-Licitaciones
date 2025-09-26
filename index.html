@@ -708,9 +708,15 @@
                             <div><p id="fallo-label-minus-1" class="text-sm text-slate-500">Fallo (Semana -1)</p><p id="fallo-count-minus-1" class="text-2xl font-bold text-secondary">0</p></div>
                         </div>
                         <!-- Semana Actual -->
-                        <div id="fallo-indicator-current" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200 current-week-highlight" title="Hacer clic para Ver">
-                            <div class="bg-primary/10 p-2 rounded-full"><i class="fa-solid fa-calendar-week text-primary text-xl"></i></div>
-                            <div><p id="fallo-label-current" class="text-sm text-slate-500 font-medium">Semana Actual</p><p id="fallo-count-current" class="text-2xl font-bold text-primary">0</p></div>
+                        <div id="fallo-indicator-current" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 transition-all duration-200 current-week-highlight">
+                            <div id="fallo-date-picker-trigger" class="relative bg-primary/10 p-2 rounded-full cursor-pointer" title="Seleccionar otra fecha">
+                                <i id="fallo-current-icon" class="fa-solid fa-calendar-week text-primary text-xl transition-colors"></i>
+                                <input type="date" id="fallo-date-picker" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
+                            </div>
+                            <div id="fallo-current-content" class="cursor-pointer" title="Hacer clic para Ver">
+                                <p id="fallo-label-current" class="text-sm text-slate-500 font-medium">Semana Actual</p>
+                                <p id="fallo-count-current" class="text-2xl font-bold text-primary">0</p>
+                            </div>
                         </div>
                         <!-- Semana +1 -->
                         <div id="fallo-indicator-plus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
@@ -1390,6 +1396,7 @@
         let currentFilterDropdown = null;
         let activeSelectElement = null;
         let openModalCount = 0; // Contador para modales anidados
+        let selectedBaseDate = null; // Para el selector de fecha dinámico del radar
         let activeFalloDashboardFilter = null; // Para el filtro del radar de fallo
 
         // =============================================
@@ -1578,14 +1585,15 @@
 
         /**
          * Calcula semanas tradicionales (Dom-Sáb) relativas a la fecha actual.
+         * @param {Date | string | null} baseDate - La fecha de referencia para el cálculo. Si es null, usa la fecha actual.
          * @param {number} offset - El desplazamiento de semanas (-2, -1, 0, 1, etc.).
          * @returns {{start: Date, end: Date, label: string}} Objeto con las fechas de inicio/fin y una etiqueta descriptiva.
          */
-        function getMonthlyPeriod(offset = 0) {
-            const today = new Date();
+        function getMonthlyPeriod(offset = 0, baseDate = null) {
+            const today = baseDate ? new Date(baseDate + 'T12:00:00Z') : new Date(); // Usar mediodía para evitar problemas de zona horaria
             // Nos movemos a la semana objetivo. El offset ahora representa semanas completas.
             today.setDate(today.getDate() + (offset * 7));
-
+        
             // Calculamos el inicio de la semana (domingo).
             // getDay() devuelve 0 para domingo, 1 para lunes, etc.
             const dayOfWeek = today.getDay();
@@ -1610,14 +1618,15 @@
 
         /**
          * Actualiza el dashboard de fechas de fallo basándose en los datos del histórico.
+         * @param {Date | string | null} baseDate - La fecha de referencia. Si es null, usa la fecha actual.
          */
-        function updateFalloDashboard() {
-            const weeks = { // Mantengo el nombre de la variable para un diff mínimo, aunque ahora son períodos
-                minus2: getMonthlyPeriod(-2),
-                minus1: getMonthlyPeriod(-1),
-                current: getMonthlyPeriod(0),
-                plus1: getMonthlyPeriod(1),
-                plus2: getMonthlyPeriod(2),
+        function updateFalloDashboard(baseDate = null) {
+            const weeks = {
+                minus2: getMonthlyPeriod(-2, baseDate),
+                minus1: getMonthlyPeriod(-1, baseDate),
+                current: getMonthlyPeriod(0, baseDate),
+                plus1: getMonthlyPeriod(1, baseDate),
+                plus2: getMonthlyPeriod(2, baseDate),
             };
 
             const counts = { minus2: 0, minus1: 0, current: 0, plus1: 0, plus2: 0 };
@@ -1640,7 +1649,15 @@
 
             document.getElementById('fallo-label-minus-2').textContent = weeks.minus2.label;
             document.getElementById('fallo-label-minus-1').textContent = weeks.minus1.label;
-            document.getElementById('fallo-label-current').innerHTML = `${weeks.current.label} <span class="font-normal text-slate-400">(Actual)</span>`;
+            
+            // Actualizar la etiqueta de la semana actual/seleccionada
+            const currentLabelEl = document.getElementById('fallo-label-current');
+            if (baseDate) {
+                currentLabelEl.innerHTML = `${weeks.current.label} <span class="font-normal text-accent">(Seleccionada)</span>`;
+            } else {
+                currentLabelEl.innerHTML = `${weeks.current.label} <span class="font-normal text-slate-400">(Actual)</span>`;
+            }
+
             document.getElementById('fallo-label-plus-1').textContent = weeks.plus1.label;
             document.getElementById('fallo-label-plus-2').textContent = weeks.plus2.label;
 
@@ -3044,7 +3061,7 @@
                     if (tabName === 'reportes') {
                         setTimeout(updateCharts, 50); // Delay para asegurar que el contenedor es visible
                     } else if (tabName === 'historico') {
-                        setTimeout(updateFalloDashboard, 50); // Actualizar el radar al cambiar a la pestaña
+                        setTimeout(() => updateFalloDashboard(selectedBaseDate), 50); // Actualizar el radar al cambiar a la pestaña
                     }
                 }
             });
@@ -3135,8 +3152,8 @@
             historicalLicitacionesCollectionRef.onSnapshot((snapshot) => {
                 historicalLicitaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
-                updateCharts();
-                updateFalloDashboard(); // <-- AÑADIDO: Actualiza el radar al cargar/actualizar datos.
+                updateCharts(); // Actualiza los gráficos de reportes
+                updateFalloDashboard(selectedBaseDate); // Actualiza el radar con la fecha base actual
                 updateDynamicSelectOptions();
             }, (error) => console.error("Error en listener de histórico:", error));
         }
@@ -3940,17 +3957,50 @@
             });
         }
 
+        function setupDynamicDatePicker() {
+            const datePicker = document.getElementById('fallo-date-picker');
+            const currentIcon = document.getElementById('fallo-current-icon');
+
+            // Función para comparar si dos fechas son el mismo día (ignorando la hora)
+            const isSameDay = (date1, date2) =>
+                date1.getFullYear() === date2.getFullYear() &&
+                date1.getMonth() === date2.getMonth() &&
+                date1.getDate() === date2.getDate();
+
+            datePicker.addEventListener('change', (e) => {
+                const newDate = e.target.value;
+                
+                if (!newDate) { // Si el usuario borra la fecha (ej. con el botón 'x' en Chrome)
+                    selectedBaseDate = null;
+                } else {
+                    const chosenDate = new Date(newDate + 'T12:00:00Z');
+                    const today = new Date();
+                    // Si la fecha seleccionada es hoy, trátala como si no hubiera selección.
+                    selectedBaseDate = isSameDay(chosenDate, today) ? null : newDate;
+                }
+
+                // Actualizar el estado visual del icono
+                currentIcon.classList.toggle('text-accent', !!selectedBaseDate);
+                currentIcon.classList.toggle('text-primary', !selectedBaseDate);
+
+                updateFalloDashboard(selectedBaseDate);
+            });
+        }
+
         function setupFalloDashboardFilter() {
             const indicators = {
                 'minus-2': document.getElementById('fallo-indicator-minus-2'),
                 'minus-1': document.getElementById('fallo-indicator-minus-1'),
-                'current': document.getElementById('fallo-indicator-current'),
                 'plus-1': document.getElementById('fallo-indicator-plus-1'),
                 'plus-2': document.getElementById('fallo-indicator-plus-2')
             };
 
+            // El clic en el contenido de la tarjeta actual también debe funcionar
+            const currentContent = document.getElementById('fallo-current-content');
+            indicators['current'] = currentContent; // Usar 'current' como clave para la lógica existente
+
             Object.entries(indicators).forEach(([key, element]) => {
-                element.addEventListener('click', () => {
+                element.addEventListener('click', (e) => {
                     const isDeactivating = activeFalloDashboardFilter && activeFalloDashboardFilter.key === key;
 
                     document.querySelectorAll('.indicator-card').forEach(card => card.classList.remove('active-filter'));
@@ -3979,9 +4029,16 @@
                             'plus-2': 2
                         };
                         const offset = offsetMap[key];
-                        const period = getMonthlyPeriod(offset);
+                        // Usar la fecha base seleccionada para calcular el período del filtro
+                        const period = getMonthlyPeriod(offset, selectedBaseDate);
                         activeFalloDashboardFilter = { key: key, start: period.start, end: period.end };
-                        element.classList.add('active-filter');
+
+                        // El resaltado visual se aplica a la tarjeta contenedora, no solo al texto.
+                        const parentCard = element.closest('.indicator-card');
+                        if (parentCard) {
+                            parentCard.classList.add('active-filter');
+                        }
+
                     }
                     // Re-renderizar la tabla de histórico con el filtro (o sin él)
                     sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
@@ -4059,6 +4116,7 @@
             initializeAppWithAuth();
             setupEventListeners();
             setupFalloDashboardFilter();
+            setupDynamicDatePicker();
 
             // Configurar Select2 para los selects
             $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion, #edit-licitacion-proyecto, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo, #edit-licitacion-anoPublicacion, #edit-licitacion-registradosInteres, #edit-licitacion-nombreLicitantes, #edit-licitacion-ganadorLicitacion').each(function() {
