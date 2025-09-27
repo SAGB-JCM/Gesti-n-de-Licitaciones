@@ -2316,14 +2316,14 @@
         
             return `
                 <div class="multi-details-item">
-                    <div class="details-header">
-                        <div class="flex justify-between items-baseline">
+                    <div class="details-header flex justify-between items-start">
+                        <div>
                            <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
-                           <span class="text-lg font-bold text-slate-400">#${index + 1}</span>
+                            <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
+                            <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
+                            <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
                         </div>
-                        <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
-                        <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
-                        <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
+                        <span class="text-lg font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">${index + 1}</span>
                     </div>
             
                     <div class="details-section">
