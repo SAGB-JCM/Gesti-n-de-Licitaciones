@@ -543,6 +543,19 @@
             color: var(--secondary-color);
         }
 
+        /* Estilos para el modal de múltiples detalles */
+        .multi-details-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .multi-details-item:last-child {
+            margin-bottom: 0;
+        }
+
         /* Clase para bloquear el scroll del body cuando un modal está abierto */
         body.modal-open {
             overflow: hidden;
@@ -735,15 +748,16 @@
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Licitaciones Registradas</h2>
                         <div class="flex items-center space-x-2">
-                            <div id="filtered-total-amount-container" class="text-sm font-medium text-slate-500 mr-4 flex items-center gap-x-2">
-                                <!-- El contenido se generará dinámicamente -->
-                            </div>
-                            <div class="relative w-full">
-                                <input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                                <button id="clear-filter-btn-historical" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden">
-                                    <i class="fa-solid fa-times-circle"></i>
+                            <div id="filtered-total-amount-container" class="text-sm font-medium text-slate-500 mr-4 flex items-center gap-x-2"></div>
+                            <div class="flex items-center space-x-2">
+                                <button id="view-all-details-btn" class="text-slate-500 hover:text-primary p-2 rounded-lg" title="Ver detalles de todos los resultados visibles">
+                                    <i class="fa-solid fa-eye"></i>
                                 </button>
+                                <div class="relative flex-grow">
+                                    <input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                    <button id="clear-filter-btn-historical" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden"><i class="fa-solid fa-times-circle"></i></button>
+                                </div>
                             </div>
                             <button id="add-licitacion-btn" class="bg-success hover:bg-success-dark text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap">
                                 <i class="fa-solid fa-plus"></i>
@@ -1291,6 +1305,21 @@
         </div>
     </div>
 
+    <div id="multi-details-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
+        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
+            <button id="close-multi-details-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-times-circle fa-lg"></i>
+            </button>
+            <div class="flex items-center space-x-4 mb-6">
+                <img src="https://github.com/SAGB-JCM/Gesti-n-de-Licitaciones/blob/main/icono_licitaciones.png?raw=true" alt="Logo Sistema Licitaciones" class="h-16 w-auto">
+                <h3 class="text-2xl font-bold text-primary">Detalle de Licitaciones Filtradas</h3>
+            </div>
+            <div id="multi-details-content-container" class="licitacion-form-container">
+                <!-- El contenido se generará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // =============================================
         // MÓDULO: Verificación de dependencias
@@ -1369,7 +1398,7 @@
         const historicalLicitacionesCollectionRef = db.collection("historicalLicitaciones");
 
         // Variables de estado de la aplicación        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
-        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
+        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn, multiDetailsModal, closeMultiDetailsModalBtn, multiDetailsContentContainer;
         
         let currentEditIsHistorical = false;
         let quickViewTooltip;
@@ -2248,6 +2277,78 @@
 
             openModal(viewDetailsModal);
         }
+
+        function generateSingleDetailHtml(licitacionItem) {
+            if (!licitacionItem) return '';
+
+            // --- Lógica para la tabla de participantes inteligente ---
+            const interesados = (licitacionItem.registradosInteres || '').split('\n').map(s => s.trim()).filter(Boolean);
+            const licitantes = (licitacionItem.nombreLicitantes || '').split('\n').map(s => s.trim()).filter(Boolean);
+            const ganadores = (licitacionItem.ganadorLicitacion || '').split('\n').map(s => s.trim()).filter(Boolean);
+
+            const maxRows = Math.max(interesados.length, licitantes.length, ganadores.length);
+            let participantesTbody = '';
+
+            if (maxRows === 0) {
+                participantesTbody = `<tr><td>N/A</td><td>N/A</td><td class="highlight-fallo">N/A</td></tr>`;
+            } else {
+                for (let i = 0; i < maxRows; i++) {
+                    participantesTbody += `
+                        <tr>
+                            <td>${interesados[i] || '—'}</td>
+                            <td>${licitantes[i] || '—'}</td>
+                            <td class="highlight-fallo">${ganadores[i] || '—'}</td>
+                        </tr>`;
+                }
+            }
+
+            const sourceLink = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM) 
+                ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline break-all">${licitacionItem.linkComprasXM}</a>` 
+                : `<p class="text-gray-700">${licitacionItem.linkComprasXM || 'N/A'}</p>`;
+        
+            return `
+                <div class="multi-details-item">
+                    <div class="details-header">
+                        <h3 class="project">${licitacionItem.proyecto || 'Proyecto no especificado'}</h3>
+                        <p class="date">${licitacionItem.siglasDependencia || 'Dependencia no especificada'}</p>
+                        <p class="date">Código de expediente: ${licitacionItem.codigoExpediente || 'N/A'}</p>
+                        <p class="date">Fecha de presentación y apertura: ${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</p>
+                    </div>
+            
+                    <div class="details-section">
+                        <h4>Información General de la Licitación</h4>
+                        <table class="details-table"><tbody><tr><th>Nombre</th><td>${licitacionItem.nombre || 'No especificado.'}</td></tr><tr><th>Descripción</th><td class="formatted-content">${formatTextWithLineBreaks(licitacionItem.descripcion)}</td></tr><tr><th>Generalidades del Proyecto</th><td class="formatted-content">${formatTextWithLineBreaks(licitacionItem.generalidades)}</td></tr></tbody></table>
+                    </div>
+
+                    <div class="details-section">
+                        <h4>Detalles de Contratación</h4>
+                        <table class="details-table"><thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th></tr></thead><tbody><tr><td>${licitacionItem.procedimientoContratacion || 'N/A'}</td><td>${licitacionItem.tipo || 'N/A'}</td><td class="highlight-fallo">${licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A'}</td></tr></tbody></table>
+                    </div>
+            
+                    <div class="details-section">
+                        <h4>Cronología del Proceso</h4>
+                        <table class="details-table"><thead><tr><th>Fecha de Presentación y Apertura</th><th>Fecha de Fallo</th><th>Fecha Estimada de Inicio</th></tr></thead><tbody><tr><td>${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</td><td class="highlight-fallo">${formatDate(licitacionItem.fechaFallo) || 'N/A'}</td><td>${formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A'}</td></tr></tbody></table>
+                    </div>
+            
+                    <div class="details-section">
+                        <h4>Participantes en el Proceso</h4>
+                        <table class="details-table equal-cols"><thead><tr><th>Registrados o manifestaron interés</th><th>Nombre de licitantes</th><th>Ganador de la licitación</th></tr></thead><tbody>${participantesTbody}</tbody></table>
+                    </div>
+            
+                    <div class="details-section"><h4>Link de Compras MX</h4>${sourceLink}</div>
+                </div>`;
+        }
+
+        function showMultiDetailsModal() {
+            const filteredData = applyAllFilters(historicalLicitaciones, 'historical');
+            if (filteredData.length === 0) {
+                showAlert("No hay licitaciones en la tabla para mostrar.", "warning");
+                return;
+            }
+            multiDetailsContentContainer.innerHTML = filteredData.map(item => generateSingleDetailHtml(item)).join('');
+            openModal(multiDetailsModal);
+        }
+
         function getTemplateDocRef() {
             return {
                 ref: db.collection('config').doc('wordTemplate_default'),
@@ -3881,6 +3982,12 @@
                 }
             });
 
+            document.getElementById('view-all-details-btn').addEventListener('click', () => {
+                showMultiDetailsModal();
+            });
+
+            closeMultiDetailsModalBtn.addEventListener('click', () => closeModal(multiDetailsModal));
+
             // Eventos para la nueva alerta de fallos
             document.getElementById('close-fallo-alert-btn').addEventListener('click', () => {
                 const container = document.getElementById('fallo-alert-container');
@@ -4109,6 +4216,10 @@
             templateUploadModal = document.getElementById('template-upload-modal');
             closeTemplateUploadModalBtn = document.getElementById('close-template-upload-modal-btn');
             closeDetailsModalBtn = document.getElementById('close-details-modal-btn');
+            multiDetailsModal = document.getElementById('multi-details-modal');
+            closeMultiDetailsModalBtn = document.getElementById('close-multi-details-modal-btn');
+            multiDetailsContentContainer = document.getElementById('multi-details-content-container');
+
             detailsModalContent = document.getElementById('details-modal-content');
 
             quickViewTooltip = document.getElementById('quick-view-tooltip');
