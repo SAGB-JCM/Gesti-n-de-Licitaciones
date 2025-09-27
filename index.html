@@ -2146,8 +2146,12 @@
             });
         }
 
-        function showDetailsModal(licitacionItem) {
+        function showDetailsModal(licitacionItem, isHistorical = false) {
             if (!licitacionItem) return;
+
+            const filterKey = isHistorical ? 'historical' : 'main';
+            const searchInput = document.getElementById(`filter-input-${filterKey}`);
+            const searchText = searchInput ? searchInput.value.trim() : '';
 
             // Ocultar el tooltip de vista rápida al abrir el modal de detalles.
             if (quickViewTooltip) {
@@ -2173,24 +2177,24 @@
                 for (let i = 0; i < maxRows; i++) {
                     participantesTbody += `
                         <tr>
-                            <td>${interesados[i] || '—'}</td>
-                            <td>${licitantes[i] || '—'}</td>
-                            <td class="highlight-fallo">${ganadores[i] || '—'}</td>
+                            <td>${highlightText(interesados[i] || '—', searchText)}</td>
+                            <td>${highlightText(licitantes[i] || '—', searchText)}</td>
+                            <td class="highlight-fallo">${highlightText(ganadores[i] || '—', searchText)}</td>
                         </tr>`;
                 }
             }
             // --- FIN: Lógica para la tabla de participantes inteligente ---
 
             const sourceLink = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM) 
-                ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline break-all">${licitacionItem.linkComprasXM}</a>` 
-                : `<p class="text-gray-700">${licitacionItem.linkComprasXM || 'N/A'}</p>`;
+                ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline break-all">${highlightText(licitacionItem.linkComprasXM, searchText)}</a>` 
+                : `<p class="text-gray-700">${highlightText(licitacionItem.linkComprasXM || 'N/A', searchText)}</p>`;
         
             detailsModalContent.innerHTML = `
                 <div class="details-header">
-                    <h3 class="project">${licitacionItem.proyecto || 'Proyecto no especificado'}</h3>
-                    <p class="date">${licitacionItem.siglasDependencia || 'Dependencia no especificada'}</p>
-                    <p class="date">Código de expediente: ${licitacionItem.codigoExpediente || 'N/A'}</p>
-                    <p class="date">Fecha de presentación y apertura: ${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</p>
+                    <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
+                    <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
+                    <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
+                    <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
                 </div>
         
                 <div class="details-section">
@@ -2199,15 +2203,15 @@
                         <tbody>
                             <tr>
                                 <th>Nombre</th>
-                                <td>${licitacionItem.nombre || 'No especificado.'}</td>
+                                <td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td>
                             </tr>
                             <tr>
                                 <th>Descripción</th>
-                                <td class="formatted-content">${formatTextWithLineBreaks(licitacionItem.descripcion)}</td>
+                                <td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.descripcion), searchText)}</td>
                             </tr>
                             <tr>
                                 <th>Generalidades del Proyecto</th>
-                                <td class="formatted-content">${formatTextWithLineBreaks(licitacionItem.generalidades)}</td>
+                                <td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.generalidades), searchText)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -2225,9 +2229,9 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>${licitacionItem.procedimientoContratacion || 'N/A'}</td>
-                                <td>${licitacionItem.tipo || 'N/A'}</td>
-                                <td class="highlight-fallo">${licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A'}</td>
+                                <td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td>
+                                <td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td>
+                                <td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -2245,9 +2249,9 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</td>
-                                <td class="highlight-fallo">${formatDate(licitacionItem.fechaFallo) || 'N/A'}</td> 
-                                <td>${formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A'}</td>
+                                <td>${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</td>
+                                <td class="highlight-fallo">${highlightText(formatDate(licitacionItem.fechaFallo) || 'N/A', searchText)}</td> 
+                                <td>${highlightText(formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A', searchText)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -2278,8 +2282,12 @@
             openModal(viewDetailsModal);
         }
 
-        function generateSingleDetailHtml(licitacionItem) {
+        function generateSingleDetailHtml(licitacionItem, isHistorical = false) {
             if (!licitacionItem) return '';
+
+            const filterKey = isHistorical ? 'historical' : 'main';
+            const searchInput = document.getElementById(`filter-input-${filterKey}`);
+            const searchText = searchInput ? searchInput.value.trim() : '';
 
             // --- Lógica para la tabla de participantes inteligente ---
             const interesados = (licitacionItem.registradosInteres || '').split('\n').map(s => s.trim()).filter(Boolean);
@@ -2295,39 +2303,39 @@
                 for (let i = 0; i < maxRows; i++) {
                     participantesTbody += `
                         <tr>
-                            <td>${interesados[i] || '—'}</td>
-                            <td>${licitantes[i] || '—'}</td>
-                            <td class="highlight-fallo">${ganadores[i] || '—'}</td>
+                            <td>${highlightText(interesados[i] || '—', searchText)}</td>
+                            <td>${highlightText(licitantes[i] || '—', searchText)}</td>
+                            <td class="highlight-fallo">${highlightText(ganadores[i] || '—', searchText)}</td>
                         </tr>`;
                 }
             }
 
             const sourceLink = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM) 
-                ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline break-all">${licitacionItem.linkComprasXM}</a>` 
-                : `<p class="text-gray-700">${licitacionItem.linkComprasXM || 'N/A'}</p>`;
+                ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline break-all">${highlightText(licitacionItem.linkComprasXM, searchText)}</a>` 
+                : `<p class="text-gray-700">${highlightText(licitacionItem.linkComprasXM || 'N/A', searchText)}</p>`;
         
             return `
                 <div class="multi-details-item">
                     <div class="details-header">
-                        <h3 class="project">${licitacionItem.proyecto || 'Proyecto no especificado'}</h3>
-                        <p class="date">${licitacionItem.siglasDependencia || 'Dependencia no especificada'}</p>
-                        <p class="date">Código de expediente: ${licitacionItem.codigoExpediente || 'N/A'}</p>
-                        <p class="date">Fecha de presentación y apertura: ${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</p>
+                        <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
+                        <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
+                        <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
+                        <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
                     </div>
             
                     <div class="details-section">
                         <h4>Información General de la Licitación</h4>
-                        <table class="details-table"><tbody><tr><th>Nombre</th><td>${licitacionItem.nombre || 'No especificado.'}</td></tr><tr><th>Descripción</th><td class="formatted-content">${formatTextWithLineBreaks(licitacionItem.descripcion)}</td></tr><tr><th>Generalidades del Proyecto</th><td class="formatted-content">${formatTextWithLineBreaks(licitacionItem.generalidades)}</td></tr></tbody></table>
+                        <table class="details-table"><tbody><tr><th>Nombre</th><td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td></tr><tr><th>Descripción</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.descripcion), searchText)}</td></tr><tr><th>Generalidades del Proyecto</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.generalidades), searchText)}</td></tr></tbody></table>
                     </div>
 
                     <div class="details-section">
                         <h4>Detalles de Contratación</h4>
-                        <table class="details-table"><thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th></tr></thead><tbody><tr><td>${licitacionItem.procedimientoContratacion || 'N/A'}</td><td>${licitacionItem.tipo || 'N/A'}</td><td class="highlight-fallo">${licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A'}</td></tr></tbody></table>
+                        <table class="details-table"><thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th></tr></thead><tbody><tr><td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td><td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td></tr></tbody></table>
                     </div>
             
                     <div class="details-section">
                         <h4>Cronología del Proceso</h4>
-                        <table class="details-table"><thead><tr><th>Fecha de Presentación y Apertura</th><th>Fecha de Fallo</th><th>Fecha Estimada de Inicio</th></tr></thead><tbody><tr><td>${formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A'}</td><td class="highlight-fallo">${formatDate(licitacionItem.fechaFallo) || 'N/A'}</td><td>${formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A'}</td></tr></tbody></table>
+                        <table class="details-table"><thead><tr><th>Fecha de Presentación y Apertura</th><th>Fecha de Fallo</th><th>Fecha Estimada de Inicio</th></tr></thead><tbody><tr><td>${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(formatDate(licitacionItem.fechaFallo) || 'N/A', searchText)}</td><td>${highlightText(formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A', searchText)}</td></tr></tbody></table>
                     </div>
             
                     <div class="details-section">
@@ -2339,13 +2347,13 @@
                 </div>`;
         }
 
-        function showMultiDetailsModal() {
+        function showMultiDetailsModal(isHistorical = true) {
             const filteredData = applyAllFilters(historicalLicitaciones, 'historical');
             if (filteredData.length === 0) {
                 showAlert("No hay licitaciones en la tabla para mostrar.", "warning");
                 return;
             }
-            multiDetailsContentContainer.innerHTML = filteredData.map(item => generateSingleDetailHtml(item)).join('');
+            multiDetailsContentContainer.innerHTML = filteredData.map(item => generateSingleDetailHtml(item, isHistorical)).join('');
             openModal(multiDetailsModal);
         }
 
@@ -3609,7 +3617,7 @@
 
             const data = isHistorical ? historicalLicitaciones : licitaciones;
             const licitacionItem = data.find(item => item.id === licitacionId);
-            showDetailsModal(licitacionItem);
+            showDetailsModal(licitacionItem, isHistorical);
         }
 
         function handleGenerateDocClick(button) {
@@ -3983,7 +3991,7 @@
             });
 
             document.getElementById('view-all-details-btn').addEventListener('click', () => {
-                showMultiDetailsModal();
+                showMultiDetailsModal(true);
             });
 
             closeMultiDetailsModalBtn.addEventListener('click', () => closeModal(multiDetailsModal));
