@@ -3328,10 +3328,15 @@
             dynamicTableBody.innerHTML = '';
             dynamicTableHeader.textContent = selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1);
             
-            let totalCount = 0;
+            // --- INICIO DE LA MEJORA: Ordenar los datos por monto descendente ---
+            const sortedStats = Object.entries(variableStats).sort(([, a], [, b]) => b.count - a.count);
+            // --- FIN DE LA MEJORA ---
+
+            let totalCount = 0; // Usar los datos ordenados (sortedStats) para renderizar la tabla
             let totalSum = 0;
 
-            Object.entries(variableStats).forEach(([value, stats]) => {
+            // Usar los datos ordenados (sortedStats) para renderizar la tabla
+            sortedStats.forEach(([value, stats]) => {
                 totalCount += stats.count;
                 totalSum += stats.sum;
 
@@ -3358,8 +3363,9 @@
             // Verificación robusta: Asegurarse de que dynamicChart es una instancia de Chart antes de destruirla.
             if (dynamicChart && typeof dynamicChart.destroy === 'function') dynamicChart.destroy();
             
-            const labels = Object.keys(variableStats);
-            const chartData = Object.values(variableStats).map(stat => stat.count);
+            // Usar los datos ordenados para la gráfica
+            const labels = sortedStats.map(([value]) => truncateText(value, 25));
+            const chartData = sortedStats.map(([, stats]) => stats.count);
             
             dynamicChart = new Chart(dynamicChartCanvas, {
                 type: 'bar',
@@ -3389,14 +3395,12 @@
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.parsed.y;
-                                    const category = context.label;
-                                    const stats = variableStats[category];
-                                    const amount = stats ? stats.sum : 0;
+                                footer: function(tooltipItems) {
+                                    const context = tooltipItems[0];
+                                    const originalStat = sortedStats[context.dataIndex];
+                                    const amount = originalStat ? originalStat[1].sum : 0;
                                     const formattedAmount = '$' + amount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                                    return `${label}: ${value} (Monto: ${formattedAmount})`;
+                                    return `Monto Total: ${formattedAmount}`;
                                 }
                             }
                         }
