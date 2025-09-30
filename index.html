@@ -753,6 +753,9 @@
                                 <button id="view-all-details-btn" class="text-slate-500 hover:text-primary p-2 rounded-lg" title="Ver detalles de todos los resultados visibles">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
+                                <button id="clear-all-filters-btn" class="text-slate-500 hover:text-primary p-2 rounded-lg" title="Limpiar todos los filtros">
+                                    <i class="fa-solid fa-broom"></i>
+                                </button>
                                 <div class="relative flex-grow">
                                     <input type="text" id="filter-input-historical" placeholder="Buscar..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                                     <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
@@ -2019,6 +2022,33 @@
             if (clearFilterBtn) clearFilterBtn.addEventListener('click', () => {
                 filterInput.value = ''; filterInput.dispatchEvent(new Event('input'));
             });
+        }
+
+        /**
+         * Limpia todos los filtros aplicados a una tabla y la vuelve a renderizar.
+         * @param {string} filterKey - La clave de la tabla a limpiar ('historical').
+         */
+        function clearAllFilters(filterKey) {
+            // 1. Limpiar el estado de los filtros de columna
+            activeFilters[filterKey] = {};
+
+            // 2. Limpiar el campo de búsqueda de texto
+            const searchInput = document.getElementById(`filter-input-${filterKey}`);
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input')); // Disparar evento para actualizar la UI
+            }
+
+            // 3. Limpiar visualmente los encabezados de columna activos
+            const tableId = 'historical-table-header';
+            document.querySelectorAll(`#${tableId} .filterable-header.active`).forEach(h => h.classList.remove('active'));
+
+            // 4. Limpiar el filtro del dashboard de fechas de fallo
+            activeFalloDashboardFilter = null;
+            document.querySelectorAll('#dashboard-historico .indicator-card.active-filter').forEach(card => card.classList.remove('active-filter'));
+
+            // 5. Re-renderizar la tabla con los datos completos y el orden por defecto
+            sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
         }
 
         function sortAndRenderTable(tableBody, data, isHistorical) {
@@ -3837,6 +3867,9 @@
             setupFiltering('filter-input-historical', () => historicalLicitaciones, renderTable, true);
             setupQuickViewTooltip();
             setupAddEditButtons();
+            // Listener para el nuevo botón de limpiar filtros
+            document.getElementById('clear-all-filters-btn').addEventListener('click', () => clearAllFilters('historical'));
+
             setupPasswordVerification();
             dynamicChartVariable.addEventListener('change', updateDynamicChart);
             
