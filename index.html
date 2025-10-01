@@ -2239,10 +2239,14 @@
             const searchText = searchInput ? searchInput.value.trim() : '';
 
             // Ocultar el tooltip de vista rápida al abrir el modal de detalles.
-            if (quickViewTooltip) {
-                quickViewTooltip.classList.remove('visible');
-            }
+            if (quickViewTooltip) quickViewTooltip.classList.remove('visible');
  
+            const downloadButtonHTML = `
+                <button id="download-details-docx-btn" data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar reporte DOCX">
+                    <i class="fa-solid fa-file-word fa-lg"></i>
+                </button>
+            `;
+
             // --- INICIO: Lógica para la tabla de participantes inteligente ---
             const interesados = (licitacionItem.registradosInteres || '').split('\n').map(s => s.trim()).filter(Boolean);
             const licitantes = (licitacionItem.nombreLicitantes || '').split('\n').map(s => s.trim()).filter(Boolean);
@@ -2275,11 +2279,14 @@
                 : `<p class="text-gray-700">${highlightText(licitacionItem.linkComprasXM || 'N/A', searchText)}</p>`;
         
             detailsModalContent.innerHTML = `
-                <div class="details-header">
-                    <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
-                    <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
-                    <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
-                    <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
+                <div class="details-header flex justify-between items-start">
+                    <div>
+                        <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
+                        <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
+                        <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
+                        <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
+                    </div>
+                    ${downloadButtonHTML}
                 </div>
         
                 <div class="details-section">
@@ -2364,6 +2371,15 @@
                 </div>
             `;
 
+            // Añadir el listener para el nuevo botón de descarga
+            const downloadBtn = detailsModalContent.querySelector('#download-details-docx-btn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', () => {
+                    const id = downloadBtn.dataset.id;
+                    const isHist = downloadBtn.dataset.isHistorical === 'true';
+                    generateDoc(id, isHist);
+                });
+            }
             openModal(viewDetailsModal);
         }
 
@@ -3973,7 +3989,7 @@
             if (counts.current > 0) {
                 alerts.push({
                     message: `Hay <strong>${counts.current}</strong> licitacion(es) con fallo esta semana.`,
-                    target: 'fallo-indicator-current'
+                    target: 'fallo-current-content' // <-- CORRECCIÓN: Apuntar al elemento clickeable correcto
                 });
             }
             if (counts.plus1 > 0) {
@@ -3991,11 +4007,11 @@
 
             if (alerts.length > 0) {
                 alerts.forEach(alert => {
-                    const item = document.createElement('div');
-                    item.className = 'text-sm text-slate-600 flex justify-between items-center';
+                    const item = document.createElement('button');
+                    item.className = 'w-full text-left text-sm text-slate-600 p-2 rounded-md hover:bg-slate-100 transition-colors';
+                    item.dataset.target = alert.target;
                     item.innerHTML = `
                         <p>${alert.message}</p>
-                        <button data-target="${alert.target}" class="view-fallo-btn ml-2 text-xs font-bold text-primary hover:underline whitespace-nowrap">Ver</button>
                     `;
                     alertContent.appendChild(item);
                 });
@@ -4469,9 +4485,9 @@
             });
 
             document.getElementById('fallo-alert-content').addEventListener('click', (e) => {
-                if (e.target.classList.contains('view-fallo-btn')) {
-                    const targetId = e.target.dataset.target;
-                    const indicator = document.getElementById(targetId);
+                const alertButton = e.target.closest('button[data-target]');
+                if (alertButton) {
+                    const indicator = document.getElementById(alertButton.dataset.target);
                     if (indicator) {
                         indicator.click(); // Simula el clic en el indicador del dashboard
                         document.getElementById('close-fallo-alert-btn').click(); // Cierra la alerta
