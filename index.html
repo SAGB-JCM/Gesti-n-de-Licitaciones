@@ -599,6 +599,13 @@
             text-align: right;
         }
 
+        /* Estilo para celdas clickeables en tablas de reportes */
+        .clickable-cell {
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
         /* Estilo para resaltar el texto de búsqueda */
         .highlight {
             background-color: #ffd966; /* Tailwind yellow-100 */
@@ -3393,6 +3400,29 @@
             
         }
 
+        /**
+         * Navega a la pestaña de licitaciones y aplica los filtros especificados.
+         * @param {Object} filtersToApply - Un objeto donde las claves son los campos a filtrar y los valores son arrays de los valores a incluir.
+         */
+        function navigateAndFilter(filtersToApply) {
+            // 1. Cambiar a la pestaña de Licitaciones
+            document.querySelector('button[data-tab="historico"]').click();
+
+            // 2. Limpiar todos los filtros existentes
+            clearAllFilters('historical');
+
+            // 3. Aplicar los nuevos filtros
+            Object.entries(filtersToApply).forEach(([key, value]) => {
+                activeFilters.historical[key] = Array.isArray(value) ? value : [value];
+                // Marcar visualmente el encabezado como activo
+                const header = document.querySelector(`#historical-table-header .filterable-header[data-filter-by="${key}"]`);
+                if (header) header.classList.add('active');
+            });
+
+            // 4. Re-renderizar la tabla con los nuevos filtros
+            sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
+        }
+
         function updateProjectProcedureChart() {
             const data = historicalLicitaciones || [];
             const projectProcedureCounts = {};
@@ -3442,7 +3472,7 @@
 
             projects.forEach(project => {
                 const row = document.createElement('tr');
-                let rowHTML = `<td>${project}</td>`;
+                let rowHTML = `<td class="clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-project="${project}">${project}</td>`;
                 let projectTotalAmount = 0;
                 let projectTotalCount = 0;
 
@@ -3451,7 +3481,7 @@
                     const amount = projectProcedureAmounts[project][proc] || 0;
                     
                     // Celda de Cantidad
-                    rowHTML += `<td class="text-center">${count}</td>`;
+                    rowHTML += `<td class="text-center clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-project="${project}" data-filter-variable="${selectedVariable}" data-filter-value="${proc}">${count}</td>`;
                     // Celda de Monto
                     rowHTML += `<td>$${amount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
                     
@@ -3554,8 +3584,8 @@
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${value}</td>
-                    <td>${stats.count}</td>
+                    <td class="clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-variable="${selectedVariable}" data-filter-value="${value}">${value}</td>
+                    <td class="clickable-cell hover:bg-slate-100 hover:text-primary">${stats.count}</td>
                     <td>${'$' + stats.sum.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 `;
                 dynamicTableBody.appendChild(row);
@@ -4027,6 +4057,31 @@
                 updateDynamicChart();
             });
             
+            // Listener para la tabla de distribución dinámica (Reportes)
+            dynamicTableBody.addEventListener('click', e => {
+                const row = e.target.closest('tr');
+                if (!row) return;
+
+                // Busca la primera celda de la fila, que es la que contiene los datos del filtro.
+                const firstCell = row.querySelector('td');
+                if (!firstCell) return;
+
+                // Extrae los datos del filtro de la primera celda.
+                const { filterVariable, filterValue } = firstCell.dataset;
+                
+                if (filterVariable && filterValue && filterValue !== 'Total') { // Asegurarse de no hacer clic en la fila de total
+                    navigateAndFilter({ [filterVariable]: [filterValue] }); // Llama a la función de navegación y filtro.
+                }
+            });
+
+            // Listener para la tabla de proyectos por procedimiento (Reportes)
+            document.getElementById('projectProcedureTable').addEventListener('click', e => {
+                const cell = e.target.closest('td[data-filter-project]');
+                if (!cell) return;
+                const { filterProject, filterVariable, filterValue } = cell.dataset;
+                navigateAndFilter({ 'proyecto': [filterProject], [filterVariable]: [filterValue] });
+            });
+
             addLicitacionBtn.addEventListener('click', () => {
                 // Clear form
                 licitacionForm.reset();
