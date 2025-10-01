@@ -407,6 +407,7 @@
         .dynamic-table th {
             background-color: var(--primary-color);
             color: white;
+            text-align: center;
             font-weight: 600;
         }
         
@@ -839,8 +840,13 @@
                                 <canvas id="dynamicChart"></canvas>
                             </div>
                             <div class="dynamic-table-container">
-                                <h4 class="text-lg font-semibold text-slate-800 mb-2 text-center">Distribución</h4>
-                                <table class="dynamic-table">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="text-lg font-semibold text-slate-800 text-center flex-grow">Distribución</h4>
+                                    <button id="download-dynamic-table-excel-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar tabla como Excel">
+                                        <i class="fa-solid fa-file-excel"></i>
+                                    </button>
+                                </div>
+                                <table id="dynamic-distribution-table" class="dynamic-table">
                                     <thead>
                                         <tr>
                                             <th id="dynamic-table-header">Variable</th>
@@ -875,7 +881,12 @@
                             <canvas id="projectProcedureChart"></canvas>
                         </div>
                         <div class="dynamic-table-container mt-4">
-                            <h4 class="text-lg font-semibold text-slate-800 mb-2 text-center">Montos Detallados por Procedimiento (MXN)</h4>
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-lg font-semibold text-slate-800 text-center flex-grow">Montos Detallados por Procedimiento (MXN)</h4>
+                                <button id="download-project-procedure-table-excel-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar tabla como Excel">
+                                    <i class="fa-solid fa-file-excel"></i>
+                                </button>
+                            </div>
                             <table id="projectProcedureTable" class="dynamic-table">
                                 <thead>
                                 </thead>
@@ -3417,8 +3428,8 @@
             // --- Lógica de la tabla con montos y totales ---
             const table = document.getElementById('projectProcedureTable');
             // Encabezado de dos niveles
-            const headerRow1 = `<tr class="bg-slate-200"><th rowspan="2" class="align-bottom">Proyecto</th>${sortedProcedures.map(proc => `<th colspan="2" class="text-center">${truncateText(proc, 20)}</th>`).join('')}<th colspan="2" class="text-center">Total</th></tr>`;
-            const headerRow2 = `<tr>${sortedProcedures.map(() => `<th>Cantidad</th><th>Monto</th>`).join('')}<th>Cantidad</th><th>Monto</th></tr>`;
+            const headerRow1 = `<tr class="bg-slate-200"><th rowspan="2" class="align-bottom text-center">Proyecto</th>${sortedProcedures.map(proc => `<th colspan="2" class="text-center">${proc}</th>`).join('')}<th colspan="2" class="text-center">Total</th></tr>`;
+            const headerRow2 = `<tr>${sortedProcedures.map(() => `<th class="text-center">Cantidad</th><th class="text-center">Monto</th>`).join('')}<th class="text-center">Cantidad</th><th class="text-center">Monto</th></tr>`;
             table.querySelector('thead').innerHTML = headerRow1 + headerRow2;
             
             const tbody = table.querySelector('tbody');
@@ -3770,6 +3781,142 @@
             ];
 
             return ws;
+        }
+
+        /**
+         * Exporta una tabla HTML a un archivo Excel con formato profesional.
+         * @param {string} tableId - El ID de la tabla HTML a exportar.
+         * @param {string} sheetName - El nombre para la hoja de Excel.
+         * @param {string} fileName - El nombre del archivo a descargar.
+         */
+        function exportTableToExcel(tableId, sheetName, fileName) { // REFACTORIZADO
+            const table = document.getElementById(tableId);
+            if (!table) {
+                showAlert("No se encontró la tabla para exportar.", "error");
+                return;
+            }
+        
+            // 1. Extraer datos y encabezados de la tabla HTML
+            const headers = [];
+            const data = [];
+            const merges = []; // Para las celdas combinadas del encabezado
+        
+            // Procesar encabezados (thead)
+             const headerRows = Array.from(table.querySelectorAll('thead tr'));
+             headerRows.forEach((tr, rowIndex) => {
+                 if (!headers[rowIndex]) headers[rowIndex] = [];
+                 let colIndex = 0;
+                 Array.from(tr.children).forEach(th => {
+                     // Saltar columnas ya ocupadas por un rowspan de una fila anterior
+                     while (headers[rowIndex][colIndex] !== undefined) {
+                         colIndex++;
+                     }
+ 
+                     const colspan = parseInt(th.getAttribute('colspan') || '1');
+                     const rowspan = parseInt(th.getAttribute('rowspan') || '1');
+                     
+                     // Registrar la fusión de celdas
+                     if (rowspan > 1 || colspan > 1) {
+                         merges.push({ s: { r: rowIndex, c: colIndex }, e: { r: rowIndex + rowspan - 1, c: colIndex + colspan - 1 } });
+                     }
+ 
+                     // Rellenar la matriz de encabezados, marcando las celdas ocupadas por la fusión
+                     for (let r = 0; r < rowspan; r++) {
+                         if (!headers[rowIndex + r]) headers[rowIndex + r] = [];
+                         for (let c = 0; c < colspan; c++) {
+                             // La celda principal obtiene el texto, las demás se marcan como ocupadas
+                             headers[rowIndex + r][colIndex + c] = (r === 0 && c === 0) ? th.innerText : null;
+                         }
+                     }
+                     colIndex += colspan;
+                 });
+             });
+ 
+             // Limpiar los valores nulos que se usaron para marcar celdas ocupadas
+             headers.forEach(row => {
+                 for (let i = 0; i < row.length; i++) {
+                     if (row[i] === null) row[i] = '';
+                 }
+             });
+        
+            // Procesar cuerpo de la tabla (tbody)
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const rowData = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    let cellValue = td.innerText;
+                    if (cellValue.startsWith('$')) {
+                        cellValue = parseFloat(cellValue.replace(/[$,]/g, ''));
+                    }
+                    rowData.push(cellValue);
+                });
+                data.push(rowData);
+            });
+        
+            // Procesar pie de la tabla (tfoot)
+            table.querySelectorAll('tfoot tr').forEach(tr => {
+                const rowData = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    let cellValue = td.innerText;
+                    if (cellValue.startsWith('$')) {
+                        cellValue = parseFloat(cellValue.replace(/[$,]/g, ''));
+                    }
+                    rowData.push(cellValue);
+                });
+                data.push(rowData);
+            });
+        
+            // 2. Crear la hoja de cálculo
+            const ws = XLSX.utils.aoa_to_sheet([...headers, ...data]);
+        
+            // 3. Definir y aplicar estilos
+            const fontStyle = { name: "Noto Sans", sz: 11 };
+            const borderStyle = { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } };
+            const centerAlign = { alignment: { horizontal: "center", vertical: "center", wrapText: true } };
+        
+            const headerStyle = { font: { ...fontStyle, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "1E5B4F" } }, ...centerAlign, border: borderStyle };
+            const totalRowStyle = { font: { ...fontStyle, bold: true }, fill: { fgColor: { rgb: "E2E8F0" } }, ...centerAlign, border: borderStyle };
+            const cellStyle = { font: fontStyle, ...centerAlign, border: borderStyle };
+            const currencyStyle = { numFmt: "$#,##0.00" };
+        
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cell_ref = XLSX.utils.encode_cell({ c: C, r: R });
+                    if (!ws[cell_ref]) continue;
+        
+                    if (R < headers.length) { // Es un encabezado
+                        ws[cell_ref].s = headerStyle;
+                    } else { // Es una celda de datos o total
+                        const isTotalRow = (ws[XLSX.utils.encode_cell({c: 0, r: R})]?.v === 'Total');
+                        if (isTotalRow) {
+                            ws[cell_ref].s = totalRowStyle;
+                        } else {
+                            ws[cell_ref].s = cellStyle;
+                        }
+                    }
+        
+                    if (typeof ws[cell_ref].v === 'number') {
+                        // Combina el estilo base (celda o total) con el formato de moneda
+                        ws[cell_ref].s = { ...ws[cell_ref].s, numFmt: currencyStyle.numFmt };
+                    }
+                }
+            }
+        
+            // 4. Aplicar fusiones y anchos de columna
+            ws['!merges'] = merges; // Aplicar las celdas combinadas
+            
+            // Validar que headers[0] exista antes de acceder a su longitud
+            if (headers.length > 0 && headers[0]) {
+                ws['!cols'] = Array(headers[0].length).fill({ wch: 20 }); // Ancho de columna de 20 caracteres
+            } else if (data.length > 0 && data[0]) {
+                // Fallback si no hay encabezados pero sí datos
+                ws['!cols'] = Array(data[0].length).fill({ wch: 20 });
+            }
+        
+            // 5. Generar y descargar el libro de trabajo
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            XLSX.writeFile(wb, fileName);
         }
 
         /**
@@ -4235,11 +4382,25 @@
                 }
             });
 
+            // Listeners para los nuevos botones de descarga de tablas de reportes
+            document.getElementById('download-dynamic-table-excel-btn').addEventListener('click', () => {
+                const variable = document.getElementById('dynamic-chart-variable').value;
+                const fileName = `Reporte_Distribucion_por_${variable}.xlsx`;
+                exportTableToExcel('dynamic-distribution-table', 'Distribución', fileName);
+            });
+
+            document.getElementById('download-project-procedure-table-excel-btn').addEventListener('click', () => {
+                const variable = document.getElementById('project-chart-variable').value;
+                const fileName = `Reporte_Detallado_por_${variable}.xlsx`;
+                // El ID de la tabla completa es 'projectProcedureTable', la función buscará el thead, tbody y tfoot dentro de ella.
+                exportTableToExcel('projectProcedureTable', 'Detalle Procedimientos', fileName);
+            });
+
             // Eventos para la nueva alerta de fallos
             document.getElementById('close-fallo-alert-btn').addEventListener('click', () => {
                 const container = document.getElementById('fallo-alert-container');
                 container.classList.remove('alert-enter');
-                container.classList.add('alert-leave');
+                container.classList.add('alert-leave'); // La animación de salida se maneja con CSS
             });
 
             // Detener el temporizador si el usuario pasa el mouse sobre la alerta
