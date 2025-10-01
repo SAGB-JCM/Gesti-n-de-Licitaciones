@@ -819,10 +819,10 @@
                 <section id="reportes" class="bg-white p-6 rounded-xl shadow-md mb-8">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Reportes</h2>
-                        <div class="flex items-center space-x-4">
-                            <button id="upload-template-btn" class="bg-secondary hover:bg-secondary-dark text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center space-x-2">
-                                <i class="fa-solid fa-file-word"></i>
-                                <span>Cargar Plantilla Word</span>
+                        <div class="flex items-center space-x-2">                            
+                            <!-- BOTÓN DE CONFIGURACIÓN DE REPORTES AÑADIDO -->
+                            <button id="report-settings-btn" class="text-slate-500 hover:text-primary p-2 rounded-lg transition-colors" title="Configuración de Reportes">
+                                <i class="fa-solid fa-cog fa-lg"></i>
                             </button>
                         </div>
                     </div>
@@ -1357,6 +1357,53 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIGURACIÓN DE REPORTES (AÑADIDO) -->
+    <div id="report-settings-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-primary">Configuración de Reportes</h3>
+                <button id="close-report-settings-modal-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa-solid fa-times-circle fa-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-md font-semibold text-slate-700 mb-2">Plantillas</h4>
+                    <button id="open-template-uploader-btn" class="w-full bg-secondary hover:bg-secondary-dark text-white font-bold py-3 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-upload"></i>
+                        <span>Cargar Plantilla Word</span>
+                    </button>
+                </div>
+                <div class="border-t border-gray-200 pt-4">
+                    <h4 class="text-md font-semibold text-slate-700 mb-3">Filtro de Fechas para Reportes (por Fecha de Fallo)</h4>
+                    <fieldset class="space-y-2">
+                        <div class="flex items-center">
+                            <input id="date-filter-all" name="date-filter-mode" type="radio" class="focus:ring-primary h-4 w-4 text-primary border-gray-300" value="all" checked>
+                            <label for="date-filter-all" class="ml-3 block text-sm font-medium text-gray-700">Todos los datos</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="date-filter-period" name="date-filter-mode" type="radio" class="focus:ring-primary h-4 w-4 text-primary border-gray-300" value="period">
+                            <label for="date-filter-period" class="ml-3 block text-sm font-medium text-gray-700">Seleccionar periodo</label>
+                        </div>
+                    </fieldset>
+                    <div id="date-range-picker-container" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-50 transition-opacity">
+                        <div>
+                            <label for="report-start-date" class="block text-sm font-medium text-gray-700">Fecha de inicio</label>
+                            <input type="date" id="report-start-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 disabled:bg-gray-100 disabled:cursor-not-allowed" disabled>
+                        </div>
+                        <div>
+                            <label for="report-end-date" class="block text-sm font-medium text-gray-700">Fecha de fin</label>
+                            <input type="date" id="report-end-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 disabled:bg-gray-100 disabled:cursor-not-allowed" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end">
+                <button id="save-report-settings-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-200 ease-in-out">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
     <div id="multi-details-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-multi-details-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
@@ -1452,6 +1499,16 @@
         // Variables de estado de la aplicación        let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, importHistoricalBtn, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn;
         let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn, multiDetailsModal, closeMultiDetailsModalBtn, multiDetailsContentContainer;
         
+        // --- INICIO: Variables para la nueva funcionalidad ---
+        let reportSettingsModal, reportSettingsBtn, closeReportSettingsModalBtn, openTemplateUploaderBtn;
+        // Objeto para almacenar la configuración de los reportes
+        let reportSettings = {
+            dateFilterMode: 'all', // 'all' o 'period'
+            startDate: '',
+            endDate: ''
+        };
+        // --- FIN: Variables para la nueva funcionalidad ---
+
         let currentEditIsHistorical = false;
         let quickViewTooltip;
         let fieldOptions = {
@@ -3407,11 +3464,29 @@
         // MÓDULO: Gráficos y reportes
         // =============================================
         
+        /**
+         * Obtiene y filtra los datos para los reportes según la configuración guardada.
+         * @returns {Array} El conjunto de datos de licitaciones filtrado por fecha si aplica.
+         */
+        function getReportData() {
+            const baseData = historicalLicitaciones;
+
+            // Aplicar filtro de fecha si está configurado
+            if (reportSettings.dateFilterMode === 'period' && reportSettings.startDate && reportSettings.endDate) {
+                try {
+                    return baseData.filter(item => {
+                        // La comparación de strings 'YYYY-MM-DD' funciona correctamente para rangos.
+                        return item.fechaFallo && item.fechaFallo >= reportSettings.startDate && item.fechaFallo <= reportSettings.endDate;
+                    });
+                } catch (e) {
+                    console.error("Error al filtrar fechas:", e);
+                    return baseData; // Devuelve los datos sin filtrar en caso de error.
+                }
+            }
+            return baseData; // Devuelve todos los datos si el filtro no está activo.
+        }
+
         function updateCharts() {
-            // La fuente de datos ahora es siempre 'historico'
-            let data = historicalLicitaciones;
-            const proyectoCounts = {}, dependenciaCounts = {};
-        
             // Verificación robusta: Asegurarse de que dynamicChart es una instancia de Chart antes de destruirla.
             if (charts.dynamic) charts.dynamic.destroy();
             if (charts.projectProcedure) charts.projectProcedure.destroy();
@@ -3431,11 +3506,27 @@
          * @param {Object} filtersToApply - Un objeto donde las claves son los campos a filtrar y los valores son arrays de los valores a incluir.
          */
         function navigateAndFilter(filtersToApply) {
-            // 1. Cambiar a la pestaña de Licitaciones
+            // 1. Cambiar a la pestaña de Licitaciones (que es 'historico' en esta app)
             document.querySelector('button[data-tab="historico"]').click();
 
             // 2. Limpiar todos los filtros existentes
             clearAllFilters('historical');
+
+            // --- INICIO DE LA MEJORA: Aplicar filtro de fecha si hay un periodo activo en reportes ---
+            if (reportSettings.dateFilterMode === 'period' && reportSettings.startDate && reportSettings.endDate) {
+                const dataForDateFiltering = historicalLicitaciones; // Obtener todos los datos.
+                
+                // Encontrar todas las fechas de fallo únicas que caen dentro del rango del reporte.
+                const datesInRange = [...new Set(
+                    dataForDateFiltering
+                        .filter(item => item.fechaFallo && item.fechaFallo >= reportSettings.startDate && item.fechaFallo <= reportSettings.endDate)
+                        .map(item => formatDate(item.fechaFallo)) // Usar la fecha formateada, que es como el filtro la espera.
+                )];
+
+                // Añadir las fechas encontradas al objeto de filtros a aplicar.
+                filtersToApply['fechaFallo'] = datesInRange;
+            }
+            // --- FIN DE LA MEJORA ---
 
             // 3. Aplicar los nuevos filtros
             Object.entries(filtersToApply).forEach(([key, value]) => {
@@ -3450,7 +3541,7 @@
         }
 
         function updateProjectProcedureChart() {
-            const data = historicalLicitaciones || [];
+            const data = getReportData(); // Usar los datos filtrados por fecha
             const projectProcedureCounts = {};
             const projectProcedureAmounts = {};
             const allProcedures = new Set();
@@ -3577,8 +3668,7 @@
         }
 
         function updateDynamicChart() {
-            // La fuente de datos ahora es siempre 'historico'
-            let data = historicalLicitaciones || [];
+            const data = getReportData(); // Usar los datos filtrados por fecha
             const selectedVariable = dynamicChartVariable.value;
             const variableStats = {};
             
@@ -4073,6 +4163,90 @@
             // Listener para el nuevo botón de limpiar filtros
             document.getElementById('clear-all-filters-btn').addEventListener('click', () => clearAllFilters('historical'));
 
+            // Listener para el botón de carga de plantilla (ahora dentro del modal de configuración)
+            if (openTemplateUploaderBtn) {
+                openTemplateUploaderBtn.addEventListener('click', () => {
+                    closeModal(reportSettingsModal); // Cierra el modal de config
+                    openModal(templateUploadModal); // Abre el modal de plantillas
+                });
+            }
+
+            // --- INICIO: Listeners para la nueva funcionalidad de configuración de reportes ---
+            if (reportSettingsBtn) {
+                reportSettingsBtn.addEventListener('click', () => {
+                    // Cargar la configuración actual en el modal antes de abrirlo
+                    document.querySelector(`input[name="date-filter-mode"][value="${reportSettings.dateFilterMode}"]`).checked = true;
+                    const startDateInput = document.getElementById('report-start-date');
+                    const endDateInput = document.getElementById('report-end-date');
+                    const dateContainer = document.getElementById('date-range-picker-container');
+
+                    startDateInput.value = reportSettings.startDate;
+                    endDateInput.value = reportSettings.endDate;
+
+                    if (reportSettings.dateFilterMode === 'period') {
+                        dateContainer.classList.remove('opacity-50');
+                        startDateInput.disabled = false;
+                        endDateInput.disabled = false;
+                    } else {
+                        dateContainer.classList.add('opacity-50');
+                        startDateInput.disabled = true;
+                        endDateInput.disabled = true;
+                    }
+                    openModal(reportSettingsModal);
+                });
+            }
+
+            if (document.getElementById('save-report-settings-btn')) {
+                document.getElementById('save-report-settings-btn').addEventListener('click', () => {
+                    const dateFilterMode = document.querySelector('input[name="date-filter-mode"]:checked').value;
+                    const startDate = document.getElementById('report-start-date').value;
+                    const endDate = document.getElementById('report-end-date').value;
+
+                    if (dateFilterMode === 'period' && (!startDate || !endDate)) {
+                        return showAlert("Por favor, seleccione una fecha de inicio y una de fin para el período.", "warning");
+                    }
+                    reportSettings = { dateFilterMode, startDate, endDate };
+                    showAlert("Configuración de reportes guardada.", "success");
+                    updateCharts(); // Actualizar los gráficos inmediatamente
+                    closeModal(reportSettingsModal);
+                });
+            }
+
+            // 1. Cierre del modal de configuración de reportes al hacer clic fuera.
+            if (reportSettingsModal) {
+                reportSettingsModal.addEventListener('click', (e) => {
+                    if (e.target === reportSettingsModal) {
+                        closeModal(reportSettingsModal);
+                    }
+                });
+
+                // 2. Guardar cambios en el modal de configuración con la tecla "Enter".
+                reportSettingsModal.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // Prevenir cualquier comportamiento por defecto.
+                        document.getElementById('save-report-settings-btn').click();
+                    }
+                });
+            }
+
+            if (closeReportSettingsModalBtn) {
+                closeReportSettingsModalBtn.addEventListener('click', () => closeModal(reportSettingsModal));
+            }
+
+            document.querySelectorAll('input[name="date-filter-mode"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const isPeriod = e.target.value === 'period';
+                    const container = document.getElementById('date-range-picker-container');
+                    const startDateInput = document.getElementById('report-start-date');
+                    const endDateInput = document.getElementById('report-end-date');
+
+                    container.classList.toggle('opacity-50', !isPeriod);
+                    startDateInput.disabled = !isPeriod;
+                    endDateInput.disabled = !isPeriod;
+                });
+            });
+            // --- FIN: Listeners para la nueva funcionalidad ---
+
             setupPasswordVerification();
             dynamicChartVariable.addEventListener('change', updateDynamicChart);
             
@@ -4169,8 +4343,6 @@
                 if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
             });
 
-            uploadTemplateBtn.addEventListener('click', () => openModal(templateUploadModal));
-            closeTemplateUploadModalBtn.addEventListener('click', () => closeModal(templateUploadModal));
 
             document.querySelectorAll('.upload-template-type-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -4718,6 +4890,13 @@
             multiDetailsModal = document.getElementById('multi-details-modal');
             closeMultiDetailsModalBtn = document.getElementById('close-multi-details-modal-btn');
             multiDetailsContentContainer = document.getElementById('multi-details-content-container');
+            
+            // --- INICIO: Asignación de elementos para la nueva funcionalidad ---
+            reportSettingsModal = document.getElementById('report-settings-modal');
+            reportSettingsBtn = document.getElementById('report-settings-btn');
+            closeReportSettingsModalBtn = document.getElementById('close-report-settings-modal-btn');
+            openTemplateUploaderBtn = document.getElementById('open-template-uploader-btn');
+            // --- FIN: Asignación de elementos ---
 
             detailsModalContent = document.getElementById('details-modal-content');
 
