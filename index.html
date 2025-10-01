@@ -4083,6 +4083,9 @@
                 updateDynamicChart();
             });
             
+            // Fortalecer la responsividad de las gráficas al cambiar el tamaño de la ventana (zoom)
+            window.addEventListener('resize', updateCharts);
+
             // Listener para la tabla de distribución dinámica (Reportes)
             dynamicTableBody.addEventListener('click', e => {
                 const row = e.target.closest('tr');
