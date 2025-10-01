@@ -2390,6 +2390,13 @@
             const searchInput = document.getElementById(`filter-input-${filterKey}`);
             const searchText = searchInput ? searchInput.value.trim() : '';
 
+            // --- Botón de descarga para cada item ---
+            const downloadButtonHTML = `
+                <button data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="generate-doc-btn text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar reporte DOCX">
+                    <i class="fa-solid fa-file-word fa-lg"></i>
+                </button>
+            `;
+
             // --- Lógica para la tabla de participantes ---
             const interesados = (licitacionItem.registradosInteres || '').split('\n').map(s => s.trim()).filter(Boolean);
             const licitantes = (licitacionItem.nombreLicitantes || '').split('\n').map(s => s.trim()).filter(Boolean);
@@ -2424,7 +2431,10 @@
                             <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
                             <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
                         </div>
-                        <span class="text-lg font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">${index + 1}</span>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-lg font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">${index + 1}</span>
+                            ${downloadButtonHTML}
+                        </div>
                     </div>
             
                     <div class="details-section">
@@ -4451,6 +4461,13 @@
                 if (e.target === multiDetailsModal) {
                     closeModal(multiDetailsModal);
                 }
+            });
+
+            // Listener para los botones de descarga en el modal de múltiples detalles
+            multiDetailsContentContainer.addEventListener('click', e => {
+                const target = e.target.closest('.generate-doc-btn');
+                if (!target) return;
+                handleGenerateDocClick(target);
             });
 
             // Listeners para los nuevos botones de descarga de tablas de reportes
