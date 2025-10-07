@@ -3771,9 +3771,9 @@
         // =============================================
 
         const exportHeaders = [
-            "No.", "Proyecto", "Nombre", "Descripción", "Generalidades", "Siglas Dependencia", 
-            "Código Expediente", "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura", 
-            "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto", "Link Compras XM"
+            "No.", "Proyecto", "Nombre", "Descripción", "Generalidades", "Siglas Dependencia",
+            "Código Expediente", "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura",
+            "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "Link Compras XM"
         ];
 
         function prepareExportData(data) {
@@ -3796,7 +3796,7 @@
                     "Participantes": fallback(licitacionItem.registradosInteres),
                     "Licitantes": fallback(licitacionItem.nombreLicitantes),
                     "Ganador": fallback(licitacionItem.ganadorLicitacion),
-                    "Monto": licitacionItem.monto ? Number(licitacionItem.monto) : "N/A", // Exportar como número o "N/A"
+                    "Monto (Pesos)": licitacionItem.monto ? Number(licitacionItem.monto) : "N/A", // Exportar como número o "N/A"
                     "Link Compras XM": fallback(licitacionItem.linkComprasXM)
                 };
             });
@@ -3818,10 +3818,9 @@
             };
 
             const totalAmountStyle = {
-                font: { ...fontStyle, bold: true, color: { rgb: "333333" } },
-                fill: { fgColor: { rgb: "FFD700" } }, // Fondo dorado/amarillo llamativo
-                alignment: { vertical: "center", horizontal: "right" },
-                numFmt: "$#,##0.00" // Formato de moneda
+                font: { ...fontStyle, bold: true, color: { rgb: "FFFFFF" } }, // Texto blanco
+                fill: { fgColor: { rgb: "CC3333" } }, // Fondo rojo sutil
+                alignment: { vertical: "center", horizontal: "right" }
             };
 
             const headerStyle = {
@@ -3848,7 +3847,7 @@
 
             const currencyCellStyle = {
                 ...rightAlignedCellStyle,
-                numFmt: "$#,##0.00"
+                numFmt: "#,##0.00"
             };
 
             // 2. Añadir fila de título en la parte superior
@@ -3861,17 +3860,20 @@
 
             // 3. Calcular y añadir la suma de montos en la celda Q1
             const numCols = exportHeaders.length;
-            const montoColIndex = exportHeaders.indexOf("Monto");
+            const montoColIndex = exportHeaders.indexOf("Monto (Pesos)");
             if (montoColIndex !== -1) {
-                const totalMonto = data.reduce((sum, row) => sum + (Number(row.Monto) || 0), 0);
+                const montoColLetter = XLSX.utils.encode_col(montoColIndex);
+                const formula = `SUBTOTAL(9,${montoColLetter}3:${montoColLetter}${data.length + 2})`;
+
                 const totalCellRef = XLSX.utils.encode_cell({ r: 0, c: montoColIndex -1 }); // Celda P1 para la etiqueta
                 const totalValueCellRef = XLSX.utils.encode_cell({ r: 0, c: montoColIndex }); // Celda Q1 para el valor
                 
                 XLSX.utils.sheet_add_aoa(ws, [["Monto Total:"]], { origin: totalCellRef });
-                XLSX.utils.sheet_add_aoa(ws, [[totalMonto]], { origin: totalValueCellRef });
+                // Añadir la fórmula en lugar del valor estático
+                ws[totalValueCellRef] = { f: formula };
                 
-                ws[totalValueCellRef].s = totalAmountStyle;
-                ws[totalCellRef].s = { font: { bold: true }, alignment: { horizontal: "right", vertical: "center" } };
+                ws[totalValueCellRef].s = { ...totalAmountStyle, numFmt: "$#,##0.00" }; // Formato de moneda para el total
+                ws[totalCellRef].s = { font: { ...fontStyle, bold: true }, alignment: { horizontal: "right", vertical: "center" } };
             }
 
             // 4. Aplicar estilos y ajustar dimensiones
@@ -3886,8 +3888,8 @@
 
             // Definir columnas con alineación especial
             const centeredColumns = ["No.", "Código Expediente", "Tipo", "Año Publicación", "Fecha Apertura", "Fecha Fallo", "Fecha Estimada Inicio"];
-            const centeredColumnIndices = centeredColumns.map(header => exportHeaders.indexOf(header));
-            const montoColumnIndex = exportHeaders.indexOf("Monto");
+            const montoColumnIndex = exportHeaders.indexOf("Monto (Pesos)");
+            const centeredColumnIndices = centeredColumns.map(header => exportHeaders.indexOf(header)); // Esto no cambia
 
             // Recorrer y aplicar estilos a encabezados y celdas de datos
             for (let R = 1; R <= numRows + 1; ++R) { // El bucle empieza en la fila de encabezados (R=1, que es la Fila 2 en Excel)
@@ -3919,6 +3921,9 @@
             if (ws['A1']) {
                 ws['A1'].s = titleStyle;
             }
+
+            // 6. Habilitar AutoFiltro en la fila de encabezados (Fila 2)
+            ws['!autofilter'] = { ref: `A2:${XLSX.utils.encode_col(numCols - 1)}2` };
 
             // 5. Ajustar el ancho de las columnas automáticamente
             ws['!cols'] = [
@@ -4470,6 +4475,7 @@
                                     'licitantes': 'nombreLicitantes', // Nombre corto
                                     'nombre licitantes': 'nombreLicitantes',
                                     'ganador': 'ganadorLicitacion', // Nombre corto
+                                    'monto (pesos)': 'monto', // Nuevo alias para importación
                                     'ganador licitación': 'ganadorLicitacion',
                                     'monto': 'monto',
                                     'link compras xm': 'linkComprasXM',
