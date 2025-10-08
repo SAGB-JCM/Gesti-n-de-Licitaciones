@@ -49,109 +49,135 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <style>
+        /* ============================================= */
+        /* === 1. RAÍZ Y ESTILOS BASE === */
+        /* ============================================= */
         :root {
             --primary-color: #1E5B4F;
             --secondary-color: #A6802D;
             --accent-color: #9C2348;
             --success-color: #10B981;
             --danger-color: #EF4444;
+        }        
+        html { 
+            font-size: 60%; 
         }
-        
-        html { font-size: 60%; }
-        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
-        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f0f2f5; 
+        }
+        /* ============================================= */
+        /* === 2. UTILIDADES === */
+        /* ============================================= */
+
+        /* Clases de utilidad para aplicar la paleta de colores principal. */
         .bg-primary { background-color: var(--primary-color); }
         .text-primary { color: var(--primary-color); }
         .border-primary { border-color: var(--primary-color); }
         .focus\:ring-primary:focus { --tw-ring-color: var(--primary-color); }
         
+        /* Clases de utilidad para el color secundario. */
         .bg-secondary { background-color: var(--secondary-color); }
         .text-secondary { color: var(--secondary-color); }
         .border-secondary { border-color: var(--secondary-color); }
         
+        /* Clases de utilidad para el color de acento. */
         .bg-accent { background-color: var(--accent-color); }
         .text-accent { color: var(--accent-color); }
         .border-accent { border-color: var(--accent-color); }
         
+        /* Clases de utilidad para colores de estado (éxito y peligro). */
         .bg-success { background-color: var(--success-color); }
         .hover\:bg-success-dark:hover { background-color: #059669; }
         
         .bg-danger { background-color: var(--danger-color); }
         .hover\:bg-danger-dark:hover { background-color: #DC2626; }
         
-        .indicator-card.active-filter {
-            box-shadow: 0 0 0 2px var(--primary-color), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transform: translateY(-2px);
-        }
-
-        /* Estilo para resaltar el indicador de la semana actual */
-        .indicator-card.current-week-highlight {
-            border-bottom: 3px solid var(--primary-color);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-            background-color: #fcfdff;
-        }
-
-        .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
-        .modal-leave { animation: fadeOut 0.3s ease-in forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
-        
+        /* Clase de utilidad para ocultar elementos. */
         .hidden { display: none; }
-        .tab-btn.active { border-color: var(--primary-color); color: var(--primary-color); font-weight: bold; }
-        
+
+        /* Estilo para resaltar el texto que coincide con el término de búsqueda. */
+        .highlight {
+            background-color: #ffd966; /* Tailwind yellow-100 */
+            border-radius: 2px;
+        }
+        /* ============================================= */
+        /* === 3. COMPONENTES DE UI GENERALES === */
+        /* ============================================= */
+
         .loader { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background-color: rgba(255, 255, 255, 0.9); z-index: 9999; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
         }
+        /* Estilo y animación del spinner. */
         .loader .spinner { 
             border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; 
             border-left-color: var(--primary-color); animation: spin 1s ease infinite; 
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
+
+        /* Estilo para la pestaña activa en la barra de navegación. */
+        .tab-btn.active { border-color: var(--primary-color); color: var(--primary-color); font-weight: bold; }
+
+        /* Estilo para la tarjeta indicadora cuando está activa como filtro en el dashboard. */
+        .indicator-card.active-filter {
+            box-shadow: 0 0 0 2px var(--primary-color), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+        /* Estilo especial para resaltar la tarjeta de la semana actual en el dashboard. */
+        .indicator-card.current-week-highlight {
+            border-bottom: 3px solid var(--primary-color);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            background-color: #fcfdff;
+        }
+        /* ============================================= */
+        /* === 4. TABLAS === */
+        /* ============================================= */
         .table-container { 
             overflow-x: auto; 
             max-height: 455px;
             overflow-y: auto;
         }
+        
+        /* Table-container anterior
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }*/
 
-        /* Estilo específico para la altura de la tabla de histórico */
+        /* Altura específica para la tabla de histórico para un mejor layout. */
         #historical-table-container {
-            max-height: 430px; /* <-- Puedes ajustar este valor a tu preferencia */
+            max-height: 430px;
         }
         
+        /* Estilos personalizados para la barra de scroll en navegadores WebKit (Chrome, Safari). */
         .table-container::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-        
         .table-container::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
-        
         .table-container::-webkit-scrollbar-thumb {
             background: #c5c5c5;
             border-radius: 10px;
         }
-        
         .table-container::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
         
-        /* Mejora para encabezados de tabla fijos */
+        /* Encabezados de tabla fijos (sticky) para mantenerlos visibles al hacer scroll vertical. */
         .table-container thead th {
             position: sticky;
             top: 0;
             z-index: 10;
-            background-color: #f1f5f9; /* Color de bg-slate-100 para evitar transparencia */
+            background-color: #f1f5f9; /* Color de fondo para evitar transparencia. */
         }
 
-        .sortable-header { cursor: pointer; }
-        .sortable-header .sort-icon { display: none; }
-        .sortable-header.asc .sort-icon.asc,
-        .sortable-header.desc .sort-icon.desc { display: inline-block; }
+        /* Icono de filtro en los encabezados. */
         .filterable-header { 
             cursor: pointer; 
             position: relative;
@@ -160,12 +186,14 @@
             opacity: 0.5;
             transition: opacity 0.2s;
         }
+        /* El icono de filtro se vuelve más visible al pasar el ratón o cuando el filtro está activo. */
         .filterable-header:hover .filter-icon,
         .filterable-header.active .filter-icon {
             opacity: 1;
             color: var(--primary-color);
         }
 
+        /* Contenedor del menú desplegable para los filtros de columna. */
         .filter-dropdown {
             position: absolute;
             background-color: white;
@@ -176,45 +204,52 @@
             max-height: 250px;
             overflow-y: auto;
             min-width: 200px;
+        }        
+        .clickable-cell {
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
         }
         
-        input:invalid, select:invalid { border-color: #ef4444; }
-        
-        .section-title { font-weight: bold; color: var(--primary-color); margin-bottom: 1rem; }
-        
+        /* ============================================= */
+        /* === 5. LAYOUT Y FORMULARIOS === */
+        /* ============================================= */
+
+        /* Anula el ancho máximo por defecto para que la app ocupe más espacio horizontal. */
         .max-w-7xl {
             max-width: 100% !important;
             padding-left: 1rem;
             padding-right: 1rem;
         }
 
+        /* Título de sección dentro de los formularios. */
+        .section-title { font-weight: bold; color: var(--primary-color); margin-bottom: 1rem; }
+
         .table-container table {
-            width: 100%;
-            min-width: 1200px;
+            width: 100%; /* La tabla ocupa el 100% de su contenedor. */
+            min-width: 1200px; /* Ancho mínimo para evitar que las columnas se compriman demasiado. */
         }
 
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-        }
-
+        /* Grid responsivo para los campos del formulario. */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr;
             align-items: end;
             gap: 1rem;
         }
-
         @media (min-width: 640px) {
+            /* En pantallas más grandes, el grid se expande a dos columnas. */
             .form-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
+        /* Espaciado inferior para cada campo del formulario. */
         .form-field {
             margin-bottom: 0.5rem;
         }
 
+        /* Estilo base para las etiquetas de los campos del formulario. */
         .form-field label {
             display: block;
             margin-bottom: 0.25rem;
@@ -222,27 +257,25 @@
             font-weight: 500;
             color: #374151;
         }
-
-        /* --- Reglas para restaurar el tamaño original de Resumen, Comentario y Fuente --- */
-
-        /* 1. Hacer que el contenedor del campo ocupe todo el ancho del grid */
+        
+        /* Campo de formulario que ocupa todo el ancho del grid. */
         .form-field.full-width {
-            grid-column: 1 / -1; /* Ocupa todas las columnas del grid */
+            grid-column: 1 / -1;
         }
 
-        /* 2. Anular el ancho fijo del contenedor interno para los textareas */
+        /* Asegura que el contenedor flexible dentro de un campo de ancho completo también ocupe todo el ancho. */
         .form-field.full-width .flex-with-buttons {
             min-width: 100%;
             max-width: 100%;
         }
 
-        /* Anular ancho fijo para el campo de fuente también */
+        /* Caso específico para el campo de link, asegurando que ocupe el ancho completo. */
         .form-field:has(#licitacion-linkComprasXM) .flex-with-buttons, .form-field:has(#edit-licitacion-linkComprasXM) .flex-with-buttons {
             min-width: 100%;
             max-width: 100%;
         }
 
-        /* 3. Ocultar los botones de edición para los campos de texto libre */
+        /* Oculta el botón de edición para campos de texto multilínea (textarea) y el campo de link. */
         .form-field:has(textarea) .edit-btn,
         .form-field:has(#licitacion-linkComprasXM) .edit-btn,
         .form-field:has(#edit-licitacion-linkComprasXM) .edit-btn {
@@ -250,11 +283,13 @@
         }
 
         .licitacion-form-container {
-            max-height: 75vh;
-            overflow-y: auto;
-            padding-right: 0.5rem;
+            max-height: 75vh; /* Altura máxima para el contenedor del formulario. */
+            overflow-y: auto; /* Habilita el scroll vertical si el contenido excede la altura. */
+            padding-right: 0.5rem; /* Espacio a la derecha para la barra de scroll. */
         }
 
+        /* Estilos personalizados para la barra de scroll en navegadores WebKit (Chrome, Safari). */
+        /* Ancho de la barra de scroll. */
         .licitacion-form-container::-webkit-scrollbar {
             width: 6px;
         }
@@ -273,25 +308,27 @@
             background: #a8a8a8;
         }
 
+        /* Contenedor flexible para alinear campos de formulario con sus botones de acción. */
         .flex-with-buttons {
-            display: flex;
-            align-items: flex-end; /* Alinea el botón con la base del campo */
-            /* Clave: Establece un tamaño fijo para el contenedor del campo y el botón */
+            display: flex; 
+            align-items: flex-end; 
             min-width: 340px;
             max-width: 340px;
         }
 
+        /* Estilos para el contenedor de Select2 dentro del layout flexible. */
         .flex-with-buttons .select2-container {
             flex-grow: 1;
-            margin-bottom: 1px;
-            min-width: 0; /* Permite que el select se encoja y no se desborde */
+            margin-bottom: 1px; /* Alineación vertical fina. */
+            min-width: 0; /* Permite que el select se encoja si es necesario. */
         }
 
         .flex-with-buttons input,
         .flex-with-buttons textarea {
-            min-width: 0; /* Permite que el campo se encoja y no se desborde */
+            min-width: 0; /* Permite que el campo se encoja. */
         }
 
+        /* Estilos base para los botones de acción (ej. editar) junto a los campos. */
         .flex-with-buttons button {
             height: 38px;
             width: 38px;
@@ -306,6 +343,7 @@
             cursor: pointer;
         }
 
+        /* Estilo específico para el botón de edición. */
         .flex-with-buttons button.edit-btn {
             background-color: var(--secondary-color);
             color: white;
@@ -315,6 +353,7 @@
             background-color: #16463c;
         }
         
+        /* Estilos para normalizar la apariencia de Select2 con Tailwind. */
         .select2-container--default .select2-selection--single {
             height: 38px;
             padding: 5px;
@@ -330,11 +369,12 @@
             height: 36px;
         }
 
+        /* Asegura que el contenedor de Select2 ocupe el 100% del ancho disponible. */
         .select2-container {
             width: 100% !important;
         }
 
-        /* Regla clave para truncar el texto dentro del campo de selección */
+        /* Trunca el texto largo en los campos Select2 para evitar desbordamiento. */
         .select2-container .select2-selection--single .select2-selection__rendered {
             display: block;
             padding-left: 8px;
@@ -344,6 +384,7 @@
             text-overflow: ellipsis;
         }
 
+        /* Estilo para celdas que contienen un link, con truncamiento de texto. */
         .link-cell {
             max-width: 200px;
             overflow: hidden;
@@ -354,15 +395,23 @@
             cursor: pointer;
         }
 
+        /* ============================================= */
+        /* === 6. MODALES === */
+        /* ============================================= */
+        .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
+        .modal-leave { animation: fadeOut 0.3s ease-in forwards; }
+
+        /* Ancho específico para modales que necesitan más espacio horizontal. */
         .wide-modal .relative {
             max-width: 76rem !important;
         }
 
-        .chart-wrapper {
-            position: relative;
-            height: 300px;
+        /* Bloquea el scroll del body cuando un modal está abierto para evitar scroll dual. */
+        body.modal-open {
+            overflow: hidden;
         }
 
+        /* Contenedor principal para cada sección de gráfico en la pestaña de reportes. */
         .dynamic-chart-container {
             margin-top: 2rem;
             margin-bottom: 2rem;
@@ -372,6 +421,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
+        /* Encabezado de la sección de gráfico, con título y selector de variable. */
         .dynamic-chart-header {
             display: flex;
             align-items: center;
@@ -379,12 +429,14 @@
             gap: 1rem;
         }
         
+        /* Grid para el contenido del gráfico (gráfico a la izquierda, tabla a la derecha). */
         .dynamic-chart-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
         }
         
+        /* Contenedor para la tabla de datos que acompaña al gráfico. */
         .dynamic-table-container {
             background: #f9fafb;
             padding: 1rem;
@@ -393,6 +445,7 @@
             overflow-y: auto;
         }
         
+        /* Estilos base para la tabla de datos dinámica. */
         .dynamic-table {
             width: 100%;
             border-collapse: collapse;
@@ -415,6 +468,7 @@
             background-color: #f3f4f6;
         }
         
+        /* Estilos para el botón de alternar etiquetas en los gráficos. */
         #toggle-labels-btn {
             transition: all 0.3s ease;
         }
@@ -423,6 +477,7 @@
             background-color: var(--primary-color) !important;
         }
 
+        /* Estilos para el modal que muestra una vista web (iframe). */
         .webview-modal {
             display: flex;
             align-items: center;
@@ -442,14 +497,14 @@
             border-radius: 0.5rem;
         }
 
-        /* Estilos para el modal de detalles de la licitación */
+        /* Contenedor principal del contenido en el modal de detalles. */
         .details-modal-content {
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
             padding: 2rem;
             background-color: #f9fafb;
         }
-        .details-header {
+        .details-header { /* Encabezado del modal con título y fechas. */
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 1rem;
             margin-bottom: 1.5rem;
@@ -465,6 +520,8 @@
             color: #111827;
             margin-top: 0.25rem;
         }
+
+        /* Estilo para cada sección dentro del modal de detalles. */
         .details-section {
             margin-bottom: 1.5rem;
         }
@@ -476,26 +533,11 @@
             margin-bottom: 0.75rem;
         }
 
-        .contenteditable {
-            min-height: 100px;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            padding: 0.5rem;
-            overflow-wrap: break-word; /* Evita el desbordamiento horizontal con texto largo */
-            background-color: white;
-            overflow-y: auto;
-        }
-
-        .contenteditable:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(156, 35, 72, 0.2);
-        }
-
+        /* Estilos para contenido formateado (ej. descripciones con saltos de línea, listas). */
         .formatted-content {
             font-size: 1rem;
             line-height: 1.5;
-            overflow-wrap: break-word; /* Evita que el texto largo se desborde del contenedor */
+            overflow-wrap: break-word; 
         }
 
         .formatted-content p {
@@ -507,12 +549,11 @@
             margin-bottom: 0.5rem;
         }
 
-        /* Regla mejorada para la sangría de las listas */
         .formatted-content ul li, .formatted-content ol li {
-            list-style-position: outside !important; /* Asegura que la viñeta esté fuera del flujo de texto */
-            padding-left: 1.5em; /* Espacio para la viñeta y un poco más */
-            text-indent: -1.5em; /* Sangría negativa para alinear el texto de las siguientes líneas */
-            margin-left: 1.5em; /* Empuja todo el elemento a la derecha para crear el espacio de la sangría */
+            list-style-position: outside !important; 
+            padding-left: 1.5em; 
+            text-indent: -1.5em; 
+            margin-left: 1.5em; 
         }
 
         .formatted-content strong, .formatted-content b {
@@ -527,24 +568,25 @@
             text-decoration: underline;
         }
         
+        /* Estilo base para las tablas dentro del modal de detalles. */
         .details-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .details-table th, .details-table td { border: 1px solid #e5e7eb; padding: 0.75rem; text-align: left; vertical-align: top; }
         .details-table th { background-color: var(--primary-color); font-weight: 600; color: white; }
 
-        /* Estilo para que las columnas de la tabla de participantes tengan el mismo ancho */
+        /* Utilidad para tablas con columnas de igual ancho. */
         .details-table.equal-cols th, .details-table.equal-cols td {
             width: 33.33%;
         }
 
-        /* Estilo para resaltar la fecha de fallo en el modal de detalles */
+        /* Resalta visualmente los campos relacionados con el fallo y el monto. */
         .highlight-fallo {
             background-color: #fefce8; /* bg-yellow-50 */
             border: 1px solid var(--secondary-color);
             font-weight: 600;
             color: var(--secondary-color);
         }
-
-        /* Estilos para el modal de múltiples detalles */
+        
+        /* Estilo para cada item en el modal de múltiples detalles. */
         .multi-details-item {
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
@@ -557,17 +599,16 @@
             margin-bottom: 0;
         }
 
-        /* Clase para bloquear el scroll del body cuando un modal está abierto */
-        body.modal-open {
-            overflow: hidden;
-        }
+        /* ============================================= */
+        /* === 7. COMPONENTES ESPECÍFICOS === */
+        /* ============================================= */
 
-        /* Estilos para el tooltip de vista rápida */
+        /* Tooltip de vista rápida */
         #quick-view-tooltip {
-            position: fixed; /* Flota sobre toda la página */
-            display: none;   /* Oculto por defecto */
-            background-color: #ffffff; /* Fondo blanco */
-            color: #374151; /* Texto oscuro (gray-700) */
+            position: fixed; 
+            display: none;   
+            background-color: #ffffff; 
+            color: #374151; 
             padding: 0.75rem 1rem;
             border-radius: 0.5rem;
             border: 1px solid #e5e7eb; /* Borde sutil (gray-200) */
@@ -586,31 +627,26 @@
             opacity: 1;
         }
 
-        #quick-view-tooltip strong { color: var(--primary-color); } /* Títulos en color primario */
+        #quick-view-tooltip strong { color: var(--primary-color); }
         #quick-view-tooltip p { margin-bottom: 0.25rem; }
+        
+        /* Contenedor para la sección de fecha de fallo y monto en el tooltip. */
         #quick-view-tooltip .fallo-monto-container {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             border-top: 1px solid #e5e7eb; padding-top: 0.5rem; margin-top: 0.5rem;
         }
+        /* Resaltado para el monto en el tooltip. */
         #quick-view-tooltip .monto-highlight { 
             font-size: 1.1rem; font-weight: 700; color: var(--primary-color); 
             text-align: right;
         }
-
-        /* Estilo para celdas clickeables en tablas de reportes */
-        .clickable-cell {
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s ease-in-out;
-        }
-
-        /* Estilo para resaltar el texto de búsqueda */
-        .highlight {
-            background-color: #ffd966; /* Tailwind yellow-100 */
-            border-radius: 2px;
-        }
+        /* ============================================= */
+        /* === 8. ANIMACIONES === */
+        /* ============================================= */
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
     </style>
     
     <script>
