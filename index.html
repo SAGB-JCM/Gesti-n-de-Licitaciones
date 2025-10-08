@@ -677,13 +677,20 @@
 </head>
 <body class="antialiased text-slate-700">
 
+    <!-- ================================================================= -->
+    <!-- ================ 1. LOADER DE CARGA INICIAL ===================== -->
+    <!-- ================================================================= -->
     <div id="loader" class="loader">
         <div class="spinner"></div>
         <p class="mt-4 text-sm text-slate-600">Cargando datos, por favor espera...</p>
     </div>
 
+    <!-- ================================================================= -->
+    <!-- ================ 2. CONTENEDOR PRINCIPAL DE LA APP ============== -->
+    <!-- ================================================================= -->
     <div id="app" class="min-h-screen hidden">
 
+        <!-- ENCABEZADO SUPERIOR: Contiene el logo, título y la información del usuario. Es fijo en la parte superior. -->
         <header class="bg-primary shadow-lg sticky top-0 z-30">
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
@@ -694,6 +701,7 @@
             </div>
         </header>
 
+        <!-- BARRA DE PESTAÑAS: Navegación principal entre "Licitaciones" y "Reportes". Es fija debajo del encabezado. -->
         <div class="bg-white shadow-sm sticky top-[56px] z-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div id="tabs" class="border-b border-gray-200">
@@ -705,10 +713,15 @@
             </div>
         </div>
 
+        <!-- ÁREA DE CONTENIDO PRINCIPAL: Aquí se renderiza el contenido de la pestaña activa. -->
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
 
+            <!-- ================================================================= -->
+            <!-- ================ PESTAÑA 1: LICITACIONES (HISTÓRICO) ============ -->
+            <!-- ================================================================= -->
+            <!-- NOTA: Esta pestaña está actualmente oculta y no se utiliza. La funcionalidad principal está en 'tab-content-historico'. -->
             <main id="tab-content-licitaciones" class="tab-content hidden">
-                <section id="licitacion-log">
+                <section id="licitacion-log-main">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Registro de Licitaciones</h2>
                         <div class="flex items-center space-x-2">
@@ -748,7 +761,10 @@
                 </section>
             </main>
 
+            <!-- CONTENIDO DE LA PESTAÑA "LICITACIONES" (Actualmente la principal) -->
             <div id="tab-content-historico" class="tab-content">
+                
+                <!-- SECCIÓN DASHBOARD (RADAR DE FECHAS): Muestra tarjetas interactivas con el conteo de licitaciones por semana de fallo. -->
                 <section id="dashboard-historico" class="mb-8">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Radar de Fechas de Fallo</h2>
@@ -788,7 +804,8 @@
                     </div>
                 </section>
 
-                <section id="historical-log">
+                <!-- SECCIÓN TABLA DE LICITACIONES: Contiene los controles de la tabla y la tabla principal de datos. -->
+                <section id="historical-log-section">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Licitaciones Registradas</h2>
                         <div class="flex items-center space-x-2">
@@ -851,7 +868,12 @@
                 </section>
             </div>
 
+            <!-- ================================================================= -->
+            <!-- ================ PESTAÑA 2: REPORTES ============================ -->
+            <!-- ================================================================= -->
             <div id="tab-content-reportes" class="tab-content hidden">
+                
+                <!-- SECCIÓN DE REPORTES: Contenedor para todos los gráficos y tablas de la pestaña de reportes. -->
                 <section id="reportes" class="bg-white p-6 rounded-xl shadow-md mb-8">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Reportes</h2>
@@ -863,7 +885,7 @@
                         </div>
                     </div>
 
-                    
+                    <!-- GRÁFICO DINÁMICO 1: "Licitaciones por..." - Permite al usuario seleccionar una variable para visualizar la distribución. -->
                     <div class="dynamic-chart-container">
                         <div class="dynamic-chart-header">
                             <h3 class="text-xl font-semibold text-slate-800">Licitaciones por</h3>
@@ -904,7 +926,7 @@
                         </div>
                     </div>
 
-                    <!-- Gráfica de Proyectos por Procedimiento -->
+                    <!-- GRÁFICO DINÁMICO 2: "Proyectos por..." - Gráfico de barras agrupadas/apiladas para comparar variables por proyecto. -->
                     <div class="dynamic-chart-container">
                         <div class="dynamic-chart-header">
                             <h3 class="text-xl font-semibold text-slate-800">Proyectos por</h3>
@@ -944,13 +966,18 @@
         </div>
     </div>
     
+    <!-- ================================================================= -->
+    <!-- ================ 3. MODALES DE LA APLICACIÓN ==================== -->
+    <!-- ================================================================= -->
+
+    <!-- MODAL PARA AGREGAR NUEVA LICITACIÓN -->
     <div id="licitacion-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
                 <i class="fa-solid fa-times-circle fa-lg"></i>
             </button>
             <h3 class="text-2xl font-bold text-primary mb-6">Registrar Nueva Licitación</h3>
-            <div class="licitacion-form-container">
+            <div class="licitacion-form-container"> <!-- Contenedor con scroll para el formulario -->
                 <form id="licitacion-form" class="space-y-6" novalidate>
                     <!-- Grupo 1: Identificación del Proyecto -->
                     <div class="section-title">Identificación del Proyecto</div>
@@ -1106,16 +1133,17 @@
         </div>
     </div>
 
-    <!-- Tooltip para vista rápida en tablas -->
+    <!-- TOOLTIP DE VISTA RÁPIDA: Elemento flotante que muestra un resumen de la fila al pasar el cursor. -->
     <div id="quick-view-tooltip"></div>
 
+    <!-- MODAL PARA EDITAR LICITACIÓN EXISTENTE -->
     <div id="edit-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-edit-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
                 <i class="fa-solid fa-times-circle fa-lg"></i>
             </button>
             <h3 class="text-2xl font-bold text-primary mb-6">Editar Licitación</h3>
-            <div class="licitacion-form-container">
+            <div class="licitacion-form-container"> <!-- Contenedor con scroll para el formulario -->
                 <form id="edit-form" class="space-y-6" novalidate>
                     <input type="hidden" id="edit-id">
                     
@@ -1273,6 +1301,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIRMACIÓN: Genérico, usado principalmente para confirmar la eliminación de un registro. -->
     <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
             <h3 class="text-xl font-bold text-slate-800 mb-4">Confirmar Eliminación</h3>
@@ -1284,6 +1313,7 @@
         </div>
     </div>
     
+    <!-- MODAL DE REEMPLAZO DE HISTÓRICO: Pregunta al usuario si desea reemplazar los datos al subir un nuevo archivo Excel. -->
     <div id="replace-historical-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
             <h3 class="text-xl font-bold text-primary mb-4">Reemplazar Histórico</h3>
@@ -1295,6 +1325,7 @@
         </div>
     </div>
     
+    <!-- MODAL DE EDICIÓN DE OPCIÓN: Permite al usuario editar el texto de una opción de un campo de tipo 'select'. -->
     <div id="edit-option-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
             <h3 class="text-xl font-bold text-primary mb-4">Editar Opción</h3>
@@ -1306,6 +1337,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONTRASEÑA: Requiere autenticación para acciones críticas (editar, eliminar, subir archivos). -->
     <div id="password-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[55] flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
             <h3 class="text-xl font-bold text-primary mb-4">Verificación de Seguridad</h3>
@@ -1318,6 +1350,7 @@
         </div>
     </div>
 
+    <!-- MODAL WEBVIEW: Muestra una página web externa dentro de un iframe. -->
     <div id="webview-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center webview-modal">
         <div class="relative bg-white rounded-lg shadow-xl webview-container">
             <button id="close-webview-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10 bg-white rounded-full p-1">
@@ -1327,6 +1360,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE CARGA DE PLANTILLAS: Permite al usuario subir plantillas de Word para la generación de reportes. -->
     <div id="template-upload-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md mx-4">
             <div class="flex justify-between items-center mb-6">
@@ -1342,7 +1376,7 @@
         </div>
     </div>
 
-    <!-- Contenedor para la Alerta de Fechas de Fallo -->
+    <!-- ALERTA DE FECHAS DE FALLO: Notificación flotante que avisa sobre fechas de fallo próximas. -->
     <div id="fallo-alert-container" class="hidden fixed bottom-4 right-4 w-full max-w-sm z-40">
         <div class="bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
             <div class="p-4">
@@ -1367,6 +1401,7 @@
         </div>
     </div>
 
+    <!-- Estilos para la animación de entrada/salida de la alerta de fallo. -->
     <style>
         #fallo-alert-container.alert-enter { animation: slideInUp 0.5s ease-out forwards; }
         #fallo-alert-container.alert-leave { animation: slideOutDown 0.5s ease-in forwards; }
@@ -1375,7 +1410,7 @@
         @keyframes slideOutDown { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); } }
     </style>
 
-
+    <!-- MODAL DE DETALLES: Muestra una vista detallada y formateada de una única licitación. -->
     <div id="view-details-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-details-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
@@ -1385,7 +1420,7 @@
                 <img src="https://github.com/SAGB-JCM/Gesti-n-de-Licitaciones/blob/main/icono_licitaciones.png?raw=true" alt="Logo Sistema Licitaciones" class="h-16 w-auto">
                 <h3 class="text-2xl font-bold text-primary">Detalle de la Licitación</h3>
             </div>
-            <div class="licitacion-form-container">
+            <div class="licitacion-form-container"> <!-- Contenedor con scroll -->
                 <div id="details-modal-content" class="details-modal-content">
                     <!-- El contenido se generará dinámicamente -->
                 </div>
@@ -1393,7 +1428,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN DE REPORTES (AÑADIDO) -->
+    <!-- MODAL DE CONFIGURACIÓN DE REPORTES: Permite al usuario definir filtros de fecha y gestionar plantillas. -->
     <div id="report-settings-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md mx-4">
             <div class="flex justify-between items-center mb-6">
@@ -1403,6 +1438,7 @@
                 </button>
             </div>
             <div class="space-y-6">
+                <!-- Sección para cargar plantillas de Word -->
                 <div>
                     <h4 class="text-md font-semibold text-slate-700 mb-2">Plantillas</h4>
                     <button id="open-template-uploader-btn" class="w-full bg-secondary hover:bg-secondary-dark text-white font-bold py-3 px-4 rounded-lg shadow transition-all duration-200 ease-in-out flex items-center justify-center space-x-2">
@@ -1410,6 +1446,7 @@
                         <span>Cargar Plantilla Word</span>
                     </button>
                 </div>
+                <!-- Sección para filtrar los reportes por un rango de fechas -->
                 <div class="border-t border-gray-200 pt-4">
                     <h4 class="text-md font-semibold text-slate-700 mb-3">Filtro de Fechas para Reportes (por Fecha de Fallo)</h4>
                     <fieldset class="space-y-2">
@@ -1440,6 +1477,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE MÚLTIPLES DETALLES: Muestra una vista detallada de todas las licitaciones actualmente visibles en la tabla. -->
     <div id="multi-details-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center wide-modal">
         <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl mx-4">
             <button id="close-multi-details-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
@@ -1449,17 +1487,25 @@
                 <img src="https://github.com/SAGB-JCM/Gesti-n-de-Licitaciones/blob/main/icono_licitaciones.png?raw=true" alt="Logo Sistema Licitaciones" class="h-16 w-auto">
                 <h3 class="text-2xl font-bold text-primary">Detalle de Licitaciones Filtradas</h3>
             </div>
-            <div id="multi-details-content-container" class="licitacion-form-container">
+            <div id="multi-details-content-container" class="licitacion-form-container"> <!-- Contenedor con scroll -->
                 <!-- El contenido se generará dinámicamente -->
             </div>
         </div>
     </div>
 
+    <!-- ================================================================= -->
+    <!-- ================ 4. SCRIPT PRINCIPAL DE LA APP ================== -->
+    <!-- ================================================================= -->
+    <!-- Contiene toda la lógica de la aplicación: Firebase, manipulación del DOM, eventos, filtros, gráficos, etc. -->
     <script>
         // =============================================
         // MÓDULO: Verificación de dependencias
         // =============================================
         
+        /**
+         * Verifica que todas las librerías de JavaScript externas necesarias estén cargadas.
+         * @returns {string[]} Un array con los nombres de las librerías que no se encontraron.
+         */
         function checkRequiredLibraries() {
             // Retrocompatibilidad: si PizZip se carga como PizZipUtils, asignarlo.
             if (typeof window.PizZip === 'undefined' && typeof window.PizZipUtils !== 'undefined') {
@@ -1484,6 +1530,11 @@
             return missing;
         }
         
+        /**
+         * Carga un script dinámicamente en el <head> del documento.
+         * @param {string} src - La URL del script a cargar.
+         * @returns {Promise<void>} Una promesa que se resuelve cuando el script se ha cargado o se rechaza si hay un error.
+         */
         function loadScript(src) {
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
@@ -1494,6 +1545,11 @@
             });
         }
 
+        /**
+         * Intenta cargar librerías faltantes desde una URL de respaldo (CDN).
+         * @param {string[]} missingLibs - Un array con los nombres de las librerías que faltan.
+         * @returns {Promise<any[]>} Una promesa que se resuelve cuando todos los scripts de respaldo han intentado cargarse.
+         */
         function loadFallbackLibraries(missingLibs) {
             const fallbacks = {
                 'PizZip': 'https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js',
@@ -1583,11 +1639,19 @@
         // MÓDULO: Utilidades
         // =============================================
         
+        /**
+         * Oculta el loader inicial y muestra el contenido principal de la aplicación.
+         */
         function showApp() {
             loader.classList.add('hidden');
             appContainer.classList.remove('hidden');
         }
 
+        /**
+         * Muestra una notificación flotante (toast) en la esquina inferior derecha.
+         * @param {string} message - El mensaje a mostrar.
+         * @param {'info'|'success'|'warning'|'error'} [type='info'] - El tipo de alerta, que determina su color.
+         */
         function showAlert(message, type = 'info') {
             const alertContainer = document.createElement('div');
             const colors = { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500', info: 'bg-gray-500' };
@@ -1597,7 +1661,12 @@
             setTimeout(() => { alertContainer.remove(); }, 3000);
         }
 
-        //Función para resaltar texto
+        /**
+         * Resalta las coincidencias de un término de búsqueda dentro de un texto.
+         * @param {string} text - El texto original.
+         * @param {string} searchTerm - El término a buscar y resaltar.
+         * @returns {string} El texto con las coincidencias envueltas en un span con la clase 'highlight'.
+         */
         function highlightText(text, searchTerm) {
             if (!searchTerm || searchTerm.trim() === '' || typeof text !== 'string') {
                 return text;
@@ -1608,6 +1677,10 @@
             return text.replace(regex, `<span class="highlight">$1</span>`);
         }
 
+        /**
+         * Abre un modal, gestionando el z-index y bloqueando el scroll del body.
+         * @param {HTMLElement} modal - El elemento del modal a abrir.
+         */
         function openModal(modal) {
             modal.classList.remove('hidden', 'modal-leave');
             modal.classList.add('modal-enter');
@@ -1617,6 +1690,10 @@
             openModalCount++;
         }
 
+        /**
+         * Cierra un modal, gestionando el z-index y restaurando el scroll del body si es necesario.
+         * @param {HTMLElement} modal - El elemento del modal a cerrar.
+         */
         function closeModal(modal) {
             modal.classList.remove('modal-enter');
             modal.classList.add('modal-leave');
@@ -1630,11 +1707,21 @@
             }, 300);
         }
 
+        /**
+         * Abre un modal y enfoca un elemento específico dentro de él.
+         * @param {HTMLElement} modal - El modal a abrir.
+         * @param {HTMLElement} elementToFocus - El elemento que recibirá el foco.
+         */
         function openModalWithFocus(modal, elementToFocus) {
             openModal(modal);
             setTimeout(() => elementToFocus.focus(), 150); // Pequeño delay para la animación
         }
 
+        /**
+         * Formatea una cadena de fecha en formato "YYYY-MM-DD" a un formato localizado "DD/MM/YYYY".
+         * @param {string} dateString - La fecha en formato "YYYY-MM-DD".
+         * @returns {string} La fecha formateada o "N/A" si la entrada no es válida.
+         */
         function formatDate(dateString) {
             if (!dateString) return 'N/A';
             try {
@@ -1648,11 +1735,22 @@
             }
         }
 
+        /**
+         * Trunca un texto a una longitud máxima y añade puntos suspensivos.
+         * @param {string} text - El texto a truncar.
+         * @param {number} [maxLength=50] - La longitud máxima permitida.
+         * @returns {string} El texto truncado o "N/A" si la entrada es nula.
+         */
         function truncateText(text, maxLength = 50) {
             if (!text) return 'N/A';
             return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
         }
 
+        /**
+         * Valida si una cadena de texto es una URL válida.
+         * @param {string} string - La cadena a validar.
+         * @returns {boolean} `true` si es una URL válida, `false` en caso contrario.
+         */
         function isValidUrl(string) {
             try {
                 new URL(string);
@@ -1662,18 +1760,33 @@
             }
         }
 
+        /**
+         * Elimina todas las etiquetas HTML de una cadena de texto.
+         * @param {string} html - La cadena HTML a limpiar.
+         * @returns {string} El texto plano sin etiquetas HTML.
+         */
         function stripHtml(html) {
             if (!html) return '';
             const doc = new DOMParser().parseFromString(html, 'text/html');
             return doc.body.textContent || "";
         }
 
+        /**
+         * Escapa caracteres HTML y reemplaza saltos de línea por etiquetas <br>.
+         * @param {string} text - El texto a formatear.
+         * @returns {string} El texto formateado como HTML seguro.
+         */
         function formatTextWithLineBreaks(text) {
             if (!text) return 'N/A';
             // Escapa HTML para seguridad y luego reemplaza saltos de línea
             return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;').replace(/\n/g, '<br>');
         }
 
+        /**
+         * Formatea una fecha en formato "YYYY-MM-DD" a un formato largo (ej. "lunes, 1 de enero de 2024").
+         * @param {string} dateString - La fecha en formato "YYYY-MM-DD".
+         * @returns {string} La fecha en formato largo.
+         */
         function formatLongDate(dateString) {
             if (!dateString) return 'Fecha no disponible';
             try {
@@ -1691,6 +1804,11 @@
             } catch (e) { return dateString; }
         }
 
+        /**
+         * Obtiene el nombre del mes a partir de una fecha en formato "YYYY-MM-DD".
+         * @param {string} dateString - La fecha en formato "YYYY-MM-DD".
+         * @returns {string} El nombre del mes capitalizado.
+         */
         function getMonthName(dateString) {
             if (!dateString) return 'Mes no disponible';
             try {
@@ -1707,6 +1825,11 @@
             } catch (e) { return 'Error de mes'; }
         }
 
+        /**
+         * Convierte una cadena Base64 a un ArrayBuffer.
+         * @param {string} base64 - La cadena en formato Base64.
+         * @returns {ArrayBuffer} El ArrayBuffer resultante.
+         */
         function base64ToArrayBuffer(base64) {
             // Primero, removemos el prefijo "data:application/..." si existe
             const base64Data = base64.substring(base64.indexOf(',') + 1);
@@ -1717,50 +1840,6 @@
                 bytes[i] = binary_string.charCodeAt(i);
             }
             return bytes.buffer;
-        }
-
-        function cleanWordHTML(html) {
-            if (!html) return '';
-
-            // 1. Eliminar comentarios, metadatos y namespaces de Word
-            html = html.replace(/<!--[\s\S]*?-->/gi, '');
-            html = html.replace(/<meta[\s\S]*?>/gi, '');
-            html = html.replace(/<link[\s\S]*?>/gi, '');
-            html = html.replace(/<style[\s\S]*?<\/style>/gi, '');
-            html = html.replace(/<o:p>[\s\S]*?<\/o:p>/gi, '');
-            html = html.replace(/<w:[\s\S]*?<\/w:[\s\S]*?>/gi, ''); // Elimina nodos de Word
-            html = html.replace(/\s*xmlns:?[^=]*="[^"]*"/gi, ''); // Elimina atributos xmlns
-
-            // 2. Reemplazar múltiples <br> por párrafos para mejor estructura
-            html = html.replace(/<br\s*\/?>\s*<br\s*\/?>/gi, '</p><p>');
-
-            return html;
-        }
-
-        function normalizeFontSizes(html) {
-            if (!html) return '';
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
-            
-            // Recorrer todos los elementos para limpiar estilos
-            tempDiv.querySelectorAll('*').forEach(el => {
-                if (el.style) {
-                    // Conservar solo el margen izquierdo para la indentación
-                    const marginLeft = el.style.marginLeft;
-                    
-                    // Limpiar todos los estilos en línea
-                    el.removeAttribute('style');
-                    
-                    // Si había un margen, volver a aplicarlo
-                    if (marginLeft) {
-                        el.style.marginLeft = marginLeft;
-                    }
-                }
-                // Eliminar otros atributos que no sean de estilo (class, id, etc.)
-                ['class', 'id', 'lang', 'dir'].forEach(attr => el.removeAttribute(attr));
-            });
-
-            return tempDiv.innerHTML;
         }
 
         /**
@@ -1797,8 +1876,9 @@
         }
 
         /**
-         * Actualiza el dashboard de fechas de fallo basándose en los datos del histórico.
-         * @param {Date | string | null} baseDate - La fecha de referencia. Si es null, usa la fecha actual.
+         * Actualiza el dashboard de fechas de fallo (radar) basándose en los datos del histórico.
+         * Calcula y muestra el número de licitaciones cuyo fallo ocurre en las semanas relativas a la fecha base.
+         * @param {Date | string | null} [baseDate=null] - La fecha de referencia para el cálculo. Si es null, usa la fecha actual.
          */
         function updateFalloDashboard(baseDate = null) {
             const weeks = {
@@ -1854,6 +1934,7 @@
 
         /**
          * Actualiza el indicador visual con la suma de los montos de los datos filtrados.
+         * Muestra el monto total de las licitaciones visibles en la tabla.
          * @param {Array} filteredData - Los datos actualmente visibles en la tabla.
          */
         function updateFilteredTotalAmount(filteredData) {
@@ -1867,7 +1948,12 @@
         // MÓDULO: Interfaz de usuario
         // =============================================
 
-
+        /**
+         * Renderiza las filas de la tabla de licitaciones con los datos proporcionados.
+         * @param {HTMLTableSectionElement} tableBody - El `<tbody>` de la tabla a poblar.
+         * @param {Array<Object>} data - El array de objetos de licitación.
+         * @param {boolean} [isHistorical=false] - Indica si la tabla es la del histórico.
+         */
         function renderTable(tableBody, data, isHistorical = false) {
             const noDataMessage = isHistorical ? noHistoricalMessage : noLicitacionMessage;
             tableBody.innerHTML = '';
@@ -1940,6 +2026,12 @@
             }
         }
 
+        /**
+         * Aplica todos los filtros activos (búsqueda general, filtros de columna, filtro de radar) a un conjunto de datos.
+         * @param {Array<Object>} data - El conjunto de datos a filtrar.
+         * @param {'main'|'historical'} filterKey - La clave que identifica el conjunto de filtros a usar.
+         * @returns {Array<Object>} Los datos filtrados.
+         */
         function applyAllFilters(data, filterKey) {
             const searchInput = document.getElementById(`filter-input-${filterKey}`);
             const searchText = searchInput ? searchInput.value.toLowerCase() : '';
@@ -1978,10 +2070,10 @@
 
         /**
          * Obtiene los datos pre-filtrados por todas las columnas excepto la especificada.
-         * Esto es crucial para que los dropdowns de filtro muestren solo opciones relevantes.
+         * Esto es crucial para que los menús desplegables de filtro muestren solo opciones relevantes.
          * @param {function} dataProvider - Función que devuelve el conjunto de datos completo.
-         * @param {string} filterKey - 'main' o 'historical'.
-         * @param {string} excludeColumn - La clave de la columna a excluir del filtrado.
+         * @param {'main'|'historical'} filterKey - La clave del conjunto de filtros a usar.
+         * @param {string} excludeColumn - La clave de la columna a excluir del pre-filtrado.
          * @returns {Array} - Los datos filtrados.
          */
         function getPreFilteredData(dataProvider, filterKey, excludeColumn) {
@@ -2012,6 +2104,14 @@
             });
         }
 
+        /**
+         * Configura los manejadores de eventos para los encabezados de columna filtrables.
+         * Crea y gestiona los menús desplegables de filtro.
+         * @param {string} headerId - El ID del `<tr>` que contiene los encabezados.
+         * @param {Function} dataProvider - Una función que devuelve los datos a filtrar.
+         * @param {Function} renderFunc - La función que renderiza la tabla.
+         * @param {'main'|'historical'} filterKey - La clave del conjunto de filtros.
+         */
         function setupColumnFilters(headerId, dataProvider, renderFunc, filterKey) {
             const headerRow = document.getElementById(headerId);
             headerRow.addEventListener('click', e => {
@@ -2118,6 +2218,13 @@
             }, true);
         }
         
+        /**
+         * Configura el campo de búsqueda general para una tabla.
+         * @param {string} inputId - El ID del campo de input para la búsqueda.
+         * @param {Function} dataProvider - Función que devuelve los datos a filtrar.
+         * @param {Function} renderFunc - La función que renderiza la tabla.
+         * @param {boolean} [isHistorical=false] - Indica si es la tabla histórica.
+         */
         function setupFiltering(inputId, dataProvider, renderFunc, isHistorical = false) {
             const filterInput = document.getElementById(inputId);
             if (!filterInput) return; // Si el input no existe, no hacer nada.
@@ -2137,7 +2244,7 @@
 
         /**
          * Limpia todos los filtros aplicados a una tabla y la vuelve a renderizar.
-         * @param {string} filterKey - La clave de la tabla a limpiar ('historical').
+         * @param {'historical'} filterKey - La clave de la tabla a limpiar.
          */
         function clearAllFilters(filterKey) {
             // 1. Limpiar el estado de los filtros de columna
@@ -2162,6 +2269,12 @@
             sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
         }
 
+        /**
+         * Ordena los datos por fecha de fallo y luego por fecha de creación (más recientes primero) y los renderiza en la tabla.
+         * @param {HTMLTableSectionElement} tableBody - El `<tbody>` de la tabla.
+         * @param {Array<Object>} data - El array de datos de licitaciones.
+         * @param {boolean} isHistorical - Indica si son datos históricos.
+         */
         function sortAndRenderTable(tableBody, data, isHistorical) {
             // Lógica de ordenamiento corregida y definitiva:
             // 1. Criterio principal: Fecha de fallo (descendente).
@@ -2190,6 +2303,10 @@
             renderTable(tableBody, filteredData, isHistorical);
         }
 
+        /**
+         * Abre un modal con un iframe para mostrar una página web.
+         * @param {string} url - La URL a cargar en el iframe.
+         */
         function openWebviewModal(url) {
             webviewFrame.src = url;
             openModal(webviewModal);
@@ -2199,6 +2316,12 @@
         // MÓDULO: Gestión de licitaciones
         // =============================================
         
+        /**
+         * Guarda un nuevo registro de licitación en Firestore.
+         * @param {Object} licitacionData - El objeto con los datos de la licitación a guardar.
+         * @param {boolean} [isHistorical=false] - Si es `true`, guarda en la colección histórica.
+         * @returns {Promise<void>}
+         */
         async function saveLicitacion(licitacionData, isHistorical = false) {
             try {
                 const collectionRef = isHistorical ? historicalLicitacionesCollectionRef : licitacionesCollectionRef;
@@ -2214,6 +2337,13 @@
             }
         }
 
+        /**
+         * Actualiza un registro de licitación existente en Firestore.
+         * @param {string} id - El ID del documento a actualizar.
+         * @param {Object} updateData - El objeto con los campos a actualizar.
+         * @param {boolean} isHistorical - `true` si la licitación está en la colección histórica.
+         * @returns {Promise<void>}
+         */
         async function updateLicitacion(id, updateData, isHistorical) {
             if (!id) {
                 console.error("ID no válido para actualización");
@@ -2239,6 +2369,12 @@
             }
         }
 
+        /**
+         * Elimina un registro de licitación de Firestore.
+         * @param {string} id - El ID del documento a eliminar.
+         * @param {boolean} isHistorical - `true` si la licitación está en la colección histórica.
+         * @returns {Promise<void>}
+         */
         async function deleteLicitacion(id, isHistorical) {
             if (!id) {
                 console.error("ID no válido para eliminación");
@@ -2264,6 +2400,10 @@
             }
         }
 
+        /**
+         * Maneja el evento de clic en el botón de editar de una fila de la tabla.
+         * @param {HTMLElement} button - El botón que fue presionado.
+         */
         function handleEditClick(button) {
             requirePassword(() => {
                 const licitacionId = button.getAttribute('data-id');
@@ -2310,6 +2450,10 @@
             });
         }
 
+        /**
+         * Maneja el evento de clic en el botón de eliminar de una fila de la tabla.
+         * @param {HTMLElement} button - El botón que fue presionado.
+         */
         function handleDeleteClick(button) {
             requirePassword(() => {
                 licitacionToDeleteId = button.getAttribute('data-id');
@@ -2324,6 +2468,11 @@
             });
         }
 
+        /**
+         * Muestra un modal con los detalles completos de una licitación.
+         * @param {Object} licitacionItem - El objeto de la licitación a mostrar.
+         * @param {boolean} [isHistorical=false] - Indica si el registro es del histórico.
+         */
         function showDetailsModal(licitacionItem, isHistorical = false) {
             if (!licitacionItem) return;
 
@@ -2476,6 +2625,12 @@
             openModal(viewDetailsModal);
         }
 
+        /**
+         * Genera el HTML para mostrar los detalles de una sola licitación dentro del modal de vista múltiple.
+         * @param {Object} licitacionItem - El objeto de la licitación.
+         * @param {number} index - El índice del elemento en la lista filtrada.
+         * @param {boolean} [isHistorical=false] - Indica si el registro es del histórico.
+         */
         function generateSingleDetailHtml(licitacionItem, index, isHistorical = false) {
             if (!licitacionItem) return '';
 
@@ -2555,8 +2710,9 @@
         }
 
         /**
-         * Devuelve la función de comparación para ordenar las licitaciones
-         * igual que en la tabla principal (fecha de fallo descendente).
+         * Devuelve una función de comparación para ordenar las licitaciones por fecha de fallo descendente,
+         * que es el orden por defecto de la tabla principal.
+         * @returns {function(Object, Object): number} La función de comparación para `Array.prototype.sort()`.
          */
         function getSortComparator() {
             return (a, b) => {
@@ -2573,6 +2729,10 @@
             };
         }
 
+        /**
+         * Muestra un modal con los detalles de todas las licitaciones actualmente visibles en la tabla.
+         * @param {boolean} [isHistorical=true] - Indica si se deben usar los datos históricos.
+         */
         function showMultiDetailsModal(isHistorical = true) {
             // 1. Ordenar los datos como en la tabla
             const sortedData = [...historicalLicitaciones].sort(getSortComparator());
@@ -2586,6 +2746,10 @@
             openModal(multiDetailsModal);
         }
 
+        /**
+         * Obtiene la referencia al documento de la plantilla de Word por defecto en Firestore.
+         * @returns {{ref: firebase.firestore.DocumentReference, type: string}} Objeto con la referencia y el tipo.
+         */
         function getTemplateDocRef() {
             return {
                 ref: db.collection('config').doc('wordTemplate_default'),
@@ -2594,7 +2758,7 @@
         }
 
         /**
-         * Genera un documento .docx a partir de una plantilla en Firebase Storage.
+         * Genera un documento .docx a partir de una plantilla almacenada en Firestore.
          * @param {string} licitacionId - El ID del registro de la licitación.
          * @param {boolean} isHistorical - Indica si el registro es del histórico.
          */
@@ -2708,6 +2872,9 @@
         // MÓDULO: Gestión de datos históricos
         // =============================================
         
+        /**
+         * Elimina todos los documentos de la colección 'historicalLicitaciones'.
+         */
         async function deleteAllHistorical() {
             const batch = db.batch();
             historicalLicitaciones.forEach(licitacionItem => {
@@ -2717,6 +2884,10 @@
             await batch.commit(); 
         }
 
+        /**
+         * Importa un lote de registros de licitaciones a la colección 'historicalLicitaciones'.
+         * @param {Array<Object>} data - Un array de objetos de licitación para importar.
+         */
         async function importHistoricalData(data) {
             try {
                 const batch = db.batch();
@@ -3057,10 +3228,18 @@
             "2025"
         ];
 
+        /**
+         * Actualiza las opciones de todos los selectores dinámicos de la aplicación.
+         * Extrae valores únicos de los datos existentes y los fusiona con catálogos base.
+         */
         // Catálogo de participantes
         const catalogoParticipantes = [
         ];
 
+        /**
+         * Actualiza las opciones de todos los selectores dinámicos de la aplicación.
+         * Extrae valores únicos de los datos existentes y los fusiona con catálogos base.
+         */
         function updateDynamicSelectOptions() {
             const allData = [...licitaciones, ...historicalLicitaciones];
             
@@ -3124,6 +3303,12 @@
             updateSelectOptions('ganadoresLicitacion', fieldOptions.ganadoresLicitacion);
         }
 
+        /**
+         * Actualiza las opciones de un conjunto de selectores Select2.
+         * @param {string} field - La clave del campo (ej. 'proyectos', 'siglasDependencias').
+         * @param {Array<string|Object>} options - El array de nuevas opciones.
+         * @param {string|null} [selectedId=null] - El ID de la opción que debe quedar seleccionada.
+         */
         function updateSelectOptions(field, options, selectedId = null) {
             const fieldToSelectMap = {
                 'proyectos': ['licitacion-proyecto', 'edit-licitacion-proyecto'],
@@ -3164,6 +3349,15 @@
             }
         }
 
+        /**
+         * Busca y reemplaza un valor en un campo específico en todos los registros de la base de datos (ambas colecciones).
+         * Se utiliza para actualizar en masa cuando se edita una opción de un selector.
+         * @param {string} field - La clave del campo (ej. 'proyectos').
+         * @param {string} oldValue - El valor antiguo a reemplazar.
+         * @param {string} newValue - El nuevo valor.
+         * @param {string} activeFormId - El ID del formulario activo para restaurar su estado.
+         * @param {Object} formStateBeforeEdit - El estado del formulario antes de la edición.
+         */
         async function findAndReplaceInDatabase(field, oldValue, newValue, activeFormId, formStateBeforeEdit) {
             const fieldToDbFieldMap = {
                 'proyectos': 'proyecto', 
@@ -3219,6 +3413,11 @@
             }
         }
 
+        /**
+         * Captura el estado actual de un formulario (valores de inputs, textareas y selects).
+         * @param {string} formId - El ID del formulario.
+         * @returns {Object|null} Un objeto que representa el estado del formulario.
+         */
         function getFormState(formId) {
             const form = document.getElementById(formId);
             if (!form) return null;
@@ -3249,6 +3448,11 @@
             return state;
         }
 
+        /**
+         * Restaura el estado de un formulario a partir de un objeto de estado guardado.
+         * @param {string} formId - El ID del formulario a restaurar.
+         * @param {Object} state - El objeto de estado previamente guardado con `getFormState`.
+         */
         function restoreFormState(formId, state) {
             const form = document.getElementById(formId);
             if (!form || !state) return;
@@ -3273,6 +3477,10 @@
             });
         }
 
+        /**
+         * Configura los manejadores de eventos para los botones de edición (lápiz)
+         * asociados a cada campo en los formularios.
+         */
         function setupAddEditButtons() {
             const buttonToFieldMap = {
                 'edit-proyecto-btn': 'proyectos',
@@ -3330,12 +3538,6 @@
                 });
             });
 
-
-
-
-
-
-
             confirmEditOptionBtn.addEventListener('click', () => {
                 const newValue = editOptionInput.value.trim();
 
@@ -3386,6 +3588,9 @@
             });
         }
 
+        /**
+         * Configura la navegación por pestañas (Licitaciones, Reportes).
+         */
         function setupTabs() {
             tabsContainer.addEventListener('click', (e) => {
                 if (e.target.matches('.tab-btn')) {
@@ -3409,6 +3614,9 @@
         // MÓDULO: Autenticación y seguridad
         // =============================================
 
+        /**
+         * Verifica la contraseña introducida en el modal de seguridad.
+         */
         function verifyPassword() {
             const password = passwordInput.value;
             
@@ -3425,6 +3633,9 @@
             }
         }
 
+        /**
+         * Configura los manejadores de eventos para el modal de verificación de contraseña.
+         */
         function setupPasswordVerification() {
             confirmPasswordBtn.addEventListener('click', verifyPassword);
             cancelPasswordBtn.addEventListener('click', () => {
@@ -3439,9 +3650,13 @@
             });
         }
 
+        /**
+         * Muestra el modal de contraseña y guarda la acción a ejecutar tras una verificación exitosa.
+         * @param {Function} action - La función a ejecutar si la contraseña es correcta.
+         * @param {boolean} [isAsync=false] - Indica si la acción es asíncrona.
+         */
         function requirePassword(action, isAsync = false) {
-            pendingAction = action;
-            //openModal(passwordModal); // Se corregirá a openModalWithFocus más adelante
+            pendingAction = action;    
             openModalWithFocus(passwordModal, passwordInput); // Llamada única para abrir el modal y enfocar
             
             if (isAsync) {
@@ -3459,6 +3674,10 @@
             }
         }
 
+        /**
+         * Inicializa la autenticación anónima de Firebase.
+         * Una vez autenticado, configura los listeners en tiempo real.
+         */
         async function initializeAppWithAuth() {
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
@@ -3479,14 +3698,11 @@
             });
         }
         
-        function setupRealtimeListeners() {
-            licitacionesCollectionRef.onSnapshot((snapshot) => {
-                licitaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                sortAndRenderTable(licitacionTableBody, licitaciones, false);
-                updateCharts();
-                updateDynamicSelectOptions();
-            }, (error) => console.error("Error en listener de licitaciones:", error));
-            
+        /**
+         * Configura los listeners de Firestore (`onSnapshot`) para recibir actualizaciones
+         * en tiempo real de las colecciones de licitaciones (histórico).
+         */
+        function setupRealtimeListeners() {            
             historicalLicitacionesCollectionRef.onSnapshot((snapshot) => {
                 historicalLicitaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
@@ -3502,6 +3718,7 @@
         
         /**
          * Obtiene y filtra los datos para los reportes según la configuración guardada.
+         * Aplica un filtro de rango de fechas si está activado.
          * @returns {Array} El conjunto de datos de licitaciones filtrado por fecha si aplica.
          */
         function getReportData() {
@@ -3522,6 +3739,9 @@
             return baseData; // Devuelve todos los datos si el filtro no está activo.
         }
 
+        /**
+         * Actualiza todos los gráficos en la pestaña de "Reportes".
+         */
         function updateCharts() {
             // Verificación robusta: Asegurarse de que dynamicChart es una instancia de Chart antes de destruirla.
             if (charts.dynamic) charts.dynamic.destroy();
@@ -3539,6 +3759,7 @@
 
         /**
          * Navega a la pestaña de licitaciones y aplica los filtros especificados.
+         * Útil para hacer clic en los gráficos y ver los datos correspondientes en la tabla.
          * @param {Object} filtersToApply - Un objeto donde las claves son los campos a filtrar y los valores son arrays de los valores a incluir.
          */
         function navigateAndFilter(filtersToApply) {
@@ -3576,6 +3797,9 @@
             sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
         }
 
+        /**
+         * Actualiza la gráfica de "Proyectos por Procedimiento/Tipo/Ganador" y su tabla de datos asociada.
+         */
         function updateProjectProcedureChart() {
             const data = getReportData(); // Usar los datos filtrados por fecha
             const projectProcedureCounts = {};
@@ -3703,6 +3927,9 @@
             });
         }
 
+        /**
+         * Actualiza el gráfico dinámico principal y su tabla de distribución de datos asociada.
+         */
         function updateDynamicChart() {
             const data = getReportData(); // Usar los datos filtrados por fecha
             const selectedVariable = dynamicChartVariable.value;
@@ -3812,6 +4039,9 @@
             "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "Link Compras XM"
         ];
 
+        /**
+         * Prepara los datos para la exportación a Excel, asegurando el formato y el orden correctos.
+         */
         function prepareExportData(data) {
             return data.map((licitacionItem, index) => {
                 const fallback = (value) => value || "N/A";
@@ -3840,6 +4070,7 @@
 
         /**
          * Aplica formato profesional a una hoja de cálculo de Excel antes de descargarla.
+         * Añade título, totales, estilos de celda y autofiltros.
          * @param {object} ws - La hoja de cálculo (worksheet) de la librería XLSX.
          * @param {Array<object>} data - Los datos que se van a exportar, para calcular dimensiones.
          */
@@ -3972,6 +4203,7 @@
 
         /**
          * Exporta una tabla HTML a un archivo Excel con formato profesional.
+         * Es útil para exportar las tablas de datos de la pestaña de reportes.
          * @param {string} tableId - El ID de la tabla HTML a exportar.
          * @param {string} sheetName - El nombre para la hoja de Excel.
          * @param {string} fileName - El nombre del archivo a descargar.
@@ -4108,6 +4340,8 @@
 
         /**
          * Muestra una alerta sutil si hay fechas de fallo próximas.
+         * La alerta aparece una vez por sesión y se cierra automáticamente.
+         * @param {Object} counts - Objeto con los conteos de fallos por semana.
          * Se ejecuta solo una vez por carga de página.
          */
         let falloAlertShown = false;
@@ -4170,6 +4404,11 @@
         // MÓDULO: Links clickeables y generar docx
         // =============================================
         
+        /**
+         * Maneja el evento de doble clic en una fila de la tabla para mostrar los detalles.
+         * @param {MouseEvent} e - El evento de clic.
+         * @param {boolean} isHistorical - Indica si la fila pertenece a la tabla histórica.
+         */
         function handleRowDoubleClick(e, isHistorical) {
             const row = e.target.closest('tr');
             if (!row || e.target.closest('button') || e.target.closest('.link-cell')) {
@@ -4183,6 +4422,10 @@
             showDetailsModal(licitacionItem, isHistorical);
         }
 
+        /**
+         * Maneja el clic en el botón de generar documento Word (.docx).
+         * @param {HTMLElement} button - El botón que fue presionado.
+         */
         function handleGenerateDocClick(button) {
             const licitacionId = button.dataset.id;
             const isHistorical = button.dataset.isHistorical === 'true';
@@ -4194,6 +4437,9 @@
         // MÓDULO: Configuración de eventos
         // =============================================
         
+        /**
+         * Configura todos los `event listeners` principales de la aplicación.
+         */
         function setupEventListeners() {
             setupTabs();
             setupColumnFilters('main-table-header', () => licitaciones, renderTable, 'main');
@@ -4208,7 +4454,7 @@
             if (closeTemplateUploadModalBtn) {
                 closeTemplateUploadModalBtn.addEventListener('click', () => closeModal(templateUploadModal));
             }
-            
+
             // Listener para el botón de carga de plantilla (ahora dentro del modal de configuración)
             if (openTemplateUploaderBtn) {
                 openTemplateUploaderBtn.addEventListener('click', () => {
@@ -4743,6 +4989,9 @@
             });
         }
 
+        /**
+         * Configura la funcionalidad del tooltip de vista rápida que aparece al pasar el ratón sobre las filas de la tabla.
+         */
         function setupQuickViewTooltip() {
             const showTooltip = (e) => {
                 const row = e.target.closest('tr[data-quickview="true"]'); // Asegurarse de que el tooltip solo se active en las filas correctas
@@ -4790,6 +5039,9 @@
             });
         }
 
+        /**
+         * Configura el selector de fecha dinámico en el radar de fallos.
+         */
         function setupDynamicDatePicker() {
             const datePicker = document.getElementById('fallo-date-picker');
             const currentIcon = document.getElementById('fallo-current-icon');
@@ -4820,6 +5072,9 @@
             });
         }
 
+        /**
+         * Configura los filtros del dashboard de radar de fechas de fallo.
+         */
         function setupFalloDashboardFilter() {
             const indicators = {
                 'minus-2': document.getElementById('fallo-indicator-minus-2'),
@@ -4879,6 +5134,9 @@
             });
         }
 
+        /**
+         * Inicia un temporizador para cerrar automáticamente la alerta de fechas de fallo.
+         */
         function startFalloAlertTimeout() {
             // Limpiar cualquier temporizador existente antes de iniciar uno nuevo
             clearTimeout(falloAlertTimeout);
@@ -4895,6 +5153,9 @@
         // MÓDULO: Inicialización
         // =============================================
 
+        /**
+         * Función de inicialización principal. Se ejecuta cuando el DOM está completamente cargado.
+         */
         document.addEventListener('DOMContentLoaded', () => {
             // Asignar elementos del DOM una vez que la página esté cargada
             loader = document.getElementById('loader');
