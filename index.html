@@ -2062,6 +2062,9 @@
                 const row = document.createElement('tr');
                 row.className = 'bg-white border-b hover:bg-gray-50';
                 // Añadir atributos de datos para el tooltip de vista rápida
+                // SOLUCIÓN: Añadir el ID directamente a la fila para un acceso fiable.
+                row.dataset.id = licitacionItem.id;
+
                 row.dataset.quickview = 'true';
 
                 row.dataset.nombre = licitacionItem.nombre || 'N/A';
@@ -4577,11 +4580,13 @@
          * @param {boolean} isHistorical - Indica si la fila pertenece a la tabla histórica.
          */
         function handleRowDoubleClick(e, isHistorical) {
-            const row = e.target.closest('tr');
+            // SOLUCIÓN: Buscar la fila que tiene el atributo data-id.
+            const row = e.target.closest('tr[data-id]');
             if (!row || e.target.closest('button') || e.target.closest('.link-cell')) {
                 return; // No hacer nada si se hace clic en un botón o en el enlace
             }
-            const licitacionId = row.querySelector('.edit-btn')?.dataset.id;
+            // SOLUCIÓN: Leer el ID directamente del dataset de la fila.
+            const licitacionId = row.dataset.id;
             if (!licitacionId) return;
 
             const data = isHistorical ? historicalLicitaciones : licitaciones;
