@@ -996,7 +996,7 @@
                                 <div class="flex justify-between items-center mb-2">
                                     <h4 class="text-lg font-semibold text-slate-800 text-center flex-grow">Distribución</h4>
                                     <!-- INICIO: Botón de ordenamiento para la primera tabla -->
-                                    <button id="toggle-dynamic-table-sort-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Ordenar por Monto">
+                                    <button id="toggle-dynamic-table-sort-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Ordenar por Cantidad">
                                         <i class="fa-solid fa-sort"></i>
                                     </button>
                                     <button id="download-dynamic-table-excel-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar tabla como Excel">
@@ -1041,7 +1041,7 @@
                             <div class="flex justify-between items-center mb-2">
                                 <h4 class="text-lg font-semibold text-slate-800 text-center flex-grow">Montos Detallados por Procedimiento (mdp)</h4>
                                 <!-- INICIO: Botón de ordenamiento para la segunda tabla -->
-                                <button id="toggle-project-table-sort-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Ordenar por Monto">
+                                <button id="toggle-project-table-sort-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Ordenar por Cantidad">
                                     <i class="fa-solid fa-sort"></i>
                                 </button>
                                 <button id="download-project-procedure-table-excel-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar tabla como Excel">
@@ -1735,8 +1735,8 @@
         let activeFalloDashboardFilter = null; // Para el filtro del radar de fallo
 
         // --- INICIO: Variables para el ordenamiento dinámico de tablas de reportes ---
-        let dynamicChartSortBy = 'count'; // 'count' o 'amount'
-        let projectChartSortBy = 'count'; // 'count' o 'amount'
+        let dynamicChartSortBy = 'amount'; // 'count' o 'amount'
+        let projectChartSortBy = 'amount'; // 'count' o 'amount'
         // --- FIN: Variables para el ordenamiento dinámico ---
         // =============================================
         // MÓDULO: Gestión de Listeners de Firebase
