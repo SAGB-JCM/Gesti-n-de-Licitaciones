@@ -1004,7 +1004,7 @@
                                         <tr>
                                             <th id="dynamic-table-header">Variable</th>
                                             <th>Total</th>
-                                            <th>Monto</th>
+                                            <th>Monto (mdp)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="dynamic-table-body">
@@ -1019,8 +1019,8 @@
                         <div class="dynamic-chart-header">
                             <h3 class="text-xl font-semibold text-slate-800">Proyectos por</h3>
                             <select id="project-chart-variable" class="mt-1 block w-full md:w-auto rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
-                                <option value="procedimientoContratacion">Procedimiento de Contratación</option>
                                 <option value="tipo">Tipo</option>
+                                <option value="procedimientoContratacion">Procedimiento de Contratación</option>
                                 <option value="ganadorLicitacion">Ganador</option>
                             </select>
                             <button id="toggle-chart-type-btn" class="bg-primary text-white font-bold py-2 px-3 rounded ml-2 transition-colors duration-200" title="Cambiar tipo de gráfica (Agrupada/Apilada)">
@@ -1035,7 +1035,7 @@
                         </div>
                         <div class="dynamic-table-container mt-4">
                             <div class="flex justify-between items-center mb-2">
-                                <h4 class="text-lg font-semibold text-slate-800 text-center flex-grow">Montos Detallados por Procedimiento (MXN)</h4>
+                                <h4 class="text-lg font-semibold text-slate-800 text-center flex-grow">Montos Detallados por Procedimiento (mdp)</h4>
                                 <button id="download-project-procedure-table-excel-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar tabla como Excel">
                                     <i class="fa-solid fa-file-excel"></i>
                                 </button>
@@ -4006,7 +4006,7 @@
             const table = document.getElementById('projectProcedureTable');
             // Encabezado de dos niveles
             const headerRow1 = `<tr class="bg-slate-200"><th rowspan="2" class="align-bottom text-center">Proyecto</th>${sortedProcedures.map(proc => `<th colspan="2" class="text-center">${proc}</th>`).join('')}<th colspan="2" class="text-center">Total</th></tr>`;
-            const headerRow2 = `<tr>${sortedProcedures.map(() => `<th class="text-center">Cantidad</th><th class="text-center">Monto</th>`).join('')}<th class="text-center">Cantidad</th><th class="text-center">Monto</th></tr>`;
+            const headerRow2 = `<tr>${sortedProcedures.map(() => `<th class="text-center">Cantidad</th><th class="text-center">Monto (mdp)</th>`).join('')}<th class="text-center">Cantidad</th><th class="text-center">Monto (mdp)</th></tr>`;
             table.querySelector('thead').innerHTML = headerRow1 + headerRow2;
             
             const tbody = table.querySelector('tbody');
@@ -4030,7 +4030,7 @@
                     // Celda de Cantidad
                     rowHTML += `<td class="text-center clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-project="${project}" data-filter-variable="${selectedVariable}" data-filter-value="${proc}">${count}</td>`;
                     // Celda de Monto
-                    rowHTML += `<td>$${amount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                    rowHTML += `<td class="text-right">${(amount / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
                     
                     projectTotalAmount += amount;
                     projectTotalCount += count;
@@ -4040,7 +4040,7 @@
 
                 // Celdas de Total por fila
                 rowHTML += `<td class="font-bold text-center">${projectTotalCount}</td>`;
-                rowHTML += `<td class="font-bold">$${projectTotalAmount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                rowHTML += `<td class="font-bold text-right">${(projectTotalAmount / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
                 row.innerHTML = rowHTML;
                 tbody.appendChild(row);
                 grandTotalAmount += projectTotalAmount;
@@ -4052,12 +4052,12 @@
                 // Total Cantidad por columna
                 footerHTML += `<td class="text-center">${procedureCountTotals[proc] || 0}</td>`;
                 // Total Monto por columna
-                footerHTML += `<td>$${(procedureAmountTotals[proc] || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
+                footerHTML += `<td class="text-right">${((procedureAmountTotals[proc] || 0) / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
             });
             // Gran Total Cantidad
             footerHTML += `<td class="text-center">${grandTotalCount}</td>`;
             // Gran Total Monto
-            footerHTML += `<td>$${grandTotalAmount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
+            footerHTML += `<td class="text-right">${(grandTotalAmount / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
             table.querySelector('tfoot').innerHTML = footerHTML;
 
             // --- Lógica del gráfico (conteo) ---
@@ -4135,7 +4135,7 @@
                 row.innerHTML = `
                     <td class="clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-variable="${selectedVariable}" data-filter-value="${value}">${value}</td>
                     <td class="clickable-cell hover:bg-slate-100 hover:text-primary">${stats.count}</td>
-                    <td>${'$' + stats.sum.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td class="text-right">${(stats.sum / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 `;
                 dynamicTableBody.appendChild(row);
             });
@@ -4146,7 +4146,7 @@
             totalRow.innerHTML = `
                 <td>Total</td>
                 <td>${totalCount}</td>
-                <td>${'$' + totalSum.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="text-right">${(totalSum / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             `;
             dynamicTableBody.appendChild(totalRow);
             
@@ -4188,8 +4188,8 @@
                                 footer: function(tooltipItems) {
                                     const context = tooltipItems[0];
                                     const originalStat = sortedStats[context.dataIndex];
-                                    const amount = originalStat ? originalStat[1].sum : 0;
-                                    const formattedAmount = '$' + amount.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                    const amountInMillions = originalStat ? (originalStat[1].sum / 1000000) : 0;
+                                    const formattedAmount = amountInMillions.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mdp';
                                     return `Monto Total: ${formattedAmount}`;
                                 }
                             }
