@@ -995,6 +995,10 @@
                             <div class="dynamic-table-container">
                                 <div class="flex justify-between items-center mb-2">
                                     <h4 class="text-lg font-semibold text-slate-800 text-center flex-grow">Distribución</h4>
+                                    <!-- INICIO: Botón de ordenamiento para la primera tabla -->
+                                    <button id="toggle-dynamic-table-sort-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Ordenar por Monto">
+                                        <i class="fa-solid fa-sort"></i>
+                                    </button>
                                     <button id="download-dynamic-table-excel-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar tabla como Excel">
                                         <i class="fa-solid fa-file-excel"></i>
                                     </button>
@@ -1036,6 +1040,10 @@
                         <div class="dynamic-table-container mt-4">
                             <div class="flex justify-between items-center mb-2">
                                 <h4 class="text-lg font-semibold text-slate-800 text-center flex-grow">Montos Detallados por Procedimiento (mdp)</h4>
+                                <!-- INICIO: Botón de ordenamiento para la segunda tabla -->
+                                <button id="toggle-project-table-sort-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Ordenar por Monto">
+                                    <i class="fa-solid fa-sort"></i>
+                                </button>
                                 <button id="download-project-procedure-table-excel-btn" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar tabla como Excel">
                                     <i class="fa-solid fa-file-excel"></i>
                                 </button>
@@ -1726,6 +1734,10 @@
         let isProjectChartStacked = true; // Variable de estado para el tipo de la segunda gráfica
         let activeFalloDashboardFilter = null; // Para el filtro del radar de fallo
 
+        // --- INICIO: Variables para el ordenamiento dinámico de tablas de reportes ---
+        let dynamicChartSortBy = 'count'; // 'count' o 'amount'
+        let projectChartSortBy = 'count'; // 'count' o 'amount'
+        // --- FIN: Variables para el ordenamiento dinámico ---
         // =============================================
         // MÓDULO: Gestión de Listeners de Firebase
         // =============================================
@@ -3972,11 +3984,14 @@
          */
         function updateProjectProcedureChart() {
             const data = getReportData(); // Usar los datos filtrados por fecha
+            const selectedVariable = document.getElementById('project-chart-variable').value;
             const projectProcedureCounts = {};
             const projectProcedureAmounts = {};
             const allProcedures = new Set();
-            const selectedVariable = document.getElementById('project-chart-variable').value;
-
+            
+            // Objeto para almacenar los totales de cada proyecto para el ordenamiento
+            const projectTotals = {};
+ 
             data.forEach(item => {
                 const project = item.proyecto || 'N/A';
                 const procedure = item[selectedVariable] || 'N/A';
@@ -3984,6 +3999,11 @@
 
                 if (project !== 'N/A' && procedure !== 'N/A') {
                     if (!projectProcedureCounts[project]) {
+                        // Inicializar totales para el proyecto
+                        if (!projectTotals[project]) {
+                            projectTotals[project] = { count: 0, amount: 0 };
+                        }
+
                         projectProcedureCounts[project] = {};
                         projectProcedureAmounts[project] = {};
                     }
@@ -3991,15 +4011,22 @@
                     projectProcedureAmounts[project][procedure] = (projectProcedureAmounts[project][procedure] || 0) + amount; // Suma de montos
                     allProcedures.add(procedure);
                 }
+
+                // Acumular totales para el ordenamiento
+                if (project !== 'N/A') {
+                    if (!projectTotals[project]) {
+                        projectTotals[project] = { count: 0, amount: 0 };
+                    }
+                    projectTotals[project].count += 1;
+                    projectTotals[project].amount += amount;
+                }
             });
 
             const sortedProcedures = Array.from(allProcedures).sort(); // Ordenar procedimientos alfabéticamente
 
-            // Ordenar proyectos por la cantidad total de licitaciones (de mayor a menor)
-            const projects = Object.keys(projectProcedureCounts).sort((a, b) => {
-                const totalA = Object.values(projectProcedureCounts[a]).reduce((sum, count) => sum + count, 0);
-                const totalB = Object.values(projectProcedureCounts[b]).reduce((sum, count) => sum + count, 0);
-                return totalB - totalA;
+            // Ordenar proyectos dinámicamente según el estado de `projectChartSortBy`
+            const projects = Object.keys(projectTotals).sort((a, b) => {
+                return projectChartSortBy === 'amount' ? projectTotals[b].amount - projectTotals[a].amount : projectTotals[b].count - projectTotals[a].count;
             });
 
             // --- Lógica de la tabla con montos y totales ---
@@ -4120,7 +4147,10 @@
             dynamicTableHeader.textContent = selectedVariable.charAt(0).toUpperCase() + selectedVariable.slice(1);
             
             // --- INICIO DE LA MEJORA: Ordenar los datos por monto descendente ---
-            const sortedStats = Object.entries(variableStats).sort(([, a], [, b]) => b.count - a.count);
+            // Ordenamiento dinámico basado en la variable de estado `dynamicChartSortBy`
+            const sortedStats = Object.entries(variableStats).sort(([, a], [, b]) => {
+                return dynamicChartSortBy === 'amount' ? b.sum - a.sum : b.count - a.count;
+            });
             // --- FIN DE LA MEJORA ---
 
             let totalCount = 0; // Usar los datos ordenados (sortedStats) para renderizar la tabla
@@ -5149,6 +5179,26 @@
                 const fileName = `Reporte_Detallado_por_${variable}.xlsx`;
                 // El ID de la tabla completa es 'projectProcedureTable', la función buscará el thead, tbody y tfoot dentro de ella.
                 exportTableToExcel('projectProcedureTable', 'Detalle Procedimientos', fileName);
+            });
+
+            // Listeners para los nuevos botones de ordenamiento de tablas de reportes
+            document.getElementById('toggle-dynamic-table-sort-btn').addEventListener('click', (e) => {
+                dynamicChartSortBy = dynamicChartSortBy === 'count' ? 'amount' : 'count';
+                const button = e.currentTarget;
+                button.title = dynamicChartSortBy === 'count' ? 'Ordenar por Monto' : 'Ordenar por Cantidad';
+                // Actualizar solo el gráfico y tabla dinámicos
+                updateDynamicChart();
+            });
+
+            document.getElementById('toggle-project-table-sort-btn').addEventListener('click', (e) => {
+                projectChartSortBy = projectChartSortBy === 'count' ? 'amount' : 'count';
+                const button = e.currentTarget;
+                button.title = projectChartSortBy === 'count' ? 'Ordenar por Monto' : 'Ordenar por Cantidad';
+                // Actualizar solo el gráfico y tabla de proyectos
+                // No es necesario destruir el otro gráfico, solo el que se va a redibujar.
+                if (charts.projectProcedure) charts.projectProcedure.destroy();
+                charts.projectProcedure = null;
+                updateProjectProcedureChart();
             });
 
             // Eventos para la nueva alerta de fallos
