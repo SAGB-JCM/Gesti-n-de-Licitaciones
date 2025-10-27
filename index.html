@@ -2249,6 +2249,18 @@
             const columnFilters = activeFilters[filterKey];
 
             return allData.filter(item => { // Usamos allData que es el set completo
+                // --- INICIO DE LA SOLUCIÓN ---
+                // Aplicar el filtro de tipo de tren primero para que las opciones del dropdown sean correctas.
+                if (filterKey === 'historical' && activeTrainTypeFilter !== 'todos') {
+                    const tipoTren = (item.tipoTren || '').toLowerCase().trim();
+                    if (activeTrainTypeFilter === 'trenes' && tipoTren !== 'trenes') {
+                        return false;
+                    }
+                    if (activeTrainTypeFilter === 'trenes-del-norte' && tipoTren !== 'trenes del norte') {
+                        return false;
+                    }
+                }
+                // --- FIN DE LA SOLUCIÓN ---
                 // Primero, aplicar el filtro del dashboard si está activo
                 if (filterKey === 'historical' && activeFalloDashboardFilter) {
                     const falloDate = new Date(item.fechaFallo + 'T00:00:00');
