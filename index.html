@@ -2249,18 +2249,18 @@
             const columnFilters = activeFilters[filterKey];
 
             return allData.filter(item => { // Usamos allData que es el set completo
-                // --- INICIO DE LA SOLUCIÓN ---
-                // Aplicar el filtro de tipo de tren primero para que las opciones del dropdown sean correctas.
-                if (filterKey === 'historical' && activeTrainTypeFilter !== 'todos') {
-                    const tipoTren = (item.tipoTren || '').toLowerCase().trim();
-                    if (activeTrainTypeFilter === 'trenes' && tipoTren !== 'trenes') {
-                        return false;
-                    }
-                    if (activeTrainTypeFilter === 'trenes-del-norte' && tipoTren !== 'trenes del norte') {
-                        return false;
-                    }
+                // --- INICIO DE LA SOLUCIÓN MEJORADA ---
+                // Aplicar el filtro de tipo de tren primero para que las opciones del dropdown sean correctas,
+                // sin importar el tipo de dato de la columna.
+                const tipoTren = (item.tipoTren || '').toLowerCase().trim();
+                if (activeTrainTypeFilter === 'trenes' && tipoTren !== 'trenes') {
+                    return false;
                 }
-                // --- FIN DE LA SOLUCIÓN ---
+                if (activeTrainTypeFilter === 'trenes-del-norte' && tipoTren !== 'trenes del norte') {
+                    return false;
+                }
+                // --- FIN DE LA SOLUCIÓN MEJORADA ---
+
                 // Primero, aplicar el filtro del dashboard si está activo
                 if (filterKey === 'historical' && activeFalloDashboardFilter) {
                     const falloDate = new Date(item.fechaFallo + 'T00:00:00');
@@ -2315,16 +2315,20 @@
                         return value.trim();
                     }
                     return value;
-                }))].sort((a, b) => {
+                }))].sort((a, b) => { // Convertir a string antes de comparar
+                    const valA = String(a);
+                    const valB = String(b);
+
                     // Lógica de ordenamiento personalizada para fechas en el filtro
                     if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') {
                         try {
-                            const dateA = new Date(a.split('/').reverse().join('-'));
-                            const dateB = new Date(b.split('/').reverse().join('-'));
+                            // Usar los valores originales (a, b) que son strings de fecha formateados
+                            const dateA = new Date(valA.split('/').reverse().join('-'));
+                            const dateB = new Date(valB.split('/').reverse().join('-'));
                             return dateA - dateB; // Orden ascendente
-                        } catch (err) { return a.localeCompare(b); }
+                        } catch (err) { return valA.localeCompare(valB); }
                     }
-                    return a.localeCompare(b, 'es', { numeric: true });
+                    return valA.localeCompare(valB, 'es', { numeric: true });
                 });
 
                 const dropdown = document.createElement('div');
