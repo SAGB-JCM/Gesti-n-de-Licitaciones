@@ -846,6 +846,7 @@
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombreLicitantes">Licitantes<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="ganadorLicitacion">Ganador<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="monto">Monto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="kmAdjudicados">KM Adjudicados<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6">Link</th>
                                     <th scope="col" class="py-3 px-6">Acciones</th>
                                 </tr>
@@ -961,6 +962,7 @@
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombreLicitantes">Licitantes<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="ganadorLicitacion">Ganador<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="monto">Monto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="kmAdjudicados">KM Adjudicados<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6">Link</th>
                                     <th scope="col" class="py-3 px-6 actions-header">Acciones</th>
                                 </tr>
@@ -1232,6 +1234,10 @@
                             <label for="licitacion-monto">Monto</label>
                             <input type="number" id="licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
+                        <div class="form-field">
+                            <label for="licitacion-kmAdjudicados">KM Adjudicados</label>
+                            <input type="number" id="licitacion-kmAdjudicados" name="kmAdjudicados" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                        </div>
                     </div>
 
                     <!-- Grupo 5: Verificación -->
@@ -1408,6 +1414,10 @@
                         <div class="form-field">
                             <label for="edit-licitacion-monto">Monto</label>
                             <input type="number" id="edit-licitacion-monto" name="monto" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-kmAdjudicados">KM Adjudicados</label>
+                            <input type="number" id="edit-licitacion-kmAdjudicados" name="kmAdjudicados" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -1741,6 +1751,7 @@
         let fieldOptions = {
             proyectos: [],
             tiposTren: [],
+            kmAdjudicados: [],
             nombres: [],
             siglasDependencias: [],
             procedimientosContratacion: [],
@@ -2127,6 +2138,7 @@
                 row.dataset.tipo = licitacionItem.tipo || 'N/A';
                 row.dataset.ganador = licitacionItem.ganadorLicitacion || 'N/A';
                 row.dataset.monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
+                row.dataset.kmAdjudicados = licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A';
                 
                 const linkCell = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM)
                     ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline" title="${licitacionItem.linkComprasXM}"><i class="fa-solid fa-link"></i></a>`
@@ -2153,6 +2165,7 @@
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.nombreLicitantes, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.ganadorLicitacion, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A')}</td>
+                    <td class="py-4 px-6">${applyHighlight(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A')}</td>
                     <td class="py-4 px-6 text-center">${linkCell}</td>
                     ${isLoggedIn ? `
                         <td class="py-4 px-6 flex space-x-2 actions-cell">
@@ -2307,14 +2320,15 @@
 
                 const uniqueValues = [...new Set(preFilteredData.map(item => {
                     let value = item[filterBy] || 'N/A';
-                    // Normalización para campos de texto (proyecto, resumen, etc.)
-                    if (typeof value === 'string') {
-                        // Para la fecha, usamos el formato específico.
-                        if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') return formatDate(value);
-                        // Para otros strings, normalizamos eliminando espacios al inicio y final.
-                        return value.trim();
+                    // --- INICIO DE LA SOLUCIÓN ---
+                    // Normalización para todos los tipos de datos para evitar duplicados como "2025" y " 2025".
+                    // 1. Manejar las fechas como un caso especial.
+                    if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') {
+                        return formatDate(value);
                     }
-                    return value;
+                    // 2. Para todos los demás valores (números o strings), convertirlos a string y aplicar trim.
+                    return String(value).trim();
+                    // --- FIN DE LA SOLUCIÓN ---
                 }))].sort((a, b) => { // Convertir a string antes de comparar
                     const valA = String(a);
                     const valB = String(b);
@@ -2629,6 +2643,7 @@
                 document.getElementById('edit-licitacion-descripcion').value = licitacionToEdit.descripcion || '';
                 document.getElementById('edit-licitacion-generalidades').value = licitacionToEdit.generalidades || '';
                 document.getElementById('edit-licitacion-monto').value = licitacionToEdit.monto || '';
+                document.getElementById('edit-licitacion-kmAdjudicados').value = licitacionToEdit.kmAdjudicados || '';
 
                 // Set select values
                 $('#edit-licitacion-proyecto').val(licitacionToEdit.proyecto || '').trigger('change');
@@ -4326,10 +4341,11 @@
         // =============================================
 
         const exportHeaders = [
-            "No.", "Proyecto", "Tipo de Tren", "Nombre", "Descripción", "Generalidades", "Siglas Dependencia",
+            "No.", "Proyecto", "Tipo de Tren", "Nombre", "Descripción", "Generalidades", "KM Adjudicados", "Siglas Dependencia",
             "Código Expediente", "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura",
             "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "Link Compras XM"
         ];
+
 
         /**
          * Prepara los datos para la exportación a Excel, asegurando el formato y el orden correctos.
@@ -4344,6 +4360,7 @@
                     "Nombre": fallback(licitacionItem.nombre),
                     "Descripción": fallback(licitacionItem.descripcion),
                     "Generalidades": fallback(licitacionItem.generalidades),
+                    "KM Adjudicados": licitacionItem.kmAdjudicados && !isNaN(Number(licitacionItem.kmAdjudicados)) ? Number(licitacionItem.kmAdjudicados) : null,
                     "Siglas Dependencia": fallback(licitacionItem.siglasDependencia),
                     "Código Expediente": fallback(licitacionItem.codigoExpediente),
                     "Procedimiento": fallback(licitacionItem.procedimientoContratacion),
@@ -4407,6 +4424,11 @@
                 alignment: { horizontal: "right", vertical: "center" }
             };
 
+            const numberCellStyle = {
+                ...rightAlignedCellStyle,
+                numFmt: "#,##0.00"
+            };
+
             const currencyCellStyle = {
                 ...rightAlignedCellStyle,
                 numFmt: "#,##0.00"
@@ -4451,6 +4473,7 @@
             // Definir columnas con alineación especial
             const centeredColumns = ["No.", "Código Expediente", "Tipo", "Año Publicación", "Fecha Apertura", "Fecha Fallo", "Fecha Estimada Inicio"];
             const montoColumnIndex = exportHeaders.indexOf("Monto (Pesos)");
+            const kmAdjudicadosColumnIndex = exportHeaders.indexOf("KM Adjudicados");
             const centeredColumnIndices = centeredColumns.map(header => exportHeaders.indexOf(header)); // Esto no cambia
 
             // Recorrer y aplicar estilos a encabezados y celdas de datos
@@ -4473,6 +4496,12 @@
                             // Si el valor es un número, aplicar formato de moneda. Si no (ej. "N/A"), solo alinear a la derecha.
                             if (typeof ws[cell_ref].v === 'number') {
                                 ws[cell_ref].s = currencyCellStyle;
+                            } else {
+                                ws[cell_ref].s = rightAlignedCellStyle;
+                            }
+                        } else if (C === kmAdjudicadosColumnIndex) {
+                            if (typeof ws[cell_ref].v === 'number') {
+                                ws[cell_ref].s = numberCellStyle;
                             } else {
                                 ws[cell_ref].s = rightAlignedCellStyle;
                             }
@@ -5068,6 +5097,7 @@
                                     'descripción': 'descripcion', // Con acento
                                     'descripcion': 'descripcion', // Sin acento
                                     'generalidades': 'generalidades',
+                                    'km adjudicados': 'kmAdjudicados',
                                     'siglas dependencia': 'siglasDependencia',
                                     'código expediente': 'codigoExpediente',
                                     'procedimiento': 'procedimientoContratacion', // Nombre corto
@@ -5143,6 +5173,7 @@
                                     nombre: trimIfString(mappedRow.nombre) || '',
                                     descripcion: trimIfString(mappedRow.descripcion) || '',
                                     generalidades: trimIfString(mappedRow.generalidades) || '',
+                                    kmAdjudicados: !isNaN(parseFloat(mappedRow.kmAdjudicados)) ? parseFloat(mappedRow.kmAdjudicados) : '',
                                     siglasDependencia: trimIfString(mappedRow.siglasDependencia) || '',
                                     codigoExpediente: trimIfString(mappedRow.codigoExpediente) || '',
                                     procedimientoContratacion: trimIfString(mappedRow.procedimientoContratacion) || '',
@@ -5360,6 +5391,9 @@
                     return (value && value.trim() !== '' && value !== 'N/A') ? formatter(value) : '-';
                 };
         
+                // Obtener el valor de kmAdjudicados directamente del objeto de datos para asegurar que sea el valor numérico correcto
+                const licitacion = historicalLicitaciones.find(l => l.id === row.dataset.id);
+                const kmAdjudicados = licitacion && licitacion.kmAdjudicados ? Number(licitacion.kmAdjudicados).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
                 // Construcción del contenido del tooltip usando la función auxiliar
                 quickViewTooltip.innerHTML = `
                     <p><strong>Dependencia:</strong> ${truncateText(dependencia, 100)}</p>
@@ -5368,6 +5402,7 @@
                     <p><strong>Procedimiento:</strong> ${displayValue(truncateText(procedimiento, 100))}</p>
                     <p><strong>Tipo:</strong> ${displayValue(truncateText(tipo, 100))}</p>
                     <p><strong>Ganador:</strong> ${displayValue(truncateText(ganador, 100))}</p>
+                    <p><strong>KM Adjudicados:</strong> ${kmAdjudicados}</p>
                     <div class="fallo-monto-container">
                         <p class="text-sm text-gray-500 m-0"><strong>Fallo:</strong> ${displayValue(fallo, formatLongDate)}</p>
                         <div class="monto-highlight">${displayValue(monto)}</div>
