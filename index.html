@@ -928,6 +928,7 @@
                                 <tr id="historical-table-header">
                                     <th scope="col" class="py-3 px-6">No.</th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="proyecto">Proyecto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="tipoTren">Tipo de Tren<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombre">Nombre<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="descripcion">Descripción<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="generalidades">Generalidades<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
@@ -1083,6 +1084,15 @@
                             <div class="flex-with-buttons">
                                 <select id="licitacion-proyecto" name="proyecto" required></select>
                                 <button type="button" id="edit-proyecto-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-tipoTren">Tipo de Tren</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-tipoTren" name="tipoTren"></select>
+                                <button type="button" id="edit-tipoTren-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
@@ -1251,6 +1261,15 @@
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-proyecto" name="proyecto" required></select>
                                 <button type="button" id="edit-proyecto-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-tipoTren">Tipo de Tren</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-tipoTren" name="tipoTren"></select>
+                                <button type="button" id="edit-tipoTren-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
@@ -1704,6 +1723,7 @@
         let quickViewTooltip;
         let fieldOptions = {
             proyectos: [],
+            tiposTren: [],
             nombres: [],
             siglasDependencias: [],
             procedimientosContratacion: [],
@@ -2099,6 +2119,7 @@
                 row.innerHTML = `
                     <td class="py-4 px-6">${applyHighlight(index + 1)}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.proyecto, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.tipoTren, 30))}</td>
                     <td class="py-4 px-6 clickable-cell">${applyHighlight(truncateText(licitacionItem.nombre, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.descripcion, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.generalidades, 30))}</td>
@@ -2558,6 +2579,12 @@
                 $('#edit-licitacion-proyecto').val(licitacionToEdit.proyecto || '').trigger('change');
                 $('#edit-licitacion-nombre').val(licitacionToEdit.nombre || '').trigger('change');
                 $('#edit-licitacion-siglasDependencia').val(licitacionToEdit.siglasDependencia || '').trigger('change');
+                
+                // --- INICIO: Cargar valor para el nuevo campo "Tipo de Tren" ---
+                // Asegurarse de que el valor exista como opción antes de seleccionarlo
+                const tipoTrenValue = licitacionToEdit.tipoTren || '';
+                $('#edit-licitacion-tipoTren').val(tipoTrenValue).trigger('change');
+                // --- FIN: Cargar valor ---
                 $('#edit-licitacion-procedimientoContratacion').val(licitacionToEdit.procedimientoContratacion || '').trigger('change');
                 $('#edit-licitacion-tipo').val(licitacionToEdit.tipo || '').trigger('change');
                 $('#edit-licitacion-anoPublicacion').val(licitacionToEdit.anoPublicacion || '').trigger('change');
@@ -3375,6 +3402,12 @@
             fieldOptions.proyectos = combinedProyectos;
             updateSelectOptions('proyectos', fieldOptions.proyectos);
         
+            // Tipo de Tren
+            const historicalTiposTren = getUniqueTrimmedOptions(allData, 'tipoTren');
+            const combinedTiposTren = [...new Set([...historicalTiposTren])].sort(); // No tiene catálogo base
+            fieldOptions.tiposTren = combinedTiposTren;
+            updateSelectOptions('tiposTren', fieldOptions.tiposTren);
+
             // Nombres
             const historicalNombres = getUniqueTrimmedOptions(allData, 'nombre');
             const combinedNombres = [...new Set([...catalogoNombres, ...historicalNombres])].sort();
@@ -3431,6 +3464,7 @@
         function updateSelectOptions(field, options, selectedId = null) {
             const fieldToSelectMap = {
                 'proyectos': ['licitacion-proyecto', 'edit-licitacion-proyecto'],
+                'tiposTren': ['licitacion-tipoTren', 'edit-licitacion-tipoTren'],
                 'nombres': ['licitacion-nombre', 'edit-licitacion-nombre'],
                 'siglasDependencias': ['licitacion-siglasDependencia', 'edit-licitacion-siglasDependencia'],
                 'procedimientosContratacion': ['licitacion-procedimientoContratacion', 'edit-licitacion-procedimientoContratacion'],
@@ -3480,6 +3514,7 @@
         async function findAndReplaceInDatabase(field, oldValue, newValue, activeFormId, formStateBeforeEdit) {
             const fieldToDbFieldMap = {
                 'proyectos': 'proyecto', 
+                'tiposTren': 'tipoTren',
                 'nombres': 'nombre',
                 'siglasDependencias': 'siglasDependencia',
                 'procedimientosContratacion': 'procedimientoContratacion',
@@ -3603,6 +3638,7 @@
         function setupAddEditButtons() {
             const buttonToFieldMap = {
                 'edit-proyecto-btn': 'proyectos',
+                'edit-tipoTren-btn': 'tiposTren',
                 'edit-nombre-btn': 'nombres',
                 'edit-descripcion-btn': 'descripcion',
                 'edit-generalidades-btn': 'generalidades',
@@ -3615,6 +3651,7 @@
                 'edit-monto-btn': 'monto',
                 'edit-linkComprasXM-btn': 'linkComprasXM',
                 'edit-proyecto-edit-btn': 'proyectos',
+                'edit-tipoTren-edit-btn': 'tiposTren',
                 'edit-nombre-edit-btn': 'nombres',
                 'edit-descripcion-edit-btn': 'descripcion',
                 'edit-generalidades-edit-btn': 'generalidades',
@@ -3672,7 +3709,7 @@
                 const formStateBeforeEdit = activeFormId ? getFormState(activeFormId) : null;
                 requirePassword(async () => {
                     try {
-                        if (['proyectos', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion'].includes(currentEditingField)) {
+                        if (['proyectos', 'tiposTren', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion'].includes(currentEditingField)) {
                             await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue, activeFormId, formStateBeforeEdit);
                         } else {
                             // Lógica para campos de texto (no afecta a otros campos)
@@ -4234,7 +4271,7 @@
         // =============================================
 
         const exportHeaders = [
-            "No.", "Proyecto", "Nombre", "Descripción", "Generalidades", "Siglas Dependencia",
+            "No.", "Proyecto", "Tipo de Tren", "Nombre", "Descripción", "Generalidades", "Siglas Dependencia",
             "Código Expediente", "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura",
             "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "Link Compras XM"
         ];
@@ -4248,6 +4285,7 @@
                 return {
                     "No.": index + 1,
                     "Proyecto": fallback(licitacionItem.proyecto),
+                    "Tipo de Tren": fallback(licitacionItem.tipoTren),
                     "Nombre": fallback(licitacionItem.nombre),
                     "Descripción": fallback(licitacionItem.descripcion),
                     "Generalidades": fallback(licitacionItem.generalidades),
@@ -4262,7 +4300,9 @@
                     "Participantes": fallback(licitacionItem.registradosInteres),
                     "Licitantes": fallback(licitacionItem.nombreLicitantes),
                     "Ganador": fallback(licitacionItem.ganadorLicitacion),
-                    "Monto (Pesos)": licitacionItem.monto ? Number(licitacionItem.monto) : "N/A", // Exportar como número o "N/A"
+                    // SOLUCIÓN: Si el monto no es un número válido, exportar `null` en lugar de "N/A".
+                    // Esto mantiene la columna puramente numérica y evita errores de formato en Excel.
+                    "Monto (Pesos)": licitacionItem.monto && !isNaN(Number(licitacionItem.monto)) ? Number(licitacionItem.monto) : null,
                     "Link Compras XM": fallback(licitacionItem.linkComprasXM)
                 };
             });
@@ -4362,8 +4402,12 @@
             for (let R = 1; R <= numRows + 1; ++R) { // El bucle empieza en la fila de encabezados (R=1, que es la Fila 2 en Excel)
                 for (let C = 0; C < numCols; ++C) {
                     const cell_address = { c: C, r: R };
-                    const cell_ref = XLSX.utils.encode_cell(cell_address);
-                    if (!ws[cell_ref]) continue;
+                    const cell_ref = XLSX.utils.encode_cell(cell_address);                    
+                    // SOLUCIÓN: Asegurarse de que la celda exista en la hoja de cálculo, incluso si está vacía.
+                    // Si no existe, la creamos como una celda vacía para poder aplicarle un estilo.
+                    if (!ws[cell_ref]) {
+                        ws[cell_ref] = { t: 's', v: '' }; // Crear celda de tipo string vacía
+                    }
 
                     if (R === 1) { // Fila de encabezados (Fila 2 en Excel)
                         ws[cell_ref].s = headerStyle;
@@ -4788,7 +4832,7 @@
 
                 // Clear form
                 licitacionForm.reset();
-                $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion').val(null).trigger('change');
+                $('#licitacion-proyecto, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion').val(null).trigger('change');
 
                 openModalWithFocus(licitacionModal, document.getElementById('licitacion-proyecto'));
             });
@@ -4963,6 +5007,7 @@
 
                                 const keyMapping = {
                                     'no.': 'no',
+                                    'tipo de tren': 'tipoTren',
                                     'proyecto': 'proyecto',
                                     'nombre': 'nombre',
                                     'descripción': 'descripcion', // Con acento
@@ -4984,9 +5029,10 @@
                                     'nombre licitantes': 'nombreLicitantes',
                                     'ganador': 'ganadorLicitacion', // Nombre corto
                                     'monto (pesos)': 'monto', // Nuevo alias para importación
+                                    'monto(pesos)': 'monto', // Alias sin espacio
                                     'ganador licitación': 'ganadorLicitacion',
                                     'monto': 'monto',
-                                    'link compras xm': 'linkComprasXM',
+                                    'link compras xm': 'linkComprasXM', // Con espacio
                                     'link': 'linkComprasXM' // Alias común para el link
                                 };
                                 const mappedRow = mapKeys(row, keyMapping);
@@ -5038,6 +5084,7 @@
 
                                 return {
                                     proyecto: trimIfString(mappedRow.proyecto) || '',
+                                    tipoTren: trimIfString(mappedRow.tipoTren) || '',
                                     nombre: trimIfString(mappedRow.nombre) || '',
                                     descripcion: trimIfString(mappedRow.descripcion) || '',
                                     generalidades: trimIfString(mappedRow.generalidades) || '',
@@ -5052,9 +5099,9 @@
                                     registradosInteres: trimIfString(mappedRow.registradosInteres) || '',
                                     nombreLicitantes: trimIfString(mappedRow.nombreLicitantes) || '',
                                     ganadorLicitacion: trimIfString(mappedRow.ganadorLicitacion) || '',
-                                    // Si el monto es "N/A" (texto del excel exportado), se convierte a '' para que sea un valor falsy.
-                                    // Si es un número, se mantiene. Si no, se trata como vacío.
-                                    monto: mappedRow.monto === "N/A" ? '' : mappedRow.monto || '',
+                                    // SOLUCIÓN: Asegurar que el monto se guarde como un número o un valor vacío.
+                                    // Se convierte a número y si el resultado no es un número válido (NaN), se guarda como ''.
+                                    monto: !isNaN(parseFloat(mappedRow.monto)) ? parseFloat(mappedRow.monto) : '',
                                     linkComprasXM: trimIfString(mappedRow.linkComprasXM) || ''
                                 };
                             });
@@ -5557,7 +5604,7 @@
             document.getElementById('toggle-chart-type-btn').addEventListener('click', (e) => {
                 isProjectChartStacked = !isProjectChartStacked;
                 const button = e.currentTarget;
-                button.classList.toggle('bg-primary', isProjectChartStacked);
+                button.classList.toggle('bg-accent', isProjectChartStacked);
                 button.classList.toggle('text-white', isProjectChartStacked);
                 button.classList.toggle('bg-slate-200', !isProjectChartStacked);
                 button.classList.toggle('text-slate-700', !isProjectChartStacked);
@@ -5565,7 +5612,7 @@
             });
 
             // Configurar Select2 para los selects
-            $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion, #edit-licitacion-proyecto, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo, #edit-licitacion-anoPublicacion, #edit-licitacion-registradosInteres, #edit-licitacion-nombreLicitantes, #edit-licitacion-ganadorLicitacion').each(function() {
+            $('#licitacion-proyecto, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion, #edit-licitacion-proyecto, #edit-licitacion-tipoTren, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo, #edit-licitacion-anoPublicacion, #edit-licitacion-registradosInteres, #edit-licitacion-nombreLicitantes, #edit-licitacion-ganadorLicitacion').each(function() {
                  $(this).select2({
                      tags: true,
                      placeholder: "Seleccione o escriba una opción",
