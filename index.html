@@ -126,6 +126,16 @@
             transform: translateY(-2px);
         }
 
+        /* Estilo para los botones de filtro de tipo de tren */
+        .train-filter-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .train-filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
         /* Estilo especial para resaltar la tarjeta de la semana actual en el dashboard. */
         .indicator-card.current-week-highlight {
             border-bottom: 3px solid var(--primary-color);
@@ -897,6 +907,13 @@
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Licitaciones Registradas</h2>
                         <div class="flex items-center space-x-2">
+                            <!-- INICIO: Marcadores de filtro de tipo de tren -->
+                            <div id="train-type-filter-container" class="flex items-center space-x-2 mr-4 bg-slate-200 p-1 rounded-lg">
+                                <button data-filter="todos" class="train-filter-btn active text-xs font-medium py-1 px-3 rounded-md">Todos</button>
+                                <button data-filter="trenes" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Trenes</button>
+                                <button data-filter="trenes-del-norte" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Trenes del Norte</button>
+                            </div>
+                            <!-- FIN: Marcadores de filtro -->
                             <div id="filtered-total-amount-container" class="text-sm font-medium text-slate-500 mr-4 flex items-center gap-x-2"></div>
                             <div class="flex items-center space-x-2">
                                 <button id="view-all-details-btn" class="text-slate-500 hover:text-primary p-2 rounded-lg" title="Ver detalles de todos los resultados visibles">
@@ -1753,6 +1770,7 @@
         let showProjectChartLegend = true; // Variable de estado para la leyenda de la segunda gráfica
         let isProjectChartStacked = true; // Variable de estado para el tipo de la segunda gráfica
         let activeFalloDashboardFilter = null; // Para el filtro del radar de fallo
+        let activeTrainTypeFilter = 'todos'; // 'todos', 'trenes', 'trenes-del-norte'
 
         // --- INICIO: Variables para el ordenamiento dinámico de tablas de reportes ---
         let dynamicChartSortBy = 'amount'; // 'count' o 'amount'
@@ -2172,6 +2190,20 @@
             const columnFilters = activeFilters[filterKey];
 
             return data.filter(item => {
+                // -1. Check train type filter (only for historical table)
+                if (filterKey === 'historical' && activeTrainTypeFilter !== 'todos') {
+                    const tipoTren = (item.tipoTren || '').toLowerCase().trim();
+                    if (activeTrainTypeFilter === 'trenes') {
+                        if (tipoTren !== 'trenes') return false;
+                    } else if (activeTrainTypeFilter === 'trenes-del-norte') {
+                        if (tipoTren !== 'trenes del norte') return false;
+                    }
+                    // Si se añade otro filtro, se puede extender aquí.
+                }
+
+
+
+
                 // 1. Check search box filter
                 const matchesSearch = searchText === '' || Object.values(item).some(value => 
                     String(value).toLowerCase().includes(searchText)
@@ -2398,6 +2430,13 @@
             // 4. Limpiar el filtro del dashboard de fechas de fallo
             activeFalloDashboardFilter = null;
             document.querySelectorAll('#dashboard-historico .indicator-card.active-filter').forEach(card => card.classList.remove('active-filter'));
+
+            // 5. Limpiar el filtro de tipo de tren
+            activeTrainTypeFilter = 'todos';
+            document.querySelectorAll('#train-type-filter-container .train-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === 'todos');
+            });
+
 
             // 5. Re-renderizar la tabla con los datos completos y el orden por defecto
             sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
@@ -5274,6 +5313,19 @@
                         document.getElementById('close-fallo-alert-btn').click(); // Cierra la alerta
                     }
                 }
+            });
+
+            // Listener para los nuevos marcadores de filtro de tipo de tren
+            document.getElementById('train-type-filter-container').addEventListener('click', (e) => {
+                const button = e.target.closest('.train-filter-btn');
+                if (!button) return;
+
+                activeTrainTypeFilter = button.dataset.filter;
+
+                document.querySelectorAll('.train-filter-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
             });
         }
 
