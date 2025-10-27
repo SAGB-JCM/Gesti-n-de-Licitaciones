@@ -846,7 +846,7 @@
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombreLicitantes">Licitantes<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="ganadorLicitacion">Ganador<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="monto">Monto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="kmAdjudicados">KM Adjudicados<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="costoPorKm">Costo por KM<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6">Link</th>
                                     <th scope="col" class="py-3 px-6">Acciones</th>
                                 </tr>
@@ -962,6 +962,7 @@
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombreLicitantes">Licitantes<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="ganadorLicitacion">Ganador<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="monto">Monto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="costoPorKm">Costo por KM<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="kmAdjudicados">KM Adjudicados<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6">Link</th>
                                     <th scope="col" class="py-3 px-6 actions-header">Acciones</th>
@@ -1238,6 +1239,10 @@
                             <label for="licitacion-kmAdjudicados">KM Adjudicados</label>
                             <input type="number" id="licitacion-kmAdjudicados" name="kmAdjudicados" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
+                        <div class="form-field">
+                            <label for="licitacion-costoPorKm">Costo por KM</label>
+                            <input type="number" id="licitacion-costoPorKm" name="costoPorKm" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                        </div>
                     </div>
 
                     <!-- Grupo 5: Verificación -->
@@ -1418,6 +1423,10 @@
                         <div class="form-field">
                             <label for="edit-licitacion-kmAdjudicados">KM Adjudicados</label>
                             <input type="number" id="edit-licitacion-kmAdjudicados" name="kmAdjudicados" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-costoPorKm">Costo por KM</label>
+                            <input type="number" id="edit-licitacion-costoPorKm" name="costoPorKm" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -2139,6 +2148,7 @@
                 row.dataset.ganador = licitacionItem.ganadorLicitacion || 'N/A';
                 row.dataset.monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
                 row.dataset.kmAdjudicados = licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A';
+                row.dataset.costoPorKm = licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX') : 'N/A';
                 
                 const linkCell = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM)
                     ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline" title="${licitacionItem.linkComprasXM}"><i class="fa-solid fa-link"></i></a>`
@@ -2165,8 +2175,8 @@
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.nombreLicitantes, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.ganadorLicitacion, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A')}</td>
-                    <td class="py-4 px-6">${applyHighlight(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A')}</td>
-                    <td class="py-4 px-6 text-center">${linkCell}</td>
+                    <td class="py-4 px-6">${applyHighlight(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX') : 'N/A')}</td>
+                    <td class="py-4 px-6">${applyHighlight(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A')}</td>                    <td class="py-4 px-6 text-center">${linkCell}</td>
                     ${isLoggedIn ? `
                         <td class="py-4 px-6 flex space-x-2 actions-cell">
                             <button data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="generate-doc-btn text-blue-600 hover:text-blue-800 actions-btn" title="Generar Reporte Individual">
@@ -2644,6 +2654,7 @@
                 document.getElementById('edit-licitacion-generalidades').value = licitacionToEdit.generalidades || '';
                 document.getElementById('edit-licitacion-monto').value = licitacionToEdit.monto || '';
                 document.getElementById('edit-licitacion-kmAdjudicados').value = licitacionToEdit.kmAdjudicados || '';
+                document.getElementById('edit-licitacion-costoPorKm').value = licitacionToEdit.costoPorKm || '';
 
                 // Set select values
                 $('#edit-licitacion-proyecto').val(licitacionToEdit.proyecto || '').trigger('change');
@@ -2908,7 +2919,7 @@
 
                     <div class="details-section">
                         <h4>Detalles de Contratación</h4>
-                        <table class="details-table"><thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th></tr></thead><tbody><tr><td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td><td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td></tr></tbody></table>
+                        <table class="details-table"><thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th><th>KM Adjudicados</th><th>Costo por KM</th></tr></thead><tbody><tr><td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td><td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td><td>${highlightText(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX') : 'N/A', searchText)}</td></tr></tbody></table>
                     </div>
             
                     <div class="details-section">
@@ -3057,6 +3068,7 @@
                     palabra_clave_13: record.nombreLicitantes || 'No especificado',
                     palabra_clave_14: record.ganadorLicitacion || 'No especificado',
                     palabra_clave_15: record.monto ? '$' + Number(record.monto).toLocaleString('es-MX') : 'No especificado',
+                    palabra_clave_15_1: record.costoPorKm ? '$' + Number(record.costoPorKm).toLocaleString('es-MX') : 'No especificado', // Nuevo campo
                     palabra_clave_16: record.linkComprasXM || 'No especificado',
                 };
 
@@ -3508,6 +3520,11 @@
             fieldOptions.anosPublicacion = combinedAnosPublicacion;
             updateSelectOptions('anosPublicacion', fieldOptions.anosPublicacion);
 
+            // KM Adjudicados
+            const historicalKmAdjudicados = getUniqueTrimmedOptions(allData, 'kmAdjudicados');
+            const combinedKmAdjudicados = [...new Set([...historicalKmAdjudicados])].sort();
+            fieldOptions.kmAdjudicados = combinedKmAdjudicados;
+            updateSelectOptions('kmAdjudicados', fieldOptions.kmAdjudicados);
             // Registrados Interés, Nombre Licitantes y Ganadores (usando la misma lógica)
             const historicalRegistradosInteres = getUniqueTrimmedOptions(allData, 'registradosInteres');
             const combinedRegistradosInteres = [...new Set([...catalogoParticipantes, ...historicalRegistradosInteres])].sort();
@@ -3541,6 +3558,7 @@
                 'tipos': ['licitacion-tipo', 'edit-licitacion-tipo'],
                 'anosPublicacion': ['licitacion-anoPublicacion', 'edit-licitacion-anoPublicacion'],
                 'registradosInteres': ['licitacion-registradosInteres', 'edit-licitacion-registradosInteres'],
+                'kmAdjudicados': ['licitacion-kmAdjudicados', 'edit-licitacion-kmAdjudicados'],
                 'nombreLicitantes': ['licitacion-nombreLicitantes', 'edit-licitacion-nombreLicitantes'],
                 'ganadoresLicitacion': ['licitacion-ganadorLicitacion', 'edit-licitacion-ganadorLicitacion']
             };
@@ -3591,6 +3609,7 @@
                 'tipos': 'tipo',
                 'anosPublicacion': 'anoPublicacion',
                 'registradosInteres': 'registradosInteres',
+                'kmAdjudicados': 'kmAdjudicados',
                 'nombreLicitantes': 'nombreLicitantes',
                 'ganadoresLicitacion': 'ganadorLicitacion'
             };
@@ -3719,6 +3738,8 @@
                 'edit-nombreLicitantes-btn': 'nombreLicitantes',
                 'edit-ganadorLicitacion-btn': 'ganadoresLicitacion',
                 'edit-monto-btn': 'monto',
+                'edit-kmAdjudicados-btn': 'kmAdjudicados',
+                'edit-costoPorKm-btn': 'costosPorKm',
                 'edit-linkComprasXM-btn': 'linkComprasXM',
                 'edit-proyecto-edit-btn': 'proyectos',
                 'edit-tipoTren-edit-btn': 'tiposTren',
@@ -3732,6 +3753,8 @@
                 'edit-nombreLicitantes-edit-btn': 'nombreLicitantes',
                 'edit-ganadorLicitacion-edit-btn': 'ganadoresLicitacion',
                 'edit-monto-edit-btn': 'monto',
+                'edit-kmAdjudicados-edit-btn': 'kmAdjudicados',
+                'edit-costoPorKm-edit-btn': 'costosPorKm',                
                 'edit-linkComprasXM-edit-btn': 'linkComprasXM'
             };
             
@@ -3742,7 +3765,7 @@
                 button.addEventListener('click', (e) => {
                     let inputElement;
                     
-                    if (['descripcion', 'generalidades', 'codigoExpediente', 'monto', 'linkComprasXM'].includes(field)) {
+                    if (['descripcion', 'generalidades', 'codigoExpediente', 'monto', 'costoPorKm', 'kmAdjudicados', 'linkComprasXM'].includes(field)) {
                         inputElement = e.currentTarget.parentElement.querySelector('input') || 
                                       e.currentTarget.parentElement.querySelector('textarea');
                     } else {
@@ -3779,7 +3802,7 @@
                 const formStateBeforeEdit = activeFormId ? getFormState(activeFormId) : null;
                 requirePassword(async () => {
                     try {
-                        if (['proyectos', 'tiposTren', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion'].includes(currentEditingField)) {
+                        if (['proyectos', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion', 'costosPorKm', 'kmAdjudicados'].includes(currentEditingField)) {
                             await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue, activeFormId, formStateBeforeEdit);
                         } else {
                             // Lógica para campos de texto (no afecta a otros campos)
@@ -3792,6 +3815,10 @@
                                 inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-codigoExpediente' : 'edit-licitacion-codigoExpediente');
                             } else if (currentEditingField === 'monto') {
                                 inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-monto' : 'edit-licitacion-monto');
+                            } else if (currentEditingField === 'kmAdjudicados') {
+                                inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-kmAdjudicados' : 'edit-licitacion-kmAdjudicados');
+                            } else if (currentEditingField === 'costoPorKm') {
+                                inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-costoPorKm' : 'edit-licitacion-costoPorKm');
                             } else if (currentEditingField === 'linkComprasXM') {
                                 inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-linkComprasXM' : 'edit-licitacion-linkComprasXM');
                             }
@@ -4343,7 +4370,7 @@
         const exportHeaders = [
             "No.", "Proyecto", "Tipo de Tren", "Nombre", "Descripción", "Generalidades", "KM Adjudicados", "Siglas Dependencia",
             "Código Expediente", "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura",
-            "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "Link Compras XM"
+            "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "Costo por KM", "Link Compras XM"
         ];
 
 
@@ -4373,8 +4400,8 @@
                     "Licitantes": fallback(licitacionItem.nombreLicitantes),
                     "Ganador": fallback(licitacionItem.ganadorLicitacion),
                     // SOLUCIÓN: Si el monto no es un número válido, exportar `null` en lugar de "N/A".
-                    // Esto mantiene la columna puramente numérica y evita errores de formato en Excel.
                     "Monto (Pesos)": licitacionItem.monto && !isNaN(Number(licitacionItem.monto)) ? Number(licitacionItem.monto) : null,
+                    "Costo por KM": licitacionItem.costoPorKm ? Number(licitacionItem.costoPorKm) : "N/A",
                     "Link Compras XM": fallback(licitacionItem.linkComprasXM)
                 };
             });
@@ -4430,6 +4457,7 @@
             };
 
             const currencyCellStyle = {
+                ...numberCellStyle,
                 ...rightAlignedCellStyle,
                 numFmt: "#,##0.00"
             };
@@ -4474,6 +4502,7 @@
             const centeredColumns = ["No.", "Código Expediente", "Tipo", "Año Publicación", "Fecha Apertura", "Fecha Fallo", "Fecha Estimada Inicio"];
             const montoColumnIndex = exportHeaders.indexOf("Monto (Pesos)");
             const kmAdjudicadosColumnIndex = exportHeaders.indexOf("KM Adjudicados");
+            const costoPorKmColumnIndex = exportHeaders.indexOf("Costo por KM");
             const centeredColumnIndices = centeredColumns.map(header => exportHeaders.indexOf(header)); // Esto no cambia
 
             // Recorrer y aplicar estilos a encabezados y celdas de datos
@@ -4496,6 +4525,12 @@
                             // Si el valor es un número, aplicar formato de moneda. Si no (ej. "N/A"), solo alinear a la derecha.
                             if (typeof ws[cell_ref].v === 'number') {
                                 ws[cell_ref].s = currencyCellStyle;
+                            } else {
+                                ws[cell_ref].s = rightAlignedCellStyle;
+                            }
+                        } else if (C === costoPorKmColumnIndex) {
+                            if (typeof ws[cell_ref].v === 'number') {
+                                ws[cell_ref].s = numberCellStyle;
                             } else {
                                 ws[cell_ref].s = rightAlignedCellStyle;
                             }
@@ -4916,7 +4951,7 @@
 
                 // Clear form
                 licitacionForm.reset();
-                $('#licitacion-proyecto, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion').val(null).trigger('change');
+                $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion, #licitacion-costoPorKm, #licitacion-kmAdjudicados, #licitacion-costoPorKm').val(null).trigger('change');
 
                 openModalWithFocus(licitacionModal, document.getElementById('licitacion-proyecto'));
             });
@@ -5117,6 +5152,8 @@
                                     'monto(pesos)': 'monto', // Alias sin espacio
                                     'ganador licitación': 'ganadorLicitacion',
                                     'monto': 'monto',
+                                    'km adjudicados': 'kmAdjudicados',
+                                    'costo por km': 'costoPorKm',
                                     'link compras xm': 'linkComprasXM', // Con espacio
                                     'link': 'linkComprasXM' // Alias común para el link
                                 };
@@ -5381,7 +5418,7 @@
          */
         function setupQuickViewTooltip() {
             const showTooltip = (e) => {
-                const row = e.target.closest('tr[data-quickview="true"]'); // Asegurarse de que el tooltip solo se active en las filas correctas
+                const row = e.target.closest('tr[data-quickview="true"]');
                 if (!row) return;
         
                 const { dependencia, proyecto, nombre, procedimiento, tipo, ganador, monto, fallo } = row.dataset;
@@ -5390,9 +5427,11 @@
                 const displayValue = (value, formatter = v => v) => {
                     return (value && value.trim() !== '' && value !== 'N/A') ? formatter(value) : '-';
                 };
-        
-                // Obtener el valor de kmAdjudicados directamente del objeto de datos para asegurar que sea el valor numérico correcto
+                
+                // Obtener el valor de costoPorKm y kmAdjudicados directamente del objeto de datos
+                // FIX: 'licitacion' has already been declared. Combine declarations.
                 const licitacion = historicalLicitaciones.find(l => l.id === row.dataset.id);
+                const costoPorKm = licitacion && licitacion.costoPorKm ? '$' + Number(licitacion.costoPorKm).toLocaleString('es-MX') : 'N/A';
                 const kmAdjudicados = licitacion && licitacion.kmAdjudicados ? Number(licitacion.kmAdjudicados).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
                 // Construcción del contenido del tooltip usando la función auxiliar
                 quickViewTooltip.innerHTML = `
@@ -5404,6 +5443,7 @@
                     <p><strong>Ganador:</strong> ${displayValue(truncateText(ganador, 100))}</p>
                     <p><strong>KM Adjudicados:</strong> ${kmAdjudicados}</p>
                     <div class="fallo-monto-container">
+                        <p class="text-sm text-gray-500 m-0"><strong>Costo/KM:</strong> ${costoPorKm}</p>
                         <p class="text-sm text-gray-500 m-0"><strong>Fallo:</strong> ${displayValue(fallo, formatLongDate)}</p>
                         <div class="monto-highlight">${displayValue(monto)}</div>
                     </div>
@@ -5715,7 +5755,7 @@
             });
 
             // Configurar Select2 para los selects
-            $('#licitacion-proyecto, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion, #edit-licitacion-proyecto, #edit-licitacion-tipoTren, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo, #edit-licitacion-anoPublicacion, #edit-licitacion-registradosInteres, #edit-licitacion-nombreLicitantes, #edit-licitacion-ganadorLicitacion').each(function() {
+            $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-registradosInteres, #licitacion-nombreLicitantes, #licitacion-ganadorLicitacion, #edit-licitacion-proyecto, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo, #edit-licitacion-anoPublicacion, #edit-licitacion-registradosInteres, #edit-licitacion-nombreLicitantes, #edit-licitacion-ganadorLicitacion').each(function() {
                  $(this).select2({
                      tags: true,
                      placeholder: "Seleccione o escriba una opción",
