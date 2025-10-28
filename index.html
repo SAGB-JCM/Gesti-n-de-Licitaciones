@@ -2148,7 +2148,7 @@
                 row.dataset.ganador = licitacionItem.ganadorLicitacion || 'N/A';
                 row.dataset.monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
                 row.dataset.kmAdjudicados = licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A';
-                row.dataset.costoPorKm = licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX') : 'N/A';
+                row.dataset.costoPorKm = licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
                 
                 const linkCell = licitacionItem.linkComprasXM && isValidUrl(licitacionItem.linkComprasXM)
                     ? `<a href="${licitacionItem.linkComprasXM}" target="_blank" class="text-blue-600 hover:underline" title="${licitacionItem.linkComprasXM}"><i class="fa-solid fa-link"></i></a>`
@@ -2175,7 +2175,7 @@
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.nombreLicitantes, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.ganadorLicitacion, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A')}</td>
-                    <td class="py-4 px-6">${applyHighlight(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX') : 'N/A')}</td>
+                    <td class="py-4 px-6">${applyHighlight(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A')}</td>
                     <td class="py-4 px-6">${applyHighlight(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A')}</td>                    <td class="py-4 px-6 text-center">${linkCell}</td>
                     ${isLoggedIn ? `
                         <td class="py-4 px-6 flex space-x-2 actions-cell">
@@ -2247,7 +2247,16 @@
                 // 2. Check column filters
                 for (const col in columnFilters) {
                     if (columnFilters[col].length > 0) {
-                        const itemValue = col === 'fechaPresentacionApertura' || col === 'fechaFallo' ? formatDate(item[col]) : (item[col] || 'N/A');
+                        let itemValue = item[col];
+                        if (col === 'fechaPresentacionApertura' || col === 'fechaFallo') {
+                            itemValue = formatDate(item[col]);
+                        } else if (col === 'monto' && typeof itemValue === 'number') {
+                            itemValue = '$' + itemValue.toLocaleString('es-MX');
+                        } else if (col === 'kmAdjudicados' && typeof itemValue === 'number') {
+                            itemValue = itemValue.toLocaleString('es-MX');
+                        } else if (col === 'costoPorKm' && typeof itemValue === 'number') {
+                            itemValue = '$' + item[col].toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        }
                         if (!columnFilters[col].includes(itemValue)) {
                             return false;
                         }
@@ -2299,7 +2308,16 @@
 
                 return Object.entries(columnFilters).every(([col, values]) => {
                     if (col === excludeColumn || values.length === 0) return true;
-                    const itemValue = col === 'fechaPresentacionApertura' || col === 'fechaFallo' ? formatDate(item[col]) : (item[col] || 'N/A');
+                    let itemValue = item[col];
+                    if (col === 'fechaPresentacionApertura' || col === 'fechaFallo') {
+                        itemValue = formatDate(item[col]);
+                    } else if (col === 'monto' && typeof itemValue === 'number') {
+                        itemValue = '$' + itemValue.toLocaleString('es-MX');
+                    } else if (col === 'kmAdjudicados' && typeof itemValue === 'number') {
+                        itemValue = itemValue.toLocaleString('es-MX');
+                    } else if (col === 'costoPorKm' && typeof itemValue === 'number') {
+                        itemValue = '$' + item[col].toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    }
                     return values.includes(itemValue);
                 });
             });
@@ -2335,6 +2353,15 @@
                     // 1. Manejar las fechas como un caso especial.
                     if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') {
                         return formatDate(value);
+                    } else if (filterBy === 'monto' && typeof value === 'number') {
+                        // Formatear el monto como moneda para el filtro
+                        return '$' + value.toLocaleString('es-MX');
+                    } else if (filterBy === 'kmAdjudicados' && typeof value === 'number') {
+                        // Formatear los KM como número localizado para el filtro
+                        return value.toLocaleString('es-MX');
+                    } else if (filterBy === 'costoPorKm' && typeof value === 'number') {
+                        // Formatear el costo por KM como moneda para el filtro
+                        return '$' + value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     }
                     // 2. Para todos los demás valores (números o strings), convertirlos a string y aplicar trim.
                     return String(value).trim();
@@ -4401,7 +4428,7 @@
                     "Ganador": fallback(licitacionItem.ganadorLicitacion),
                     // SOLUCIÓN: Si el monto no es un número válido, exportar `null` en lugar de "N/A".
                     "Monto (Pesos)": licitacionItem.monto && !isNaN(Number(licitacionItem.monto)) ? Number(licitacionItem.monto) : null,
-                    "Costo por KM": licitacionItem.costoPorKm ? Number(licitacionItem.costoPorKm) : "N/A",
+                    "Costo por KM": licitacionItem.costoPorKm && !isNaN(Number(licitacionItem.costoPorKm)) ? Number(licitacionItem.costoPorKm) : null, // Corregido
                     "Link Compras XM": fallback(licitacionItem.linkComprasXM)
                 };
             });
@@ -4458,8 +4485,7 @@
 
             const currencyCellStyle = {
                 ...numberCellStyle,
-                ...rightAlignedCellStyle,
-                numFmt: "#,##0.00"
+                numFmt: "$#,##0.00"
             };
 
             // 2. Añadir fila de título en la parte superior
@@ -4530,7 +4556,7 @@
                             }
                         } else if (C === costoPorKmColumnIndex) {
                             if (typeof ws[cell_ref].v === 'number') {
-                                ws[cell_ref].s = numberCellStyle;
+                                ws[cell_ref].s = currencyCellStyle;
                             } else {
                                 ws[cell_ref].s = rightAlignedCellStyle;
                             }
@@ -5153,7 +5179,8 @@
                                     'ganador licitación': 'ganadorLicitacion',
                                     'monto': 'monto',
                                     'km adjudicados': 'kmAdjudicados',
-                                    'costo por km': 'costoPorKm',
+                                    'Costo por KM': 'costoPorKm', // Con espacio
+                                    'costo por km': 'costoPorKm', // Con espacio y minúsculas
                                     'link compras xm': 'linkComprasXM', // Con espacio
                                     'link': 'linkComprasXM' // Alias común para el link
                                 };
@@ -5225,6 +5252,7 @@
                                     // SOLUCIÓN: Asegurar que el monto se guarde como un número o un valor vacío.
                                     // Se convierte a número y si el resultado no es un número válido (NaN), se guarda como ''.
                                     monto: !isNaN(parseFloat(mappedRow.monto)) ? parseFloat(mappedRow.monto) : '',
+                                    costoPorKm: !isNaN(parseFloat(mappedRow.costoPorKm)) ? parseFloat(mappedRow.costoPorKm) : '',
                                     linkComprasXM: trimIfString(mappedRow.linkComprasXM) || ''
                                 };
                             });
@@ -5430,9 +5458,9 @@
                 
                 // Obtener el valor de costoPorKm y kmAdjudicados directamente del objeto de datos
                 // FIX: 'licitacion' has already been declared. Combine declarations.
-                const licitacion = historicalLicitaciones.find(l => l.id === row.dataset.id);
-                const costoPorKm = licitacion && licitacion.costoPorKm ? '$' + Number(licitacion.costoPorKm).toLocaleString('es-MX') : 'N/A';
-                const kmAdjudicados = licitacion && licitacion.kmAdjudicados ? Number(licitacion.kmAdjudicados).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
+                const licitacionItem = historicalLicitaciones.find(l => l.id === row.dataset.id);
+                const costoPorKm = licitacionItem && licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
+                const kmAdjudicados = licitacionItem && licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
                 // Construcción del contenido del tooltip usando la función auxiliar
                 quickViewTooltip.innerHTML = `
                     <p><strong>Dependencia:</strong> ${truncateText(dependencia, 100)}</p>
@@ -5443,7 +5471,7 @@
                     <p><strong>Ganador:</strong> ${displayValue(truncateText(ganador, 100))}</p>
                     <p><strong>KM Adjudicados:</strong> ${kmAdjudicados}</p>
                     <div class="fallo-monto-container">
-                        <p class="text-sm text-gray-500 m-0"><strong>Costo/KM:</strong> ${costoPorKm}</p>
+                        <p class="text-sm text-gray-500 m-0"><strong>Costo/KM:</strong> ${displayValue(costoPorKm)}</p>
                         <p class="text-sm text-gray-500 m-0"><strong>Fallo:</strong> ${displayValue(fallo, formatLongDate)}</p>
                         <div class="monto-highlight">${displayValue(monto)}</div>
                     </div>
