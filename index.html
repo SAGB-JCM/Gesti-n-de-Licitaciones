@@ -268,7 +268,12 @@
             color: #374151;
             text-align: center; /* Centrar el texto de las etiquetas */
         }
-        
+
+        /* Nueva clase para alinear etiquetas específicas a la izquierda */
+        .label-left-align {
+            text-align: left !important;
+        }
+
         /* Campo de formulario que ocupa todo el ancho del grid. */
         .form-field.full-width {
             grid-column: 1 / -1;
@@ -1109,7 +1114,7 @@
                     <div class="section-title">Identificación del Proyecto</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
-                            <label for="licitacion-proyecto">Proyecto</label>
+                            <label for="licitacion-proyecto" class="label-left-align">Proyecto</label>
                             <div class="flex-with-buttons">
                                 <select id="licitacion-proyecto" name="proyecto" required></select>
                                 <button type="button" id="edit-proyecto-btn" class="edit-btn">
@@ -1118,7 +1123,7 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="licitacion-tipoTren">Tipo de Tren</label>
+                            <label for="licitacion-tipoTren" class="label-left-align">Tipo de Tren</label>
                             <div class="flex-with-buttons">
                                 <select id="licitacion-tipoTren" name="tipoTren"></select>
                                 <button type="button" id="edit-tipoTren-btn" class="edit-btn">
@@ -1127,7 +1132,7 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="licitacion-nombre">Nombre</label>
+                            <label for="licitacion-nombre" class="label-left-align">Nombre</label>
                             <div class="flex-with-buttons">
                                 <select id="licitacion-nombre" name="nombre"></select>
                                 <button type="button" id="edit-nombre-btn" class="edit-btn">
@@ -1136,7 +1141,7 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="licitacion-siglasDependencia">Siglas Dependencia</label>
+                            <label for="licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
                                 <select id="licitacion-siglasDependencia" name="siglasDependencia"></select>
                                 <button type="button" id="edit-siglasDependencia-btn" class="edit-btn">
@@ -1164,7 +1169,7 @@
                     <div class="section-title">Detalles Administrativos de la Licitación</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
-                            <label for="licitacion-tipo">Tipo</label>
+                            <label for="licitacion-tipo" class="label-left-align">Tipo</label>
                             <div class="flex-with-buttons">
                                 <select id="licitacion-tipo" name="tipo"></select>
                                 <button type="button" id="edit-tipo-btn" class="edit-btn">
@@ -1173,7 +1178,7 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="licitacion-procedimientoContratacion">Procedimiento de Contratación</label>
+                            <label for="licitacion-procedimientoContratacion" class="label-left-align">Procedimiento de Contratación</label>
                             <div class="flex-with-buttons">
                                 <select id="licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
                                 <button type="button" id="edit-procedimientoContratacion-btn" class="edit-btn">
@@ -1274,7 +1279,7 @@
                     <div class="section-title">Identificación del Proyecto</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
-                            <label for="edit-licitacion-proyecto">Proyecto</label>
+                            <label for="edit-licitacion-proyecto" class="label-left-align">Proyecto</label>
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-proyecto" name="proyecto" required></select>
                                 <button type="button" id="edit-proyecto-edit-btn" class="edit-btn">
@@ -1292,7 +1297,7 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="edit-licitacion-nombre">Nombre</label>
+                            <label for="edit-licitacion-nombre" class="label-left-align">Nombre</label>
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-nombre" name="nombre"></select>
                                 <button type="button" id="edit-nombre-edit-btn" class="edit-btn">
@@ -1301,7 +1306,7 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="edit-licitacion-siglasDependencia">Siglas Dependencia</label>
+                            <label for="edit-licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-siglasDependencia" name="siglasDependencia"></select>
                                 <button type="button" id="edit-siglasDependencia-edit-btn" class="edit-btn">
@@ -1329,7 +1334,7 @@
                     <div class="section-title">Detalles Administrativos de la Licitación</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
                         <div class="form-field">
-                            <label for="edit-licitacion-tipo">Tipo</label>
+                            <label for="edit-licitacion-tipo" class="label-left-align">Tipo</label>
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-tipo" name="tipo"></select>
                                 <button type="button" id="edit-tipo-edit-btn" class="edit-btn">
@@ -1338,7 +1343,7 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="edit-licitacion-procedimientoContratacion">Procedimiento de Contratación</label>
+                            <label for="edit-licitacion-procedimientoContratacion" class="label-left-align">Procedimiento de Contratación</label>
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
                                 <button type="button" id="edit-procedimientoContratacion-edit-btn" class="edit-btn">
