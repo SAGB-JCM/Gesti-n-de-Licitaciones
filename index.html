@@ -2190,8 +2190,8 @@
                         if (tipoTren !== 'trenes') return false;
                     } else if (activeTrainTypeFilter === 'trenes-del-norte') { // Añadir la nueva condición
                         if (tipoTren !== 'trenes del norte') return false;
-                    } else if (activeTrainTypeFilter === 'tren-maya') {
-                        if (tipoTren !== 'trenes del norte') return false;
+                    } else if (activeTrainTypeFilter === 'tren-maya') { // CORRECCIÓN: Comparar con 'tren maya'
+                        if (tipoTren !== 'tren maya') return false;
                     }
                     // Si se añade otro filtro, se puede extender aquí.
                 }
