@@ -1187,9 +1187,8 @@
                         </div>
                         <div class="form-field">
                             <label for="licitacion-anoPublicacion">Año De Publicación</label>
-                            <div class="flex-with-buttons">
-                                <select id="licitacion-anoPublicacion" name="anoPublicacion"></select>
-                            </div>
+                            <!-- REFACTOR: Cambiado de select a input con datalist -->
+                            <input type="number" id="licitacion-anoPublicacion" name="anoPublicacion" list="anos-datalist" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -1353,9 +1352,8 @@
                         </div>
                         <div class="form-field">
                             <label for="edit-licitacion-anoPublicacion">Año De Publicación</label>
-                            <div class="flex-with-buttons">
-                                <select id="edit-licitacion-anoPublicacion" name="anoPublicacion"></select>
-                            </div>
+                            <!-- REFACTOR: Cambiado de select a input con datalist -->
+                            <input type="number" id="edit-licitacion-anoPublicacion" name="anoPublicacion" list="anos-datalist" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
                         </div>
                     </div>
 
@@ -1613,6 +1611,24 @@
                 <!-- El contenido se generará dinámicamente -->
             </div>
         </div>
+    </div>
+
+    <!-- DATALIST GLOBAL: Contiene las opciones para el campo de año de publicación. -->
+    <datalist id="anos-datalist">
+        <option value="2017"></option>
+        <option value="2018"></option>
+        <option value="2019"></option>
+        <option value="2020"></option>
+        <option value="2021"></option>
+        <option value="2022"></option>
+        <option value="2023"></option>
+        <option value="2024"></option>
+        <option value="2025"></option>
+        <option value="2026"></option>
+        <option value="2027"></option>
+        <option value="2028"></option>
+        <option value="2029"></option>
+        <option value="2030"></option>
     </div>
 
     <!-- ================================================================= -->
@@ -2673,7 +2689,7 @@
                 // --- FIN: Cargar valor ---
                 $('#edit-licitacion-procedimientoContratacion').val(licitacionToEdit.procedimientoContratacion || '').trigger('change');
                 $('#edit-licitacion-tipo').val(licitacionToEdit.tipo || '').trigger('change');
-                $('#edit-licitacion-anoPublicacion').val(licitacionToEdit.anoPublicacion || '').trigger('change');
+                document.getElementById('edit-licitacion-anoPublicacion').value = licitacionToEdit.anoPublicacion || '';
 
                 openModal(editModal);
             });
@@ -3448,16 +3464,6 @@
         const catalogoTipos = [
         ];
 
-        // Catálogo de años de publicación
-        const catalogoAnosPublicacion = [
-            "2020",
-            "2021",
-            "2022",
-            "2023",
-            "2024",
-            "2025"
-        ];
-
         /**
          * Actualiza las opciones de todos los selectores dinámicos de la aplicación.
          * Extrae valores únicos de los datos existentes y los fusiona con catálogos base.
@@ -3516,12 +3522,6 @@
             fieldOptions.tipos = combinedTipos;
             updateSelectOptions('tipos', fieldOptions.tipos);
 
-            // Años Publicación
-            const historicalAnosPublicacion = getUniqueTrimmedOptions(allData, 'anoPublicacion');
-            const combinedAnosPublicacion = [...new Set([...catalogoAnosPublicacion, ...historicalAnosPublicacion])].sort();
-            fieldOptions.anosPublicacion = combinedAnosPublicacion;
-            updateSelectOptions('anosPublicacion', fieldOptions.anosPublicacion);
-
             // Registrados Interés, Nombre Licitantes y Ganadores (usando la misma lógica)
             const historicalRegistradosInteres = getUniqueTrimmedOptions(allData, 'registradosInteres');
             const combinedRegistradosInteres = [...new Set([...catalogoParticipantes, ...historicalRegistradosInteres])].sort();
@@ -3553,7 +3553,6 @@
                 'siglasDependencias': ['licitacion-siglasDependencia', 'edit-licitacion-siglasDependencia'],
                 'procedimientosContratacion': ['licitacion-procedimientoContratacion', 'edit-licitacion-procedimientoContratacion'],
                 'tipos': ['licitacion-tipo', 'edit-licitacion-tipo'],
-                'anosPublicacion': ['licitacion-anoPublicacion', 'edit-licitacion-anoPublicacion']
             };
 
             const normalizedOptions = options.map(opt => ({id: opt, text: opt}));
@@ -3600,7 +3599,6 @@
                 'siglasDependencias': 'siglasDependencia',
                 'procedimientosContratacion': 'procedimientoContratacion',
                 'tipos': 'tipo',
-                'anosPublicacion': 'anoPublicacion',
                 'registradosInteres': 'registradosInteres',
                 'nombreLicitantes': 'nombreLicitantes',
                 'ganadoresLicitacion': 'ganadorLicitacion'
@@ -3740,7 +3738,6 @@
                 'edit-siglasDependencia-edit-btn': 'siglasDependencias',
                 'edit-procedimientoContratacion-edit-btn': 'procedimientosContratacion',
                 'edit-tipo-edit-btn': 'tipos',
-                'edit-registradosInteres-edit-btn': 'registradosInteres',
                 'edit-nombreLicitantes-edit-btn': 'nombreLicitantes',
                 'edit-ganadorLicitacion-edit-btn': 'ganadoresLicitacion',
                 'edit-monto-edit-btn': 'monto',
@@ -3791,7 +3788,7 @@
                 
                 const formStateBeforeEdit = activeFormId ? getFormState(activeFormId) : null;
                 requirePassword(async () => {
-                    try {
+                    try { // REFACTOR: Se elimina 'anosPublicacion' de esta lógica ya que no es un select.
                         if (['proyectos', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion', 'costosPorKm'].includes(currentEditingField)) {
                             await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue, activeFormId, formStateBeforeEdit);
                         } else {
@@ -4980,7 +4977,8 @@
 
                 // Clear form
                 licitacionForm.reset(); // Esto limpia inputs y textareas
-                $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #licitacion-tipoTren').val(null).trigger('change'); // Limpia los selects
+                $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-tipoTren').val(null).trigger('change'); // Limpia los selects
+                document.getElementById('licitacion-anoPublicacion').value = ''; // Limpia el nuevo input de año
 
                 openModalWithFocus(licitacionModal, document.getElementById('licitacion-proyecto'));
             });
@@ -5789,7 +5787,7 @@
             });
 
             // Configurar Select2 para los selects
-            $('#licitacion-proyecto, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-anoPublicacion, #edit-licitacion-proyecto, #edit-licitacion-tipoTren, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo, #edit-licitacion-anoPublicacion').each(function() {
+            $('#licitacion-proyecto, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #edit-licitacion-proyecto, #edit-licitacion-tipoTren, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo').each(function() {
                  $(this).select2({
                      tags: true,
                      placeholder: "Seleccione o escriba una opción",
