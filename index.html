@@ -480,6 +480,12 @@
             text-align: left;
         }
         
+        /* Asegura que las celdas de monto en las tablas de reportes estén alineadas a la derecha. */
+        .dynamic-table td.text-right {
+            text-align: right !important;
+            padding-right: 1rem; /* Añade un poco de espacio para que no se pegue al borde. */
+        }
+
         .dynamic-table th {
             background-color: var(--primary-color);
             color: white;
