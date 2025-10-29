@@ -4110,9 +4110,7 @@
             const data = getReportData(); // Usar los datos filtrados por fecha
             const selectedVariable = document.getElementById('project-chart-variable').value;
             const projectProcedureCounts = {};
-            const projectProcedureAmounts = {}; // Para Monto
-            const projectProcedureKm = {}; // Para KM Adjudicados
-            const projectProcedureCostoKm = {}; // Para Costo por KM
+            const projectProcedureAmounts = {};
             const allProcedures = new Set();
             
             // Objeto para almacenar los totales de cada proyecto para el ordenamiento
@@ -4121,9 +4119,7 @@
             data.forEach(item => {
                 const project = item.proyecto || 'N/A';
                 const procedure = item[selectedVariable] || 'N/A';
-                const amount = parseFloat(item.monto) || 0; // Monto
-                const km = parseFloat(item.kmAdjudicados) || 0; // KM Adjudicados
-                const costoKm = parseFloat(item.costoPorKm) || 0; // Costo por KM
+                const amount = parseFloat(item.monto) || 0;
 
                 if (project !== 'N/A' && procedure !== 'N/A') {
                     if (!projectProcedureCounts[project]) {
@@ -4134,13 +4130,9 @@
 
                         projectProcedureCounts[project] = {};
                         projectProcedureAmounts[project] = {};
-                        projectProcedureKm[project] = {};
-                        projectProcedureCostoKm[project] = {};
                     }
                     projectProcedureCounts[project][procedure] = (projectProcedureCounts[project][procedure] || 0) + 1; // Conteo
                     projectProcedureAmounts[project][procedure] = (projectProcedureAmounts[project][procedure] || 0) + amount; // Suma de montos
-                    projectProcedureKm[project][procedure] = (projectProcedureKm[project][procedure] || 0) + km; // Suma de KM
-                    projectProcedureCostoKm[project][procedure] = (projectProcedureCostoKm[project][procedure] || 0) + costoKm; // Suma de Costo/KM
                     allProcedures.add(procedure);
                 }
 
@@ -4163,20 +4155,14 @@
 
             // --- Lógica de la tabla con montos y totales ---
             const table = document.getElementById('projectProcedureTable');
-            const isTipoObraView = selectedVariable === 'tipo';
 
             // Encabezado de dos niveles
             let headerRow1 = `<tr class="bg-slate-200"><th rowspan="2" class="align-bottom text-center">Proyecto</th>`;
             let headerRow2 = `<tr>`;
 
             sortedProcedures.forEach(proc => {
-                const isObra = isTipoObraView && proc === '1.1 Obra';
-                const colspan = isObra ? 4 : 2;
-                headerRow1 += `<th colspan="${colspan}" class="text-center">${proc}</th>`;
+                headerRow1 += `<th colspan="2" class="text-center">${proc}</th>`;
                 headerRow2 += `<th class="text-center">Cantidad</th><th class="text-center">Monto (mdp)</th>`;
-                if (isObra) {
-                    headerRow2 += `<th class="text-center">KM Adj.</th><th class="text-center">Costo/KM (mdp)</th>`;
-                }
             });
             headerRow1 += `<th colspan="2" class="text-center">Total</th></tr>`;
             headerRow2 += `<th class="text-center">Cantidad</th><th class="text-center">Monto (mdp)</th></tr>`;
@@ -4187,8 +4173,6 @@
             
             const procedureAmountTotals = {};
             const procedureCountTotals = {};
-            const procedureKmTotals = {};
-            const procedureCostoKmTotals = {};
             let grandTotalAmount = 0;
             let grandTotalCount = 0;
 
@@ -4201,27 +4185,16 @@
                 sortedProcedures.forEach(proc => {
                     const count = projectProcedureCounts[project][proc] || 0;
                     const amount = projectProcedureAmounts[project][proc] || 0;
-                    const isObra = isTipoObraView && proc === '1.1 Obra';
-                    const km = isObra ? (projectProcedureKm[project][proc] || 0) : 0;
-                    const costoKm = isObra ? (projectProcedureCostoKm[project][proc] || 0) : 0;
                     
                     // Celda de Cantidad
                     rowHTML += `<td class="text-center clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-project="${project}" data-filter-variable="${selectedVariable}" data-filter-value="${proc}">${count}</td>`;
                     // Celda de Monto
                     rowHTML += `<td class="text-right">${(amount / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
-                    if (isObra) {
-                        rowHTML += `<td class="text-right">${km.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
-                        rowHTML += `<td class="text-right">${(costoKm / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
-                    }
                     
                     projectTotalAmount += amount;
                     projectTotalCount += count;
                     procedureAmountTotals[proc] = (procedureAmountTotals[proc] || 0) + amount;
                     procedureCountTotals[proc] = (procedureCountTotals[proc] || 0) + count;
-                    if (isObra) {
-                        procedureKmTotals[proc] = (procedureKmTotals[proc] || 0) + km;
-                        procedureCostoKmTotals[proc] = (procedureCostoKmTotals[proc] || 0) + costoKm;
-                    }
                 });
 
                 // Celdas de Total por fila
@@ -4235,17 +4208,10 @@
 
             let footerHTML = `<tr class="bg-slate-200 font-bold"><td>Total</td>`;
             sortedProcedures.forEach(proc => {
-                const isObra = isTipoObraView && proc === '1.1 Obra';
                 // Total Cantidad por columna
                 footerHTML += `<td class="text-center">${procedureCountTotals[proc] || 0}</td>`;
                 // Total Monto por columna
                 footerHTML += `<td class="text-right">${((procedureAmountTotals[proc] || 0) / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
-                if (isObra) {
-                    // Total KM por columna
-                    footerHTML += `<td class="text-right">${(procedureKmTotals[proc] || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
-                    // Total Costo/KM por columna
-                    footerHTML += `<td class="text-right">${((procedureCostoKmTotals[proc] || 0) / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
-                }
             });
             // Gran Total Cantidad
             footerHTML += `<td class="text-center">${grandTotalCount}</td>`;
