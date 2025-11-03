@@ -5875,15 +5875,20 @@
                          <div class="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-shadow">
                              <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this)">
                                  <p class="text-sm font-medium text-slate-500">Costo Total del Tramo <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
-                                 <p class="text-2xl font-bold text-primary mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
-                                 <p class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toFixed(2)} Millones)</p>
+                                 <p id="costo-tramo-total-display" class="text-2xl font-bold text-primary mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
+                                 <p id="costo-tramo-total-millones-display" class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toFixed(2)} Millones)</p>
                              </div>
                              <div class="summary-card-content">
-                                 <ul class="text-sm space-y-1 mt-2 border-t pt-2">
+                                 <ul id="costo-total-breakdown-list" class="text-sm space-y-1 mt-2 border-t pt-2">
                                      ${Object.entries(costosPorTipo).sort(([,a],[,b]) => b-a).map(([tipo, monto]) => `
-                                         <li class="flex justify-between">
-                                             <span class="text-slate-600">${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}:</span>
-                                             <span class="font-semibold text-primary">${monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span>
+                                         <li class="flex justify-between items-center">
+                                             <label class="flex items-center cursor-pointer text-slate-600 flex-grow">
+                                                 <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mr-2" data-monto="${monto}" checked>
+                                                 <span class="truncate" title="${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}">
+                                                     ${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}:
+                                                 </span>
+                                             </label>
+                                             <span class="font-semibold text-primary ml-2">${monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span>
                                          </li>
                                      `).join('')}
                                  </ul>
@@ -5934,7 +5939,35 @@
                 const datosParaTarjeta = licitacionesFiltradas.filter(lic => lic.tipo === tipo);
                 costosCardsGrid.innerHTML += createCostoCardHTML(datosParaTarjeta, titulo, tipo);
             }
+
+            // Añadir el listener para la actualización interactiva del costo total
+            const breakdownList = document.getElementById('costo-total-breakdown-list');
+            if (breakdownList) {
+                breakdownList.addEventListener('change', updateCostoTotalTramo);
+            }
         }
+
+        // --- INICIO: Nueva función para actualizar el costo total del tramo interactivamente ---
+        /**
+         * Recalcula y actualiza el costo total del tramo mostrado en la tarjeta de resumen.
+         * Se basa en los checkboxes seleccionados en la lista de desglose.
+         */
+        function updateCostoTotalTramo() {
+            const breakdownList = document.getElementById('costo-total-breakdown-list');
+            if (!breakdownList) return;
+
+            const checkboxes = breakdownList.querySelectorAll('input[type="checkbox"]');
+            let nuevoTotal = 0;
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    nuevoTotal += parseFloat(cb.dataset.monto) || 0;
+                }
+            });
+
+            document.getElementById('costo-tramo-total-display').textContent = nuevoTotal.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+            document.getElementById('costo-tramo-total-millones-display').textContent = `(${(nuevoTotal / 1000000).toFixed(2)} Millones)`;
+        }
+        // --- FIN: Nueva función ---
 
         /**
          * Crea el HTML para una tarjeta de costos individual.
