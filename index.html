@@ -628,6 +628,21 @@
             margin-bottom: 0;
         }
 
+        /* --- INICIO: Estilos para tarjetas de resumen desplegables --- */
+        .summary-card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out;
+            margin-top: 0;
+        }
+
+        .summary-card-content.expanded {
+            max-height: 500px; /* Altura suficiente para el contenido */
+            margin-top: 1rem; /* Espacio cuando está expandido */
+        }
+        /* --- FIN: Estilos para tarjetas de resumen desplegables --- */
+
+
         /* ============================================= */
         /* === 7. COMPONENTES ESPECÍFICOS === */
         /* ============================================= */
@@ -5831,6 +5846,7 @@
              let totalMontoGeneral = 0;
              let totalKmAdjudicadosGeneral = 0;
              const costosPorTipo = {};
+             const licitacionesDeObra = [];
  
              licitacionesFiltradas.forEach(lic => {
                  const monto = parseFloat(lic.monto) || 0;
@@ -5840,6 +5856,7 @@
                  totalMontoGeneral += monto;
                  if (lic.tipo === "1.1 Obra") { // Sumar KM solo para licitaciones de obra
                      totalKmAdjudicadosGeneral += km;
+                     licitacionesDeObra.push(lic);
                  }
  
                  if (!costosPorTipo[tipo]) {
@@ -5853,24 +5870,47 @@
              let resumenHTML = `
                  <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-primary mb-8">
                      <h3 class="text-xl font-bold text-primary mb-4 text-center">Resumen Financiero del Tramo: ${tramo}</h3>
-                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 summary-card-container">
                          <!-- Card Costo Total -->
-                         <div class="bg-slate-50 p-4 rounded-lg">
-                             <p class="text-sm font-medium text-slate-500">Costo Total del Tramo</p>
-                             <p class="text-2xl font-bold text-primary mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
-                             <p class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toFixed(2)} Millones)</p>
+                         <div class="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-shadow">
+                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this)">
+                                 <p class="text-sm font-medium text-slate-500">Costo Total del Tramo <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
+                                 <p class="text-2xl font-bold text-primary mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
+                                 <p class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toFixed(2)} Millones)</p>
+                             </div>
+                             <div class="summary-card-content">
+                                 <ul class="text-sm space-y-1 mt-2 border-t pt-2">
+                                     ${Object.entries(costosPorTipo).sort(([,a],[,b]) => b-a).map(([tipo, monto]) => `
+                                         <li class="flex justify-between">
+                                             <span class="text-slate-600">${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}:</span>
+                                             <span class="font-semibold text-primary">${monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span>
+                                         </li>
+                                     `).join('')}
+                                 </ul>
+                             </div>
                          </div>
                          <!-- Card KM Adjudicados (Obra) -->
-                         <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-300">
-                             <p class="text-sm font-medium text-slate-500">KM Adjudicados (Solo Obra)</p>
-                             <p class="text-2xl font-bold text-secondary mt-1">${totalKmAdjudicadosGeneral.toLocaleString('es-MX')} km</p>
-                             <p class="text-md text-slate-600">Suma de KM de licitaciones tipo "1.1 Obra"</p>
+                         <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-300 hover:shadow-md transition-shadow">
+                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this)">
+                                 <p class="text-sm font-medium text-slate-500">KM Adjudicados (Solo Obra) <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
+                                 <p class="text-2xl font-bold text-secondary mt-1">${totalKmAdjudicadosGeneral.toLocaleString('es-MX')} km</p>
+                                 <p class="text-md text-slate-600">Suma de KM de licitaciones tipo "1.1 Obra"</p>
+                             </div>
+                             <div id="km-obra-details" class="summary-card-content">
+                                 <ul class="text-sm space-y-1 mt-2 border-t pt-2">
+                                     ${licitacionesDeObra.map(lic => `
+                                         <li class="flex justify-between"><span class="text-slate-600 truncate pr-2" title="${lic.nombre}">${lic.nombre}:</span> <span class="font-semibold text-secondary">${(parseFloat(lic.kmAdjudicados) || 0).toLocaleString('es-MX')} km</span></li>
+                                     `).join('')}
+                                 </ul>
+                             </div>
                          </div>
                          <!-- Card Costo por KM General -->
                          <div class="bg-slate-50 p-4 rounded-lg">
-                             <p class="text-sm font-medium text-slate-500">Costo Total por KM (Obra)</p>
-                             <p class="text-2xl font-bold text-primary mt-1">${costoTotalPorKmGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
-                             <p class="text-md text-slate-600">(Costo Total / KM de Obra)</p>
+                             <div class="text-center">
+                                 <p class="text-sm font-medium text-slate-500">Costo Total por KM (Obra)</p>
+                                 <p class="text-2xl font-bold text-primary mt-1">${costoTotalPorKmGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
+                                 <p class="text-md text-slate-600">(Costo Total / KM de Obra)</p>
+                             </div>
                          </div>
                      </div>
                      <div class="mt-6 border-t pt-4">
@@ -5878,7 +5918,7 @@
                          <div class="flex flex-wrap justify-center gap-4">
                              ${Object.entries(costosPorTipo).map(([tipo, monto]) => `
                                  <div class="bg-blue-50 p-3 rounded-md text-center">
-                                     <p class="text-xs font-semibold text-blue-800">${tiposDeLicitacionParaCostos[tipo] || tipo}</p>
+                                     <p class="text-xs font-semibold text-blue-800">${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}</p>
                                      <p class="text-lg font-bold text-blue-900">${monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
                                  </div>
                              `).join('')}
@@ -5980,6 +6020,18 @@
                     </div>
                 </div>
             `;
+        }
+
+        /**
+         * Alterna la visibilidad de un contenedor de contenido dentro de las tarjetas de resumen.
+         * @param {string} contentId - El ID del elemento de contenido a mostrar/ocultar.
+         */
+        function toggleSummaryContent(clickedElement) {
+            const cardBody = clickedElement.parentElement;
+            const contentElement = cardBody.querySelector('.summary-card-content');
+            if (contentElement) { // REFACTOR: contentElement
+                contentElement.classList.toggle('expanded');
+            }
         }
 
         // =============================================
