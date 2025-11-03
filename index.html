@@ -932,6 +932,7 @@
                                 <button data-filter="todos" class="train-filter-btn active text-xs font-medium py-1 px-3 rounded-md">Todos</button>
                                 <button data-filter="trenes-del-norte" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Trenes del Norte</button>
                                 <button data-filter="tren-maya" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Tren Maya</button>
+                                <button data-filter="trolebus" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Trolebús</button>
                                 <button data-filter="trenes" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Otros Trenes</button>
                             </div>
                             <!-- FIN: Marcadores de filtro -->
@@ -964,9 +965,10 @@
                         <table class="w-full text-sm text-left text-slate-500">
                             <thead class="text-xs text-slate-700 uppercase bg-slate-100">
                                 <tr id="historical-table-header">
-                                    <th scope="col" class="py-3 px-6">No.</th>
-                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="proyecto">Proyecto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6">No.</th>                                    
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="tipoTren">Tipo de Tren<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="proyecto">Proyecto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="tramo">Tramo<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombre">Nombre<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="descripcion">Descripción<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="generalidades">Generalidades<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
@@ -982,8 +984,8 @@
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="nombreLicitantes">Licitantes<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="ganadorLicitacion">Ganador<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="monto">Monto<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
-                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="costoPorKm">Costo por KM<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="kmAdjudicados">KM Adjudicados<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
+                                    <th scope="col" class="py-3 px-6 filterable-header" data-filter-by="costoPorKm">Costo por KM<span class="filter-icon"><i class="fa-solid fa-filter ml-1"></i></span></th>
                                     <th scope="col" class="py-3 px-6">Link</th>
                                     <th scope="col" class="py-3 px-6 actions-header">Acciones</th>
                                 </tr>
@@ -1124,6 +1126,15 @@
                             <div class="flex-with-buttons">
                                 <select id="licitacion-proyecto" name="proyecto" required></select>
                                 <button type="button" id="edit-proyecto-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-tramo" class="label-left-align">Tramo</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-tramo" name="tramo"></select>
+                                <button type="button" id="edit-tramo-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
@@ -1289,6 +1300,15 @@
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-proyecto" name="proyecto" required></select>
                                 <button type="button" id="edit-proyecto-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-tramo" class="label-left-align">Tramo</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-tramo" name="tramo"></select>
+                                <button type="button" id="edit-tramo-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
@@ -1757,6 +1777,7 @@
         let quickViewTooltip;
         let fieldOptions = {
             proyectos: [],
+            tramos: [], // Añadido para el nuevo campo
             tiposTren: [],
             nombres: [],
             siglasDependencias: [],
@@ -2133,8 +2154,9 @@
                 row.dataset.id = licitacionItem.id;
 
                 row.dataset.quickview = 'true';
-
+                
                 row.dataset.nombre = licitacionItem.nombre || 'N/A';
+                row.dataset.tramo = licitacionItem.tramo || 'N/A'; // Añadido para el tooltip
                 row.dataset.proyecto = licitacionItem.proyecto || 'N/A';
                 row.dataset.dependencia = licitacionItem.siglasDependencia || 'N/A';
                 row.dataset.expediente = licitacionItem.codigoExpediente || 'N/A';
@@ -2155,8 +2177,9 @@
 
                 row.innerHTML = `
                     <td class="py-4 px-6">${applyHighlight(index + 1)}</td>
-                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.proyecto, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.tipoTren, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.proyecto, 30))}</td>
+                    <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.tramo, 30))}</td>
                     <td class="py-4 px-6 clickable-cell">${applyHighlight(truncateText(licitacionItem.nombre, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.descripcion, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.generalidades, 30))}</td>
@@ -2172,8 +2195,9 @@
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.nombreLicitantes, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(truncateText(licitacionItem.ganadorLicitacion, 30))}</td>
                     <td class="py-4 px-6">${applyHighlight(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A')}</td>
+                    <td class="py-4 px-6">${applyHighlight(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A')}</td>
                     <td class="py-4 px-6">${applyHighlight(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A')}</td>
-                    <td class="py-4 px-6">${applyHighlight(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A')}</td>                    <td class="py-4 px-6 text-center">${linkCell}</td>
+                    <td class="py-4 px-6 text-center">${linkCell}</td>
                     ${isLoggedIn ? `
                         <td class="py-4 px-6 flex space-x-2 actions-cell">
                             <button data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="generate-doc-btn text-blue-600 hover:text-blue-800 actions-btn" title="Generar Reporte Individual">
@@ -2219,6 +2243,8 @@
                         if (tipoTren !== 'trenes del norte') return false;
                     } else if (activeTrainTypeFilter === 'tren-maya') { // CORRECCIÓN: Comparar con 'tren maya'
                         if (tipoTren !== 'tren maya') return false;
+                    } else if (activeTrainTypeFilter === 'trolebus') {
+                        if (tipoTren !== 'trolebús') return false;
                     }
                     // Si se añade otro filtro, se puede extender aquí.
                 }
@@ -2256,9 +2282,19 @@
                         } else if (col === 'costoPorKm' && typeof itemValue === 'number') {
                             itemValue = '$' + item[col].toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                         }
-                        if (!columnFilters[col].includes(itemValue)) {
-                            return false;
+
+                        // --- INICIO: Lógica de filtro mejorada para "Tramo" ---
+                        // Si la columna es 'tramo' y el filtro incluye 'N/A',
+                        // la condición de coincidencia se expande para incluir valores vacíos o nulos.
+                        if (col === 'tramo' && columnFilters[col].includes('N/A')) {
+                            if (!columnFilters[col].includes(itemValue) && itemValue !== 'N/A' && item[col]) {
+                                return false; // No coincide y no es un valor vacío/nulo
+                            }
+                        } else {
+                            // Lógica de filtro estándar para todas las demás columnas.
+                            if (!columnFilters[col].includes(itemValue)) return false;
                         }
+                        // --- FIN: Lógica de filtro mejorada ---
                     }
                 }
                 return true;
@@ -2291,6 +2327,9 @@
                     return false;
                 }
                 if (activeTrainTypeFilter === 'tren-maya' && tipoTren !== 'tren maya') {
+                    return false;
+                }
+                if (activeTrainTypeFilter === 'trolebus' && tipoTren !== 'trolebús') {
                     return false;
                 }
                 // --- FIN DE LA SOLUCIÓN MEJORADA ---
@@ -2690,6 +2729,7 @@
 
                 // Set select values
                 $('#edit-licitacion-proyecto').val(licitacionToEdit.proyecto || '').trigger('change');
+                $('#edit-licitacion-tramo').val(licitacionToEdit.tramo || '').trigger('change');
                 $('#edit-licitacion-nombre').val(licitacionToEdit.nombre || '').trigger('change');
                 $('#edit-licitacion-siglasDependencia').val(licitacionToEdit.siglasDependencia || '').trigger('change');
                 
@@ -2742,6 +2782,7 @@
             const downloadButtonHTML = `
                 <button id="download-details-docx-btn" data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar reporte DOCX">
                     <i class="fa-solid fa-file-word fa-lg"></i>
+                    <i class="fa-solid fa-file-pdf fa-lg ml-2"></i>
                 </button>
             `;
 
@@ -2794,6 +2835,10 @@
                             <tr>
                                 <th>Nombre</th>
                                 <td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td>
+                            </tr>
+                            <tr>
+                                <th>Tramo</th>
+                                <td>${highlightText(licitacionItem.tramo || 'No especificado.', searchText)}</td>
                             </tr>
                             <tr>
                                 <th>Descripción</th>
@@ -2931,6 +2976,7 @@
                     <div class="details-header flex justify-between items-start">
                         <div>
                            <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
+                            <p class="date">Tramo: ${highlightText(licitacionItem.tramo || 'N/A', searchText)}</p>
                             <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
                             <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
                             <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
@@ -3082,6 +3128,7 @@
                 // 4. Mapeo de datos (asegurando que no haya valores nulos)
                 const dataForTemplate = {
                     palabra_clave_0: record.proyecto || 'No especificado',
+                    palabra_clave_0_1: record.tramo || 'No especificado', // Nuevo campo para Tramo
                     palabra_clave_1: record.nombre || 'No especificado',
                     palabra_clave_2: record.descripcion || 'No especificado',
                     palabra_clave_3: record.generalidades || 'No especificado',
@@ -3170,6 +3217,10 @@
 
         // Catálogo de proyectos
         const catalogoProyectos = [
+        ];
+
+        // Catálogo de tramos (inicialmente vacío)
+        const catalogoTramos = [
         ];
 
         // Catálogo de nombres de licitaciones
@@ -3503,6 +3554,12 @@
             fieldOptions.proyectos = combinedProyectos;
             updateSelectOptions('proyectos', fieldOptions.proyectos);
         
+            // Tramos
+            const historicalTramos = getUniqueTrimmedOptions(allData, 'tramo');
+            const combinedTramos = [...new Set([...catalogoTramos, ...historicalTramos])].sort();
+            fieldOptions.tramos = combinedTramos;
+            updateSelectOptions('tramos', fieldOptions.tramos);
+
             // Tipo de Tren
             const historicalTiposTren = getUniqueTrimmedOptions(allData, 'tipoTren');
             const combinedTiposTren = [...new Set([...historicalTiposTren])].sort(); // No tiene catálogo base
@@ -3559,6 +3616,7 @@
         function updateSelectOptions(field, options, selectedId = null) {
             const fieldToSelectMap = {
                 'proyectos': ['licitacion-proyecto', 'edit-licitacion-proyecto'],
+                'tramos': ['licitacion-tramo', 'edit-licitacion-tramo'],
                 'tiposTren': ['licitacion-tipoTren', 'edit-licitacion-tipoTren'],
                 'nombres': ['licitacion-nombre', 'edit-licitacion-nombre'],
                 'siglasDependencias': ['licitacion-siglasDependencia', 'edit-licitacion-siglasDependencia'],
@@ -3605,6 +3663,7 @@
         async function findAndReplaceInDatabase(field, oldValue, newValue, activeFormId, formStateBeforeEdit) {
             const fieldToDbFieldMap = {
                 'proyectos': 'proyecto', 
+                'tramos': 'tramo',
                 'tiposTren': 'tipoTren',
                 'nombres': 'nombre',
                 'siglasDependencias': 'siglasDependencia',
@@ -3728,6 +3787,7 @@
         function setupAddEditButtons() {
             const buttonToFieldMap = {
                 'edit-proyecto-btn': 'proyectos',
+                'edit-tramo-btn': 'tramos',
                 'edit-tipoTren-btn': 'tiposTren',
                 'edit-nombre-btn': 'nombres',
                 'edit-descripcion-btn': 'descripcion',
@@ -3742,6 +3802,7 @@
                 'edit-costoPorKm-btn': 'costosPorKm',
                 'edit-linkComprasXM-btn': 'linkComprasXM',
                 'edit-proyecto-edit-btn': 'proyectos',
+                'edit-tramo-edit-btn': 'tramos',
                 'edit-tipoTren-edit-btn': 'tiposTren',
                 'edit-nombre-edit-btn': 'nombres',
                 'edit-descripcion-edit-btn': 'descripcion',
@@ -3799,8 +3860,8 @@
                 
                 const formStateBeforeEdit = activeFormId ? getFormState(activeFormId) : null;
                 requirePassword(async () => {
-                    try { // REFACTOR: Se elimina 'anosPublicacion' de esta lógica ya que no es un select.
-                        if (['proyectos', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion', 'costosPorKm'].includes(currentEditingField)) {
+                    try {
+                        if (['proyectos', 'tramos', 'tiposTren', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion', 'costosPorKm'].includes(currentEditingField)) {
                             await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue, activeFormId, formStateBeforeEdit);
                         } else {
                             // Lógica para campos de texto (no afecta a otros campos)
@@ -4372,26 +4433,27 @@
         // =============================================
 
         const exportHeaders = [
-            "No.", "Proyecto", "Tipo de Tren", "Nombre", "Descripción", "Generalidades", "KM Adjudicados", "Siglas Dependencia",
+            "No.", "Tipo de Tren", "Proyecto", "Tramo", "Nombre", "Descripción", "Generalidades", "Siglas Dependencia",
             "Código Expediente", "Procedimiento", "Tipo", "Año Publicación", "Fecha Apertura",
-            "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "Costo por KM", "Link Compras XM"
+            "Fecha Fallo", "Fecha Estimada Inicio", "Participantes", "Licitantes", "Ganador", "Monto (Pesos)", "KM Adjudicados", "Costo por KM", "Link Compras XM"
         ];
 
 
         /**
+         * Prepara los datos para la exportación a Excel, asegurando el formato y el orden correctos.
          * Prepara los datos para la exportación a Excel, asegurando el formato y el orden correctos.
          */
         function prepareExportData(data) {
             return data.map((licitacionItem, index) => {
                 const fallback = (value) => value || "N/A";
                 return {
-                    "No.": index + 1,
-                    "Proyecto": fallback(licitacionItem.proyecto),
+                    "No.": index + 1,                    
                     "Tipo de Tren": fallback(licitacionItem.tipoTren),
+                    "Proyecto": fallback(licitacionItem.proyecto),
+                    "Tramo": fallback(licitacionItem.tramo),
                     "Nombre": fallback(licitacionItem.nombre),
                     "Descripción": fallback(licitacionItem.descripcion),
                     "Generalidades": fallback(licitacionItem.generalidades),
-                    "KM Adjudicados": licitacionItem.kmAdjudicados && !isNaN(Number(licitacionItem.kmAdjudicados)) ? Number(licitacionItem.kmAdjudicados) : null,
                     "Siglas Dependencia": fallback(licitacionItem.siglasDependencia),
                     "Código Expediente": fallback(licitacionItem.codigoExpediente),
                     "Procedimiento": fallback(licitacionItem.procedimientoContratacion),
@@ -4405,6 +4467,7 @@
                     "Ganador": fallback(licitacionItem.ganadorLicitacion),
                     // SOLUCIÓN: Si el monto no es un número válido, exportar `null` en lugar de "N/A".
                     "Monto (Pesos)": licitacionItem.monto && !isNaN(Number(licitacionItem.monto)) ? Number(licitacionItem.monto) : null,
+                    "KM Adjudicados": licitacionItem.kmAdjudicados && !isNaN(Number(licitacionItem.kmAdjudicados)) ? Number(licitacionItem.kmAdjudicados) : null,
                     "Costo por KM": licitacionItem.costoPorKm && !isNaN(Number(licitacionItem.costoPorKm)) ? Number(licitacionItem.costoPorKm) : null, // Corregido
                     "Link Compras XM": fallback(licitacionItem.linkComprasXM)
                 };
@@ -4414,7 +4477,7 @@
         /**
          * Aplica formato profesional a una hoja de cálculo de Excel antes de descargarla.
          * Añade título, totales, estilos de celda y autofiltros.
-         * @param {object} ws - La hoja de cálculo (worksheet) de la librería XLSX.
+         * @param {object} ws - La hoja de cálculo (worksheet) de la librería XLSX. // REFACTOR: La hoja de cálculo (worksheet) de la librería XLSX.
          * @param {Array<object>} data - Los datos que se van a exportar, para calcular dimensiones.
          */
         function applyExcelFormatting(ws, data) {
@@ -4477,7 +4540,7 @@
             const numCols = exportHeaders.length;
             const montoColIndex = exportHeaders.indexOf("Monto (Pesos)");
             if (montoColIndex !== -1) {
-                const montoColLetter = XLSX.utils.encode_col(montoColIndex);
+                const montoColLetter = XLSX.utils.encode_col(montoColIndex); // Esto no cambia
                 const formula = `SUBTOTAL(9,${montoColLetter}3:${montoColLetter}${data.length + 2})`;
 
                 const totalCellRef = XLSX.utils.encode_cell({ r: 0, c: montoColIndex -1 }); // Celda P1 para la etiqueta
@@ -4506,7 +4569,7 @@
             const montoColumnIndex = exportHeaders.indexOf("Monto (Pesos)");
             const kmAdjudicadosColumnIndex = exportHeaders.indexOf("KM Adjudicados");
             const costoPorKmColumnIndex = exportHeaders.indexOf("Costo por KM");
-            const centeredColumnIndices = centeredColumns.map(header => exportHeaders.indexOf(header)); // Esto no cambia
+            const centeredColumnIndices = centeredColumns.map(header => exportHeaders.indexOf(header));
 
             // Recorrer y aplicar estilos a encabezados y celdas de datos
             for (let R = 1; R <= numRows + 1; ++R) { // El bucle empieza en la fila de encabezados (R=1, que es la Fila 2 en Excel)
@@ -4560,8 +4623,8 @@
 
             // 5. Ajustar el ancho de las columnas automáticamente
             ws['!cols'] = [
-                { wch: 5 }, // Columna A (No.)
-                ...Array(exportHeaders.length - 1).fill({ wpx: 130 }) // Resto de columnas
+                { wch: 5 }, // No.
+                ...Array(exportHeaders.length - 1).fill({ wpx: 130 })
             ];
 
             return ws;
@@ -4953,8 +5016,8 @@
                 }
 
                 // Clear form
-                licitacionForm.reset(); // Esto limpia inputs y textareas
-                $('#licitacion-proyecto, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-tipoTren').val(null).trigger('change'); // Limpia los selects
+                licitacionForm.reset();
+                $('#licitacion-proyecto, #licitacion-tramo, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-tipoTren').val(null).trigger('change');
                 document.getElementById('licitacion-anoPublicacion').value = ''; // Limpia el nuevo input de año
 
                 openModalWithFocus(licitacionModal, document.getElementById('licitacion-proyecto'));
@@ -5134,6 +5197,7 @@
                                 const keyMapping = {
                                     'no.': 'no',
                                     'tipo de tren': 'tipoTren',
+                                    'tramo': 'tramo',
                                     'proyecto': 'proyecto',
                                     'nombre': 'nombre',
                                     'descripción': 'descripcion', // Con acento
@@ -5163,7 +5227,7 @@
                                     'Costo por KM': 'costoPorKm', // Con espacio
                                     'costo por km': 'costoPorKm', // Con espacio y minúsculas
                                     'link compras xm': 'linkComprasXM', // Con espacio
-                                    'link': 'linkComprasXM' // Alias común para el link
+                                    'Link Compras XM': 'linkComprasXM' // Alias común para el link
                                 };
                                 const mappedRow = mapKeys(row, keyMapping);
 
@@ -5214,6 +5278,7 @@
 
                                 return {
                                     proyecto: trimIfString(mappedRow.proyecto) || '',
+                                    tramo: trimIfString(mappedRow.tramo) || '',
                                     tipoTren: trimIfString(mappedRow.tipoTren) || '',
                                     nombre: trimIfString(mappedRow.nombre) || '',
                                     descripcion: trimIfString(mappedRow.descripcion) || '',
@@ -5283,18 +5348,23 @@
                 const filteredData = applyAllFilters(historicalLicitaciones, 'historical');
 
                 if (filteredData.length === 0) return showAlert("No hay datos en la tabla para descargar.", "warning");
-                const dataToExport = prepareExportData(filteredData);
+                const dataToExport = filteredData.map((item, index) => ({ "No.": index + 1, ...item }));
                 
-                // Crear la hoja de cálculo directamente con los datos y encabezados, pero dejando espacio para el título.
-                // 1. Crear un array de arrays, empezando con los encabezados.
+                // --- INICIO: Lógica de exportación restaurada a la versión anterior ---
+                // 1. Preparar los datos para la exportación.
+                const preparedData = prepareExportData(filteredData);
+
+                // 2. Crear un array de arrays: primero los encabezados, luego los datos.
                 const sheetData = [exportHeaders];
-                // 2. Añadir los datos de cada fila.
-                dataToExport.forEach(item => sheetData.push(Object.values(item)));
-                // 3. Crear la hoja a partir de este array, insertándola desde la celda A2.
+                preparedData.forEach(item => sheetData.push(Object.values(item)));
+
+                // 3. Crear la hoja de cálculo a partir del array, especificando que comience en la celda A2.
                 const ws = XLSX.utils.aoa_to_sheet(sheetData, { origin: "A2" });
 
-                // Aplicar todo el formato
-                applyExcelFormatting(ws, dataToExport); // Llamada corregida, sin reasignación
+                // 4. Aplicar todo el formato profesional a la hoja.
+                applyExcelFormatting(ws, preparedData);
+                // --- FIN: Lógica de exportación restaurada ---
+
 
                 const wb = XLSX.utils.book_new();
                 // Generar nombre de archivo con fecha actual
@@ -5427,10 +5497,12 @@
          */
         function setupQuickViewTooltip() {
             const showTooltip = (e) => {
-                const row = e.target.closest('tr[data-quickview="true"]');
+                const row = e.target.closest('tr[data-id]'); // Apuntar a la fila por su ID
                 if (!row) return;
         
-                const { dependencia, proyecto, nombre, procedimiento, tipo, ganador, monto, fallo } = row.dataset;
+                // Usar el ID para encontrar el objeto de datos completo
+                const licitacionItem = historicalLicitaciones.find(l => l.id === row.dataset.id);
+                if (!licitacionItem) return;
         
                 // Función auxiliar para mostrar el valor o un guion si está vacío
                 const displayValue = (value, formatter = v => v) => {
@@ -5438,22 +5510,22 @@
                 };
                 
                 // Obtener el valor de costoPorKm y kmAdjudicados directamente del objeto de datos
-                // FIX: 'licitacion' has already been declared. Combine declarations.
-                const licitacionItem = historicalLicitaciones.find(l => l.id === row.dataset.id);
                 const costoPorKm = licitacionItem && licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
                 const kmAdjudicados = licitacionItem && licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
+                const monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
                 // Construcción del contenido del tooltip usando la función auxiliar
                 quickViewTooltip.innerHTML = `
-                    <p><strong>Dependencia:</strong> ${truncateText(dependencia, 100)}</p>
-                    <p><strong>Proyecto:</strong> ${truncateText(proyecto, 100)}</p>
-                    <p><strong>Nombre:</strong> ${truncateText(nombre, 100)}</p>
-                    <p><strong>Procedimiento:</strong> ${displayValue(truncateText(procedimiento, 100))}</p>
-                    <p><strong>Tipo:</strong> ${displayValue(truncateText(tipo, 100))}</p>
-                    <p><strong>Ganador:</strong> ${displayValue(truncateText(ganador, 100))}</p>
+                    <p><strong>Dependencia:</strong> ${truncateText(licitacionItem.siglasDependencia, 100)}</p>
+                    <p><strong>Proyecto:</strong> ${truncateText(licitacionItem.proyecto, 100)}</p>
+                    <p><strong>Tramo:</strong> ${truncateText(licitacionItem.tramo, 100)}</p>
+                    <p><strong>Nombre:</strong> ${truncateText(licitacionItem.nombre, 100)}</p>
+                    <p><strong>Procedimiento:</strong> ${displayValue(truncateText(licitacionItem.procedimientoContratacion, 100))}</p>
+                    <p><strong>Tipo:</strong> ${displayValue(truncateText(licitacionItem.tipo, 100))}</p>
+                    <p><strong>Ganador:</strong> ${displayValue(truncateText(licitacionItem.ganadorLicitacion, 100))}</p>
                     <p><strong>KM Adjudicados:</strong> ${kmAdjudicados}</p>
                     <div class="fallo-monto-container">
                         <p class="text-sm text-gray-500 m-0"><strong>Costo/KM:</strong> ${displayValue(costoPorKm)}</p>
-                        <p class="text-sm text-gray-500 m-0"><strong>Fallo:</strong> ${displayValue(fallo, formatLongDate)}</p>
+                        <p class="text-sm text-gray-500 m-0"><strong>Fallo:</strong> ${displayValue(licitacionItem.fechaFallo, formatLongDate)}</p>
                         <div class="monto-highlight">${displayValue(monto)}</div>
                     </div>
                 `;
@@ -5764,7 +5836,7 @@
             });
 
             // Configurar Select2 para los selects
-            $('#licitacion-proyecto, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #edit-licitacion-proyecto, #edit-licitacion-tipoTren, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo').each(function() {
+            $('#licitacion-proyecto, #licitacion-tramo, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #edit-licitacion-proyecto, #edit-licitacion-tramo, #edit-licitacion-tipoTren, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo').each(function() {
                  $(this).select2({
                      tags: true,
                      placeholder: "Seleccione o escriba una opción",
