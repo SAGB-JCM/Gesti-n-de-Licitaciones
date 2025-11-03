@@ -825,6 +825,9 @@
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                         <button data-tab="historico" class="tab-btn active whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Licitaciones</button>
                         <button data-tab="reportes" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Reportes</button>
+                        <button data-tab="costos" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Costos
+                        </button>
                     </nav>
                 </div>
             </div>
@@ -1099,6 +1102,38 @@
                         <div class="chart-wrapper mt-6" style="height: 400px;">
                             <canvas id="projectProcedureChart"></canvas>
                         </div>
+                    </div>
+                </section>
+            </div>
+            <!-- ================================================================= -->
+            <!-- ================ PESTAÑA 3: COSTOS ============================== -->
+            <!-- ================================================================= -->
+            <div id="tab-content-costos" class="tab-content hidden">
+                <section class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-bold text-primary">Análisis de Costos por KM</h2>
+                        <div class="flex items-center gap-4 w-full md:w-auto">
+                            <select id="costos-proyecto-selector" class="w-full md:w-80 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="">-- Seleccione un Proyecto --</option>
+                            </select>
+                            <select id="costos-tramo-selector" class="w-full md:w-80 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" disabled>
+                                <option value="">-- Seleccione un Tramo --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor del Dashboard de Costos -->
+                    <div id="costos-dashboard-container" class="hidden space-y-8">
+                        <div id="costos-cards-grid" class="grid grid-cols-1 gap-8">
+                            <!-- Las tarjetas de costos se generarán aquí dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Mensaje inicial -->
+                    <div id="no-costos-selected" class="text-center py-12">
+                        <i class="fa-solid fa-hand-pointer text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">Seleccione un proyecto y un tramo para visualizar los costos</p>
+                        <p class="text-gray-400 mt-2">Las tablas de costos por kilómetro aparecerán aquí.</p>
                     </div>
                 </section>
             </div>
@@ -1774,6 +1809,15 @@
         // --- FIN: Variables para la nueva funcionalidad ---
 
         let currentEditIsHistorical = false;
+            // --- INICIO: Variables para la nueva pestaña de Costos ---
+            let costosProyectoSelector, costosTramoSelector, costosDashboardContainer, noCostosSelected, costosCardsGrid;
+            const tiposDeLicitacionParaCostos = {
+                "1.1 Obra": "Licitaciones de Construcción - Costo por Km",
+                "1.2 Supervisión": "Licitaciones de Supervisión - Costo por Km",
+                "1.3 Adquisición": "Licitaciones de Adquisición - Costo por Km",
+                "1.4 Servicios Relacionados con la Obra": "Licitaciones de Servicios Relacionados - Costo por Km",
+                "1.5 Servicio de Testigo Social": "Licitaciones de Testigo Social - Costo por Km"
+            };
         let quickViewTooltip;
         let fieldOptions = {
             proyectos: [],
@@ -3953,6 +3997,11 @@
                     } else if (tabName === 'historico') {
                         setTimeout(() => updateFalloDashboard(selectedBaseDate), 50); // Actualizar el radar al cambiar a la pestaña
                     }
+                    // --- INICIO: Lógica para la nueva pestaña de Costos ---
+                    else if (tabName === 'costos') {
+                        populateCostosProyectoSelector(); // Poblar el selector de proyectos al entrar a la pestaña
+                    }
+                    // --- FIN: Lógica para la nueva pestaña de Costos ---
                 }
             });
         }
@@ -5697,6 +5746,160 @@
             }, 15000); // 15000 milisegundos = 15 segundos
         }
 
+        // =============================================
+        // MÓDULO: Pestaña de Costos
+        // =============================================
+
+        /**
+         * Configura los listeners para la nueva pestaña de Costos.
+         */
+        function setupCostosTabListeners() {
+            costosProyectoSelector.addEventListener('change', () => {
+                const selectedProyecto = costosProyectoSelector.value;
+                populateCostosTramoSelector(selectedProyecto);
+                // Resetear la vista si se cambia el proyecto
+                costosDashboardContainer.classList.add('hidden');
+                noCostosSelected.classList.remove('hidden');
+            });
+
+            costosTramoSelector.addEventListener('change', () => {
+                const selectedProyecto = costosProyectoSelector.value;
+                const selectedTramo = costosTramoSelector.value;
+                if (selectedProyecto && selectedTramo) {
+                    renderCostosDashboard(selectedProyecto, selectedTramo);
+                }
+            });
+        }
+
+        /**
+         * Puebla el selector de proyectos en la pestaña de Costos.
+         */
+        function populateCostosProyectoSelector() {
+            const proyectos = [...new Set(historicalLicitaciones.map(item => item.proyecto).filter(Boolean))].sort();
+            costosProyectoSelector.innerHTML = '<option value="">-- Seleccione un Proyecto --</option>';
+            proyectos.forEach(p => {
+                costosProyectoSelector.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+            // Resetear y deshabilitar el selector de tramos
+            costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
+            costosTramoSelector.disabled = true;
+        }
+
+        /**
+         * Puebla el selector de tramos basado en el proyecto seleccionado.
+         * @param {string} proyecto - El nombre del proyecto seleccionado.
+         */
+        function populateCostosTramoSelector(proyecto) {
+            if (!proyecto) {
+                costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
+                costosTramoSelector.disabled = true;
+                return;
+            }
+
+            const tramos = [...new Set(
+                historicalLicitaciones
+                    .filter(item => item.proyecto === proyecto && item.tramo)
+                    .map(item => item.tramo)
+            )].sort();
+
+            costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
+            tramos.forEach(t => {
+                costosTramoSelector.innerHTML += `<option value="${t}">${t}</option>`;
+            });
+            costosTramoSelector.disabled = false;
+        }
+
+        /**
+         * Renderiza el dashboard completo de costos para un proyecto y tramo específicos.
+         * @param {string} proyecto - El nombre del proyecto.
+         * @param {string} tramo - El nombre del tramo.
+         */
+        function renderCostosDashboard(proyecto, tramo) {
+            costosDashboardContainer.classList.remove('hidden');
+            noCostosSelected.classList.add('hidden');
+            costosCardsGrid.innerHTML = ''; // Limpiar tarjetas anteriores
+
+            const licitacionesFiltradas = historicalLicitaciones.filter(lic => lic.proyecto === proyecto && lic.tramo === tramo);
+
+            // Iterar sobre los tipos de licitación definidos para crear una tarjeta para cada uno
+            for (const [tipo, titulo] of Object.entries(tiposDeLicitacionParaCostos)) {
+                const datosParaTarjeta = licitacionesFiltradas.filter(lic => lic.tipo === tipo);
+                costosCardsGrid.innerHTML += createCostoCardHTML(datosParaTarjeta, titulo, tipo);
+            }
+        }
+
+        /**
+         * Crea el HTML para una tarjeta de costos individual.
+         * @param {Array} data - Las licitaciones para esta tarjeta.
+         * @param {string} title - El título de la tarjeta.
+         * @param {string} tipo - El tipo de licitación (ej. "1.1 Obra").
+         * @returns {string} El string HTML de la tarjeta.
+         */
+        function createCostoCardHTML(data, title, tipo) {
+            let subtitle = tipo === "1.1 Obra" ? "(No considera costos de supervisión, asesoría y servicios.)" : "";
+            let tableContent = '<p class="text-center text-gray-500 py-4">No hay datos para este tipo de licitación.</p>';
+
+            // --- INICIO: Cálculo del costo promedio por KM ---
+            let footerContent = '';
+            if (data.length > 0) {
+                const costosValidos = data.map(item => parseFloat(item.costoPorKm)).filter(costo => !isNaN(costo) && costo > 0);
+                const promedioCostoKm = costosValidos.length > 0
+                    ? costosValidos.reduce((sum, costo) => sum + costo, 0) / costosValidos.length
+                    : 0;
+
+                footerContent = `
+                    <tfoot class="bg-slate-200 font-semibold">
+                        <tr>
+                            <td colspan="6" class="py-2 px-3 text-right">Costo Promedio por KM</td>
+                            <td class="py-2 px-3 text-center text-accent">${promedioCostoKm.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td class="py-2 px-3"></td>
+                        </tr>
+                    </tfoot>
+                `;
+            // --- FIN: Cálculo del costo promedio por KM ---
+
+                tableContent = `
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-200 sticky top-0">
+                            <tr>
+                                <th class="py-2 px-3">Dependencia</th>
+                                <th class="py-2 px-3">Nombre</th>
+                                <th class="py-2 px-3">Procedimiento</th>
+                                <th class="py-2 px-3">Fallo</th>
+                                <th class="py-2 px-3">Ganador</th>
+                                <th class="py-2 px-3 text-center">KM Adjudicados</th>
+                                <th class="py-2 px-3 text-center">Costo/KM</th>
+                                <th class="py-2 px-3 text-center">Monto (mdp)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(item => `
+                                <tr class="border-b">
+                                    <td class="py-2 px-3">${item.siglasDependencia || 'N/A'}</td>
+                                    <td class="py-2 px-3">${item.nombre || 'N/A'}</td>
+                                    <td class="py-2 px-3">${item.procedimientoContratacion || 'N/A'}</td>
+                                    <td class="py-2 px-3">${formatDate(item.fechaFallo)}</td>
+                                    <td class="py-2 px-3">${item.ganadorLicitacion || 'N/A'}</td>
+                                    <td class="py-2 px-3 text-center">${item.kmAdjudicados || 0}</td>
+                                    <td class="py-2 px-3 text-center font-bold bg-accent/10 text-accent">${item.costoPorKm ? Number(item.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</td>
+                                    <td class="py-2 px-3 text-center font-bold text-primary">${item.monto ? Number(item.monto).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</td>
+                                </tr>`).join('')}
+                        </tbody>
+                        ${footerContent}
+                    </table>
+                `;
+            }
+
+            return `
+                <div class="bg-slate-50 p-6 rounded-lg border">
+                    <h3 class="text-lg font-semibold text-center text-slate-700 mb-2">${title}</h3>
+                    ${subtitle ? `<p class="text-sm text-center text-gray-500 mb-4">${subtitle}</p>` : ''}
+                    <div class="max-h-80 overflow-y-auto">
+                        ${tableContent}
+                    </div>
+                </div>
+            `;
+        }
 
         // =============================================
         // MÓDULO: Inicialización
@@ -5773,6 +5976,13 @@
             // --- FIN: Asignación de elementos ---
 
             // Listener para el modal de detalles content
+            // --- INICIO: Asignación de elementos para la pestaña de Costos ---
+            costosProyectoSelector = document.getElementById('costos-proyecto-selector');
+            costosTramoSelector = document.getElementById('costos-tramo-selector');
+            costosDashboardContainer = document.getElementById('costos-dashboard-container');
+            noCostosSelected = document.getElementById('no-costos-selected');
+            costosCardsGrid = document.getElementById('costos-cards-grid');
+            // --- FIN: Asignación de elementos para la pestaña de Costos ---
             detailsModalContent = document.getElementById('details-modal-content');
             
             // Listener para el tooltip de vista rápida
@@ -5784,6 +5994,7 @@
             setupFalloDashboardFilter();
             setupDynamicDatePicker();
             
+            setupCostosTabListeners();
             // --- Lógica de Autenticación ---
             loginBtn.addEventListener('click', () => {
                 loginScreen.classList.remove('hidden');
