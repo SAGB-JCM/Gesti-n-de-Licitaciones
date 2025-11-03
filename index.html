@@ -2772,12 +2772,13 @@
         function showDetailsModal(licitacionItem, isHistorical = false) {
             if (!licitacionItem) return;
 
+            // Ocultar el tooltip de vista rápida al abrir el modal de detalles
+            if (quickViewTooltip) quickViewTooltip.classList.remove('visible');
+
             const filterKey = isHistorical ? 'historical' : 'main';
             const searchInput = document.getElementById(`filter-input-${filterKey}`);
             const searchText = searchInput ? searchInput.value.trim() : '';
 
-            // Ocultar el tooltip de vista rápida al abrir el modal de detalles
-            if (quickViewTooltip) quickViewTooltip.classList.remove('visible');
  
             const downloadButtonHTML = `
                 <button id="download-details-docx-btn" data-id="${licitacionItem.id}" data-is-historical="${isHistorical}" class="text-slate-400 hover:text-primary p-2 rounded-lg transition-colors" title="Descargar reporte DOCX">
@@ -2821,6 +2822,7 @@
                 <div class="details-header flex justify-between items-start">
                     <div>
                         <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
+                        <p class="date">Tramo: ${highlightText(licitacionItem.tramo || 'N/A', searchText)}</p>
                         <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
                         <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
                         <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
@@ -2835,10 +2837,6 @@
                             <tr>
                                 <th>Nombre</th>
                                 <td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td>
-                            </tr>
-                            <tr>
-                                <th>Tramo</th>
-                                <td>${highlightText(licitacionItem.tramo || 'No especificado.', searchText)}</td>
                             </tr>
                             <tr>
                                 <th>Descripción</th>
@@ -2867,6 +2865,26 @@
                                 <td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td>
                                 <td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td>
                                 <td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="details-section">
+                    <h4>Costo por Kilómetro</h4>
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th>KM del Proyecto</th>
+                                <th>KM Adjudicados</th>
+                                <th>Costo por KM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>N/A</td>
+                                <td>${highlightText(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A', searchText)}</td>
+                                <td class="highlight-fallo">${highlightText(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A', searchText)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -2994,7 +3012,26 @@
 
                     <div class="details-section">
                         <h4>Detalles de Contratación</h4>
-                        <table class="details-table"><thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th><th>KM Adjudicados</th><th>Costo por KM</th></tr></thead><tbody><tr><td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td><td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td><td>${highlightText(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX') : 'N/A', searchText)}</td></tr></tbody></table>
+                        <table class="details-table">
+                            <thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th></tr></thead>
+                            <tbody><tr><td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td><td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td></tr></tbody>
+                        </table>
+                    </div>
+
+                    <div class="details-section">
+                        <h4>Costo por Kilómetro</h4>
+                        <table class="details-table">
+                            <thead>
+                                <tr><th>KM del Proyecto</th><th>KM Adjudicados</th><th>Costo por KM</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>N/A</td>
+                                    <td>${highlightText(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A', searchText)}</td>
+                                    <td class="highlight-fallo">${highlightText(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A', searchText)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
             
                     <div class="details-section">
