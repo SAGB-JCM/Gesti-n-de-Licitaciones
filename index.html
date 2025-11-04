@@ -1169,6 +1169,30 @@
             <h3 class="text-2xl font-bold text-primary mb-6">Registrar Nueva Licitación</h3>
             <div class="licitacion-form-container"> <!-- Contenedor con scroll para el formulario -->
                 <form id="licitacion-form" class="space-y-6" novalidate>
+
+                    <!-- Grupo 0: Tipo de Tren -->
+                    <div class="section-title">Tipo de Tren</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+                        <div class="form-field">
+                            <label for="licitacion-tipoTren" class="label-left-align">Tipo de Tren</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-tipoTren" name="tipoTren"></select>
+                                <button type="button" id="edit-tipoTren-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
+                            <div class="flex-with-buttons">
+                                <select id="licitacion-siglasDependencia" name="siglasDependencia"></select>
+                                <button type="button" id="edit-siglasDependencia-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Grupo 1: Identificación del Proyecto -->
                     <div class="section-title">Identificación del Proyecto</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
@@ -1186,24 +1210,6 @@
                             <div class="flex-with-buttons">
                                 <select id="licitacion-tramo" name="tramo"></select>
                                 <button type="button" id="edit-tramo-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="licitacion-tipoTren" class="label-left-align">Tipo de Tren</label>
-                            <div class="flex-with-buttons">
-                                <select id="licitacion-tipoTren" name="tipoTren"></select>
-                                <button type="button" id="edit-tipoTren-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
-                            <div class="flex-with-buttons">
-                                <select id="licitacion-siglasDependencia" name="siglasDependencia"></select>
-                                <button type="button" id="edit-siglasDependencia-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
@@ -1341,6 +1347,30 @@
                 <form id="edit-form" class="space-y-6" novalidate>
                     <input type="hidden" id="edit-id">
                     
+                    <!-- Grupo 0: Tipo de Tren -->
+                    <div class="section-title">Tipo de Tren</div>
+                    <div class="form-grid grid-cols-1 sm:grid-cols-2">
+
+                        <div class="form-field">
+                            <label for="edit-licitacion-tipoTren" class="label-left-align">Tipo de Tren</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-tipoTren" name="tipoTren"></select>
+                                <button type="button" id="edit-tipoTren-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="edit-licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
+                            <div class="flex-with-buttons">
+                                <select id="edit-licitacion-siglasDependencia" name="siglasDependencia"></select>
+                                <button type="button" id="edit-siglasDependencia-edit-btn" class="edit-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Grupo 1: Identificación del Proyecto -->
                     <div class="section-title">Identificación del Proyecto</div>
                     <div class="form-grid grid-cols-1 sm:grid-cols-2">
@@ -1358,24 +1388,6 @@
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-tramo" name="tramo"></select>
                                 <button type="button" id="edit-tramo-edit-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="edit-licitacion-tipoTren" class="label-left-align">Tipo de Tren</label>
-                            <div class="flex-with-buttons">
-                                <select id="edit-licitacion-tipoTren" name="tipoTren"></select>
-                                <button type="button" id="edit-tipoTren-edit-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
-                            <label for="edit-licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
-                            <div class="flex-with-buttons">
-                                <select id="edit-licitacion-siglasDependencia" name="siglasDependencia"></select>
-                                <button type="button" id="edit-siglasDependencia-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
