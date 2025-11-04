@@ -1176,7 +1176,7 @@
                         <div class="form-field">
                             <label for="licitacion-tipoTren" class="label-left-align">Tipo de Tren</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-tipoTren" name="tipoTren"></select>
+                                <select id="licitacion-tipoTren" name="tipoTren" required></select>
                                 <button type="button" id="edit-tipoTren-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1185,7 +1185,7 @@
                         <div class="form-field">
                             <label for="licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-siglasDependencia" name="siglasDependencia"></select>
+                                <select id="licitacion-siglasDependencia" name="siglasDependencia" required></select>
                                 <button type="button" id="edit-siglasDependencia-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1208,7 +1208,7 @@
                         <div class="form-field">
                             <label for="licitacion-tramo" class="label-left-align">Tramo</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-tramo" name="tramo"></select>
+                                <select id="licitacion-tramo" name="tramo" required></select>
                                 <button type="button" id="edit-tramo-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1217,21 +1217,21 @@
                         <div class="form-field full-width">
                             <label for="licitacion-nombre">Nombre de la Licitacion</label>
                             <div class="flex-with-buttons">
-                                <textarea id="licitacion-nombre" name="nombre" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="licitacion-nombre" name="nombre" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required></textarea>
                                 <button type="button" id="edit-nombre-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         <div class="form-field full-width">
                             <label for="licitacion-descripcion">Descripción</label>
                             <div class="flex-with-buttons">
-                                <textarea id="licitacion-descripcion" name="descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="licitacion-descripcion" name="descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required></textarea>
                                 <button type="button" id="edit-descripcion-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         <div class="form-field full-width">
                             <label for="licitacion-generalidades">Generalidades Del Proyecto</label>
                             <div class="flex-with-buttons">
-                                <textarea id="licitacion-generalidades" name="generalidades" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="licitacion-generalidades" name="generalidades" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required></textarea>
                                 <button type="button" id="edit-generalidades-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
@@ -1243,7 +1243,7 @@
                         <div class="form-field">
                             <label for="licitacion-tipo" class="label-left-align">Tipo</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-tipo" name="tipo"></select>
+                                <select id="licitacion-tipo" name="tipo" required></select>
                                 <button type="button" id="edit-tipo-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1252,7 +1252,7 @@
                         <div class="form-field">
                             <label for="licitacion-procedimientoContratacion" class="label-left-align">Procedimiento de Contratación</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
+                                <select id="licitacion-procedimientoContratacion" name="procedimientoContratacion" required></select>
                                 <button type="button" id="edit-procedimientoContratacion-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1260,12 +1260,12 @@
                         </div>
                         <div class="form-field">
                             <label for="licitacion-codigoExpediente">Código De Expediente</label>
-                            <input type="text" id="licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                            <input type="text" id="licitacion-codigoExpediente" name="codigoExpediente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
                         </div>
                         <div class="form-field">
                             <label for="licitacion-anoPublicacion">Año De Publicación</label>
                             <!-- REFACTOR: Cambiado de select a input con datalist -->
-                            <input type="number" id="licitacion-anoPublicacion" name="anoPublicacion" list="anos-datalist" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2">
+                            <input type="number" id="licitacion-anoPublicacion" name="anoPublicacion" list="anos-datalist" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required>
                         </div>
                     </div>
 
@@ -1354,7 +1354,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-tipoTren" class="label-left-align">Tipo de Tren</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-tipoTren" name="tipoTren"></select>
+                                <select id="edit-licitacion-tipoTren" name="tipoTren" required></select>
                                 <button type="button" id="edit-tipoTren-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1363,7 +1363,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-siglasDependencia" name="siglasDependencia"></select>
+                                <select id="edit-licitacion-siglasDependencia" name="siglasDependencia" required></select>
                                 <button type="button" id="edit-siglasDependencia-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1386,7 +1386,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-tramo" class="label-left-align">Tramo</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-tramo" name="tramo"></select>
+                                <select id="edit-licitacion-tramo" name="tramo" required></select>
                                 <button type="button" id="edit-tramo-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1395,21 +1395,21 @@
                         <div class="form-field full-width">
                             <label for="edit-licitacion-nombre">Nombre de la Licitacion</label>
                             <div class="flex-with-buttons">
-                                <textarea id="edit-licitacion-nombre" name="nombre" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="edit-licitacion-nombre" name="nombre" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required></textarea>
                                 <button type="button" id="edit-nombre-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         <div class="form-field full-width">
                             <label for="edit-licitacion-descripcion">Descripción</label>
                             <div class="flex-with-buttons">
-                                <textarea id="edit-licitacion-descripcion" name="descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="edit-licitacion-descripcion" name="descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required></textarea>
                                 <button type="button" id="edit-descripcion-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         <div class="form-field full-width">
                             <label for="edit-licitacion-generalidades">Generalidades Del Proyecto</label>
                             <div class="flex-with-buttons">
-                                <textarea id="edit-licitacion-generalidades" name="generalidades" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <textarea id="edit-licitacion-generalidades" name="generalidades" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2" required></textarea>
                                 <button type="button" id="edit-generalidades-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
@@ -1421,7 +1421,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-tipo" class="label-left-align">Tipo</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-tipo" name="tipo"></select>
+                                <select id="edit-licitacion-tipo" name="tipo" required></select>
                                 <button type="button" id="edit-tipo-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -1430,7 +1430,7 @@
                         <div class="form-field">
                             <label for="edit-licitacion-procedimientoContratacion" class="label-left-align">Procedimiento de Contratación</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-procedimientoContratacion" name="procedimientoContratacion"></select>
+                                <select id="edit-licitacion-procedimientoContratacion" name="procedimientoContratacion" required></select>
                                 <button type="button" id="edit-procedimientoContratacion-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -5187,7 +5187,8 @@
             licitacionForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 if (!licitacionForm.checkValidity()) {
-                    return showAlert("Por favor, complete todos los campos obligatorios.", "warning");
+                    licitacionForm.reportValidity(); // Muestra los mensajes de validación del navegador
+                    return showAlert("Por favor, complete todos los campos obligatorios marcados.", "warning");
                 }
                 
                 const formData = new FormData(licitacionForm);
@@ -5203,7 +5204,8 @@
             editForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!editForm.checkValidity()) {
-                    return showAlert("Por favor, complete todos los campos obligatorios.", "warning");
+                    editForm.reportValidity(); // Muestra los mensajes de validación del navegador
+                    return showAlert("Por favor, complete todos los campos obligatorios marcados.", "warning");
                 }
                 
                 const formData = new FormData(editForm);
