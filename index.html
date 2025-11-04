@@ -3740,6 +3740,31 @@
         }
 
         /**
+         * Actualiza las opciones de un único elemento Select2.
+         * @param {jQuery} selectElement - El elemento select de jQuery a actualizar.
+         * @param {Array<string>} options - El array de nuevas opciones.
+         * @param {string|null} [selectedValue=null] - El valor que debe quedar seleccionado si existe en las nuevas opciones.
+         */
+        function updateSelectOptionsForElement(selectElement, options, selectedValue = null) {
+            if (!selectElement.length) return;
+
+            const normalizedOptions = options.map(opt => ({ id: opt, text: opt }));
+
+            selectElement.empty().select2({
+                data: normalizedOptions,
+                tags: true,
+                placeholder: "Seleccione o escriba una opción",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Intentar restaurar el valor anterior si todavía es una opción válida
+            if (selectedValue && options.includes(selectedValue)) {
+                selectElement.val(selectedValue).trigger('change.select2');
+            }
+        }
+
+        /**
          * Busca y reemplaza un valor en un campo específico en todos los registros de la base de datos (ambas colecciones).
          * Se utiliza para actualizar en masa cuando se edita una opción de un selector.
          * @param {string} field - La clave del campo (ej. 'proyectos').
@@ -3985,6 +4010,39 @@
                 activeSelectElement = null;
             });
         }
+
+        /**
+         * Filtra y actualiza las opciones de los campos dependientes (Tramo, Nombre) basado en el proyecto seleccionado.
+         * @param {string} selectedProject - El proyecto que fue seleccionado.
+         * @param {string} formPrefix - El prefijo del ID para los campos del formulario ('licitacion-' o 'edit-licitacion-').
+         */
+        function updateDependentFields(selectedProject, formPrefix) {
+            const tramoSelect = $(`#${formPrefix}tramo`);
+            const nombreSelect = $(`#${formPrefix}nombre`);
+
+            // Guardar los valores actuales para intentar restaurarlos si es posible
+            const currentTramo = tramoSelect.val();
+            const currentNombre = nombreSelect.val();
+
+            if (!selectedProject) {
+                // Si no hay proyecto seleccionado, mostrar todas las opciones
+                updateSelectOptions('tramos', fieldOptions.tramos);
+                updateSelectOptions('nombres', fieldOptions.nombres);
+                return;
+            }
+
+            // Filtrar opciones basadas en el proyecto
+            const allData = [...licitaciones, ...historicalLicitaciones];
+            const relevantData = allData.filter(item => item.proyecto === selectedProject);
+
+            const filteredTramos = [...new Set(relevantData.map(item => item.tramo).filter(Boolean))].sort();
+            const filteredNombres = [...new Set(relevantData.map(item => item.nombre).filter(Boolean))].sort();
+
+            // Actualizar los selectores con las nuevas opciones
+            updateSelectOptionsForElement(tramoSelect, filteredTramos, currentTramo);
+            updateSelectOptionsForElement(nombreSelect, filteredNombres, currentNombre);
+        }
+
 
         /**
          * Configura la navegación por pestañas (Licitaciones, Reportes).
@@ -6255,6 +6313,15 @@
                 button.classList.toggle('bg-slate-200', !isProjectChartStacked);
                 button.classList.toggle('text-slate-700', !isProjectChartStacked);
                 updateProjectProcedureChart();
+            });
+
+            // --- INICIO: Listeners para campos dependientes ---
+            $('#licitacion-proyecto').on('change', function() {
+                updateDependentFields($(this).val(), 'licitacion-');
+            });
+
+            $('#edit-licitacion-proyecto').on('change', function() {
+                updateDependentFields($(this).val(), 'edit-licitacion-');
             });
 
             // Configurar Select2 para los selects
