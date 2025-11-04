@@ -5088,8 +5088,12 @@
                 // Extrae los datos del filtro de la primera celda.
                 const { filterVariable, filterValue } = firstCell.dataset;
                 
-                if (filterVariable && filterValue && filterValue !== 'Total') { // Asegurarse de no hacer clic en la fila de total
-                    navigateAndFilter({ [filterVariable]: [filterValue] }); // Llama a la función de navegación y filtro.
+                if (filterVariable && filterValue && filterValue !== 'Total') {
+                    // SOLUCIÓN: Normalizar el valor del filtro antes de pasarlo, para que coincida
+                    // con la lógica de normalización en `applyAllFilters`.
+                    const normalizedFilterValue = normalizeFilterValue(filterValue);
+
+                    navigateAndFilter({ [filterVariable]: [normalizedFilterValue] });
                 }
             });
 
@@ -5097,8 +5101,16 @@
             document.getElementById('projectProcedureTable').addEventListener('click', e => {
                 const cell = e.target.closest('td[data-filter-project]');
                 if (!cell) return;
+
                 const { filterProject, filterVariable, filterValue } = cell.dataset;
-                navigateAndFilter({ 'proyecto': [filterProject], [filterVariable]: [filterValue] });
+
+                // SOLUCIÓN: Normalizar los valores del filtro antes de pasarlos.
+                const normalizedProject = normalizeFilterValue(filterProject);
+                const normalizedValue = filterValue ? normalizeFilterValue(filterValue) : undefined;
+
+                const filtersToApply = { 'proyecto': [normalizedProject] };
+                if (filterVariable && normalizedValue) filtersToApply[filterVariable] = [normalizedValue];
+                navigateAndFilter(filtersToApply);
             });
 
             addLicitacionBtn.addEventListener('click', () => {
