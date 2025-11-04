@@ -2332,6 +2332,9 @@
                 for (const col in columnFilters) {
                     if (columnFilters[col].length > 0) {
                         let itemValue = item[col];
+                        // Normalizar el valor del item para la comparación, igual que se hace al crear el filtro.
+                        const normalizedItemValue = String(itemValue || '').trim();
+
                         if (col === 'fechaPresentacionApertura' || col === 'fechaFallo') {
                             itemValue = formatDate(item[col]);
                         } else if (col === 'monto' && typeof itemValue === 'number') {
@@ -2340,11 +2343,10 @@
                             itemValue = itemValue.toLocaleString('es-MX');
                         } else if (col === 'costoPorKm' && typeof itemValue === 'number') {
                             itemValue = '$' + item[col].toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        } else {
+                            itemValue = normalizedItemValue; // Usar el valor normalizado para la comparación
                         }
 
-                        // --- INICIO: Lógica de filtro mejorada para "Tramo" ---
-                        // Si la columna es 'tramo' y el filtro incluye 'N/A',
-                        // la condición de coincidencia se expande para incluir valores vacíos o nulos.
                         if (col === 'tramo' && columnFilters[col].includes('N/A')) {
                             if (!columnFilters[col].includes(itemValue) && itemValue !== 'N/A' && item[col]) {
                                 return false; // No coincide y no es un valor vacío/nulo
@@ -2353,7 +2355,6 @@
                             // Lógica de filtro estándar para todas las demás columnas.
                             if (!columnFilters[col].includes(itemValue)) return false;
                         }
-                        // --- FIN: Lógica de filtro mejorada ---
                     }
                 }
                 return true;
@@ -5790,7 +5791,11 @@
          * Puebla el selector de proyectos en la pestaña de Costos.
          */
         function populateCostosProyectoSelector() {
-            const proyectos = [...new Set(historicalLicitaciones.map(item => item.proyecto).filter(Boolean))].sort();
+            const proyectos = [...new Set(
+                historicalLicitaciones
+                    .map(item => item.proyecto)
+                    .filter(p => p && !p.includes('\n')) // Filtrar proyectos nulos/vacíos Y que no contengan saltos de línea
+            )].sort();
             costosProyectoSelector.innerHTML = '<option value="">-- Seleccione un Proyecto --</option>';
             proyectos.forEach(p => {
                 costosProyectoSelector.innerHTML += `<option value="${p}">${p}</option>`;
