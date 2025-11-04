@@ -2333,13 +2333,12 @@
                 for (const col in columnFilters) {
                     const filterValues = columnFilters[col];
                     if (filterValues && filterValues.length > 0) {
-                        const itemValue = item[col] || 'N/A';
-
-                        // Normalización CRÍTICA:
-                        // 1. Reemplazar saltos de línea (\n) por espacios.
-                        // 2. Eliminar espacios al inicio y al final (trim).
-                        // Esto asegura que el valor de la base de datos (ej: "Texto\n con espacio ")
-                        // coincida con el valor normalizado en la lista del filtro (ej: "Texto con espacio").
+                        let itemValue = item[col] || 'N/A';
+ 
+                        // Normalización CRÍTICA: Se aplica la misma lógica de normalización que en `setupColumnFilters`.
+                        if (col.toLowerCase().includes('fecha')) {
+                            itemValue = formatDate(itemValue);
+                        }
                         const normalizedItemValue = String(itemValue).replace(/\n/g, ' ').trim();
                         const normalizedFilterValues = filterValues.map(v => String(v).replace(/\n/g, ' ').trim());
 
@@ -2406,7 +2405,12 @@
 
                     const filterValues = columnFilters[col];
                     if (filterValues && filterValues.length > 0) {
-                        const itemValue = item[col] || 'N/A';
+                        let itemValue = item[col] || 'N/A';
+ 
+                        // Normalización CRÍTICA: Se aplica la misma lógica de normalización que en `setupColumnFilters`.
+                        if (col.toLowerCase().includes('fecha')) {
+                            itemValue = formatDate(itemValue);
+                        }
                         const normalizedItemValue = String(itemValue).replace(/\n/g, ' ').trim();
                         const normalizedFilterValues = filterValues.map(v => String(v).replace(/\n/g, ' ').trim());
 
@@ -2439,31 +2443,31 @@
                 const filterBy = header.dataset.filterBy;
                 // Usar los datos pre-filtrados para generar las opciones del dropdown.
                 const preFilteredData = getPreFilteredData(dataProvider, filterKey, filterBy);
-
+ 
                 const uniqueValues = [...new Set(preFilteredData.map(item => {
                     let value = item[filterBy] || 'N/A';
-                    // --- INICIO DE LA REFACTORIZACIÓN ---
+                    // --- INICIO: Normalización robusta de valores para el dropdown ---
                     // Normalización coherente para todos los tipos de datos.
                     // 1. Manejar fechas como un caso especial.
-                    if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') {
+                    if (filterBy.toLowerCase().includes('fecha')) {
                         return formatDate(value);
                     } else if (filterBy === 'monto' && typeof value === 'number') {
                         return '$' + value.toLocaleString('es-MX');
                     } else if (filterBy === 'kmAdjudicados' && typeof value === 'number') {
                         return value.toLocaleString('es-MX');
-                    } else if (filterBy === 'costoPorKm' && typeof value === 'number') {
+                    } else if (filterBy === 'costoPorKm' && typeof value === 'number') { // REFACTOR: costoPorKm
                         return '$' + value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     }
                     // 2. Para todos los demás valores, reemplazar saltos de línea por espacios y luego aplicar trim.
                     // Esto asegura que el valor en el dropdown coincida con el valor normalizado en `applyAllFilters`.
                     return String(value).replace(/\n/g, ' ').trim();
-                    // --- FIN DE LA REFACTORIZACIÓN ---
+                    // --- FIN: Normalización robusta ---
                 }))].sort((a, b) => { // Convertir a string antes de comparar
                     const valA = String(a);
                     const valB = String(b);
-
+ 
                     // Lógica de ordenamiento personalizada para fechas en el filtro
-                    if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') {
+                    if (filterBy.toLowerCase().includes('fecha')) {
                         try {
                             // Usar los valores originales (a, b) que son strings de fecha formateados
                             const dateA = new Date(valA.split('/').reverse().join('-'));
@@ -2471,7 +2475,7 @@
                             return dateA - dateB; // Orden ascendente
                         } catch (err) { return valA.localeCompare(valB); }
                     }
-                    return valA.localeCompare(valB, 'es', { numeric: true });
+                    return valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
                 });
 
                 const dropdown = document.createElement('div');
