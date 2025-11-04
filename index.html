@@ -2333,10 +2333,13 @@
                 for (const col in columnFilters) {
                     const filterValues = columnFilters[col];
                     if (filterValues && filterValues.length > 0) {
-                        let itemValue = item[col] || 'N/A';
+                        const itemValue = item[col] || 'N/A';
 
-                        // Normalización coherente para todos los valores antes de la comparación.
-                        // Esto asegura que "Valor\ncon salto" coincida con "Valor con salto".
+                        // Normalización CRÍTICA:
+                        // 1. Reemplazar saltos de línea (\n) por espacios.
+                        // 2. Eliminar espacios al inicio y al final (trim).
+                        // Esto asegura que el valor de la base de datos (ej: "Texto\n con espacio ")
+                        // coincida con el valor normalizado en la lista del filtro (ej: "Texto con espacio").
                         const normalizedItemValue = String(itemValue).replace(/\n/g, ' ').trim();
                         const normalizedFilterValues = filterValues.map(v => String(v).replace(/\n/g, ' ').trim());
 
