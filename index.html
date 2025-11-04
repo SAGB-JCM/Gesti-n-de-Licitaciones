@@ -905,19 +905,19 @@
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary">Radar de Fechas de Fallo</h2>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-start">
                         <!-- Semana -2 -->
-                        <div id="fallo-indicator-minus-2" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
+                        <div id="fallo-indicator-minus-2" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center self-start space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
                             <div class="bg-secondary/10 p-2 rounded-full"><i class="fa-solid fa-angles-left text-secondary text-xl"></i></div>
                             <div><p id="fallo-label-minus-2" class="text-sm text-slate-500">Fallo (Semana -2)</p><p id="fallo-count-minus-2" class="text-2xl font-bold text-secondary">0</p></div>
                         </div>
                         <!-- Semana -1 -->
-                        <div id="fallo-indicator-minus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
+                        <div id="fallo-indicator-minus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center self-start space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
                             <div class="bg-secondary/10 p-2 rounded-full"><i class="fa-solid fa-angle-left text-secondary text-xl"></i></div>
                             <div><p id="fallo-label-minus-1" class="text-sm text-slate-500">Fallo (Semana -1)</p><p id="fallo-count-minus-1" class="text-2xl font-bold text-secondary">0</p></div>
                         </div>
                         <!-- Semana Actual -->
-                        <div id="fallo-indicator-current" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 transition-all duration-200 current-week-highlight">
+                        <div id="fallo-indicator-current" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center self-start space-x-3 transition-all duration-200 current-week-highlight">
                             <div id="fallo-date-picker-trigger" class="relative bg-primary/10 p-2 rounded-full cursor-pointer" title="Seleccionar otra fecha">
                                 <i id="fallo-current-icon" class="fa-solid fa-calendar-week text-primary text-xl transition-colors"></i>
                                 <input type="date" id="fallo-date-picker" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer">
@@ -928,12 +928,12 @@
                             </div>
                         </div>
                         <!-- Semana +1 -->
-                        <div id="fallo-indicator-plus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
+                        <div id="fallo-indicator-plus-1" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center self-start space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
                             <div class="bg-accent/10 p-2 rounded-full"><i class="fa-solid fa-angle-right text-accent text-xl"></i></div>
                             <div><p id="fallo-label-plus-1" class="text-sm text-slate-500">Fallo (Semana +1)</p><p id="fallo-count-plus-1" class="text-2xl font-bold text-accent">0</p></div>
                         </div>
                         <!-- Semana +2 -->
-                        <div id="fallo-indicator-plus-2" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
+                        <div id="fallo-indicator-plus-2" class="indicator-card bg-white p-4 rounded-xl shadow-md flex items-center self-start space-x-3 cursor-pointer transition-all duration-200" title="Hacer clic para Ver">
                             <div class="bg-accent/10 p-2 rounded-full"><i class="fa-solid fa-angles-right text-accent text-xl"></i></div>
                             <div><p id="fallo-label-plus-2" class="text-sm text-slate-500">Fallo (Semana +2)</p><p id="fallo-count-plus-2" class="text-2xl font-bold text-accent">0</p></div>
                         </div>
@@ -5611,9 +5611,13 @@
 
             // Eventos para la nueva alerta de fallos
             document.getElementById('close-fallo-alert-btn').addEventListener('click', () => {
-                const container = document.getElementById('fallo-alert-container');
-                container.classList.remove('alert-enter');
-                container.classList.add('alert-leave'); // La animación de salida se maneja con CSS
+                 const container = document.getElementById('fallo-alert-container');
+                 container.classList.remove('alert-enter');
+                 container.classList.add('alert-leave');
+                 // SOLUCIÓN: Añadir 'hidden' después de la animación para que el elemento no intercepte clics.
+                 setTimeout(() => {
+                     container.classList.add('hidden');
+                 }, 500); // 500ms coincide con la duración de la animación 'slideOutDown'
             });
 
             // Detener el temporizador si el usuario pasa el mouse sobre la alerta
@@ -5935,7 +5939,7 @@
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 summary-card-container">
                          <!-- Card Costo Total -->
                          <div class="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-shadow">
-                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this)">
+                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this, event)">
                                  <p class="text-sm font-medium text-slate-500">Costo Total del Tramo <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
                                  <p id="costo-tramo-total-display" class="text-2xl font-bold text-primary mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
                                  <p id="costo-tramo-total-millones-display" class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toFixed(2)} Millones)</p>
@@ -5958,7 +5962,7 @@
                          </div>
                          <!-- Card KM Adjudicados (Obra) -->
                          <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-300 hover:shadow-md transition-shadow">
-                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this)">
+                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this, event)">
                                  <p class="text-sm font-medium text-slate-500">KM Adjudicados (Solo Obra) <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
                                  <p class="text-2xl font-bold text-secondary mt-1">${totalKmAdjudicadosGeneral.toLocaleString('es-MX')} km</p>
                                  <p class="text-md text-slate-600">Suma de KM de licitaciones tipo "1.1 Obra"</p>
@@ -6121,7 +6125,8 @@
          * Alterna la visibilidad de un contenedor de contenido dentro de las tarjetas de resumen.
          * @param {string} contentId - El ID del elemento de contenido a mostrar/ocultar.
          */
-        function toggleSummaryContent(clickedElement) {
+        function toggleSummaryContent(clickedElement, event) {
+            event.stopPropagation(); // ¡LA SOLUCIÓN! Detiene la propagación del clic.
             const cardBody = clickedElement.parentElement;
             const contentElement = cardBody.querySelector('.summary-card-content');
             if (contentElement) { // REFACTOR: contentElement
