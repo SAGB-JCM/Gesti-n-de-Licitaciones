@@ -2331,33 +2331,16 @@
 
                 // 2. Check column filters
                 for (const col in columnFilters) {
-                    if (columnFilters[col].length > 0) {
+                    const filterValues = columnFilters[col];
+                    if (filterValues && filterValues.length > 0) {
                         let itemValue = item[col] || 'N/A';
 
-                        if (col === 'fechaPresentacionApertura' || col === 'fechaFallo') {
-                            itemValue = formatDate(itemValue);
-                        } else if (col === 'monto' && typeof itemValue === 'number') {
-                            itemValue = '$' + itemValue.toLocaleString('es-MX');
-                        } else if (col === 'kmAdjudicados' && typeof itemValue === 'number') {
-                            itemValue = itemValue.toLocaleString('es-MX');
-                        } else if (col === 'costoPorKm' && typeof itemValue === 'number') {
-                            itemValue = '$' + itemValue.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                        } else {
-                            // Solución: Normalizar el valor de la base de datos reemplazando saltos de línea por espacios.
-                            itemValue = String(itemValue).replace(/\n/g, ' ').trim();
-                        }
-                        
-                        // Solución: Normalizar también los valores del filtro de la misma manera.
-                        const normalizedFilterValues = columnFilters[col].map(v => String(v).replace(/\n/g, ' ').trim());
+                        // Normalización coherente para todos los valores antes de la comparación.
+                        // Esto asegura que "Valor\ncon salto" coincida con "Valor con salto".
+                        const normalizedItemValue = String(itemValue).replace(/\n/g, ' ').trim();
+                        const normalizedFilterValues = filterValues.map(v => String(v).replace(/\n/g, ' ').trim());
 
-                        if (col === 'tramo' && columnFilters[col].includes('N/A')) {
-                            if (!columnFilters[col].includes(itemValueForFilter) && itemValueForFilter !== 'N/A' && item[col]) {
-                                return false; // No coincide y no es un valor vacío/nulo
-                            }
-                        } else {
-                            // Lógica de filtro estándar para todas las demás columnas.
-                            if (!normalizedFilterValues.includes(itemValue)) return false;
-                        }
+                        if (!normalizedFilterValues.includes(normalizedItemValue)) return false;
                     }
                 }
                 return true;
@@ -2452,24 +2435,22 @@
 
                 const uniqueValues = [...new Set(preFilteredData.map(item => {
                     let value = item[filterBy] || 'N/A';
-                    // --- INICIO DE LA SOLUCIÓN ---
-                    // Normalización para todos los tipos de datos para evitar duplicados como "2025" y " 2025".
-                    // 1. Manejar las fechas como un caso especial.
+                    // --- INICIO DE LA REFACTORIZACIÓN ---
+                    // Normalización coherente para todos los tipos de datos.
+                    // 1. Manejar fechas como un caso especial.
                     if (filterBy === 'fechaPresentacionApertura' || filterBy === 'fechaFallo') {
                         return formatDate(value);
                     } else if (filterBy === 'monto' && typeof value === 'number') {
-                        // Formatear el monto como moneda para el filtro
                         return '$' + value.toLocaleString('es-MX');
                     } else if (filterBy === 'kmAdjudicados' && typeof value === 'number') {
-                        // Formatear los KM como número localizado para el filtro
                         return value.toLocaleString('es-MX');
                     } else if (filterBy === 'costoPorKm' && typeof value === 'number') {
-                        // Formatear el costo por KM como moneda para el filtro
                         return '$' + value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                     }
-                    // 2. Para todos los demás valores (números o strings), convertirlos a string y aplicar trim.
-                    return String(value).trim();
-                    // --- FIN DE LA SOLUCIÓN ---
+                    // 2. Para todos los demás valores, reemplazar saltos de línea por espacios y luego aplicar trim.
+                    // Esto asegura que el valor en el dropdown coincida con el valor normalizado en `applyAllFilters`.
+                    return String(value).replace(/\n/g, ' ').trim();
+                    // --- FIN DE LA REFACTORIZACIÓN ---
                 }))].sort((a, b) => { // Convertir a string antes de comparar
                     const valA = String(a);
                     const valB = String(b);
