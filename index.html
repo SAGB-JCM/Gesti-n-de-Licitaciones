@@ -2361,24 +2361,27 @@
             const searchText = searchInput ? searchInput.value.toLowerCase() : '';
             const columnFilters = activeFilters[filterKey];
 
-            return allData.filter(item => { // Usamos allData que es el set completo
-                // --- INICIO DE LA SOLUCIÓN MEJORADA ---
-                // Aplicar el filtro de tipo de tren primero para que las opciones del dropdown sean correctas,
-                // sin importar el tipo de dato de la columna.
-                const tipoTren = (item.tipoTren || '').toLowerCase().trim();
-                if (activeTrainTypeFilter === 'trenes' && tipoTren !== 'trenes') {
-                    return false;
+            return allData.filter(item => {
+                // 1. Aplicar filtro de tipo de tren (botones superiores)
+                if (filterKey === 'historical' && activeTrainTypeFilter !== 'todos') {
+                    const tipoTren = (item.tipoTren || '').toLowerCase().trim();
+                    let match = true;
+                    switch (activeTrainTypeFilter) {
+                        case 'trenes':
+                            if (tipoTren !== 'trenes') match = false;
+                            break;
+                        case 'trenes-del-norte':
+                            if (tipoTren !== 'trenes del norte') match = false;
+                            break;
+                        case 'tren-maya':
+                            if (tipoTren !== 'tren maya') match = false;
+                            break;
+                        case 'trolebus':
+                            if (tipoTren !== 'trolebús') match = false;
+                            break;
+                    }
+                    if (!match) return false;
                 }
-                if (activeTrainTypeFilter === 'trenes-del-norte' && tipoTren !== 'trenes del norte') {
-                    return false;
-                }
-                if (activeTrainTypeFilter === 'tren-maya' && tipoTren !== 'tren maya') {
-                    return false;
-                }
-                if (activeTrainTypeFilter === 'trolebus' && tipoTren !== 'trolebús') {
-                    return false;
-                }
-                // --- FIN DE LA SOLUCIÓN MEJORADA ---
 
                 // Primero, aplicar el filtro del dashboard si está activo
                 if (filterKey === 'historical' && activeFalloDashboardFilter) {
@@ -2393,20 +2396,21 @@
                 const matchesSearch = searchText === '' || Object.values(item).some(value => String(value).toLowerCase().includes(searchText));
                 if (!matchesSearch) return false;
 
-                return Object.entries(columnFilters).every(([col, values]) => {
-                    if (col === excludeColumn || values.length === 0) return true;
-                    let itemValue = item[col];
-                    if (col === 'fechaPresentacionApertura' || col === 'fechaFallo') {
-                        itemValue = formatDate(item[col]);
-                    } else if (col === 'monto' && typeof itemValue === 'number') {
-                        itemValue = '$' + itemValue.toLocaleString('es-MX');
-                    } else if (col === 'kmAdjudicados' && typeof itemValue === 'number') {
-                        itemValue = itemValue.toLocaleString('es-MX');
-                    } else if (col === 'costoPorKm' && typeof itemValue === 'number') {
-                        itemValue = '$' + item[col].toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                // 3. Aplicar todos los filtros de columna EXCEPTO el que se está abriendo
+                for (const col in columnFilters) {
+                    // Ignorar el filtro de la columna que estamos abriendo
+                    if (col === excludeColumn) continue;
+
+                    const filterValues = columnFilters[col];
+                    if (filterValues && filterValues.length > 0) {
+                        const itemValue = item[col] || 'N/A';
+                        const normalizedItemValue = String(itemValue).replace(/\n/g, ' ').trim();
+                        const normalizedFilterValues = filterValues.map(v => String(v).replace(/\n/g, ' ').trim());
+
+                        if (!normalizedFilterValues.includes(normalizedItemValue)) return false;
                     }
-                    return values.includes(itemValue);
-                });
+                }
+                return true;
             });
         }
 
