@@ -1875,6 +1875,16 @@
         let projectChartSortBy = 'amount'; // 'count' o 'amount'
         // --- FIN: Variables para el ordenamiento dinámico ---
         // =============================================
+        // MÓDULO: Normalización de Filtros
+        // =============================================
+        /**
+         * Normaliza un valor para su uso consistente en los filtros.
+         * Convierte a string, elimina espacios al inicio/final y reemplaza saltos de línea por un espacio.
+         * @param {*} value - El valor a normalizar.
+         * @returns {string} El valor normalizado.
+         */
+        const normalizeFilterValue = (value) => String(value || '').trim().replace(/\s*\n\s*/g, ' ');
+        // =============================================
         // MÓDULO: Gestión de Listeners de Firebase
         // =============================================
         let unsubscribeHistorical = null; // Variable para guardar la función de des-suscripción del listener
@@ -2332,17 +2342,10 @@
                 // 2. Check column filters
                 for (const col in columnFilters) {
                     const filterValues = columnFilters[col];
-                    if (filterValues && filterValues.length > 0) {
-                        let itemValue = item[col] || 'N/A';
- 
-                        // Normalización CRÍTICA: Se aplica la misma lógica de normalización que en `setupColumnFilters`.
-                        if (col.toLowerCase().includes('fecha')) {
-                            itemValue = formatDate(itemValue);
-                        }
-                        const normalizedItemValue = String(itemValue).replace(/\n/g, ' ').trim();
-                        const normalizedFilterValues = filterValues.map(v => String(v).replace(/\n/g, ' ').trim());
-
-                        if (!normalizedFilterValues.includes(normalizedItemValue)) return false;
+                    if (filterValues && filterValues.length > 0) { // `filterValues` ya está normalizado.
+                        // Normalizamos el valor del item de la misma manera antes de comparar.
+                        const itemValue = normalizeFilterValue(item[col]);
+                        if (!filterValues.includes(itemValue)) return false;
                     }
                 }
                 return true;
@@ -2403,18 +2406,10 @@
                     // Ignorar el filtro de la columna que estamos abriendo
                     if (col === excludeColumn) continue;
 
-                    const filterValues = columnFilters[col];
+                    const filterValues = columnFilters[col]; // Estos son los valores originales, con \n
                     if (filterValues && filterValues.length > 0) {
-                        let itemValue = item[col] || 'N/A';
- 
-                        // Normalización CRÍTICA: Se aplica la misma lógica de normalización que en `setupColumnFilters`.
-                        if (col.toLowerCase().includes('fecha')) {
-                            itemValue = formatDate(itemValue);
-                        }
-                        const normalizedItemValue = String(itemValue).replace(/\n/g, ' ').trim();
-                        const normalizedFilterValues = filterValues.map(v => String(v).replace(/\n/g, ' ').trim());
-
-                        if (!normalizedFilterValues.includes(normalizedItemValue)) return false;
+                        const itemValue = normalizeFilterValue(item[col]); // Normalizar valor del item
+                        if (!filterValues.includes(itemValue)) return false; // Comparar normalizado vs normalizado
                     }
                 }
                 return true;
@@ -2443,29 +2438,27 @@
                 const filterBy = header.dataset.filterBy;
                 // Usar los datos pre-filtrados para generar las opciones del dropdown.
                 const preFilteredData = getPreFilteredData(dataProvider, filterKey, filterBy);
- 
-                const uniqueValues = [...new Set(preFilteredData.map(item => {
-                    let value = item[filterBy] || 'N/A';
-                    // --- INICIO: Normalización robusta de valores para el dropdown ---
-                    // Normalización coherente para todos los tipos de datos.
-                    // 1. Manejar fechas como un caso especial.
+
+                // 1. Obtener valores únicos y normalizarlos para la lógica de filtrado.
+                const uniqueNormalizedValues = [...new Set(preFilteredData.map(item => normalizeFilterValue(item[filterBy])))];
+
+                // 2. Crear un mapa para la visualización, aplicando formatos especiales (fecha, moneda) solo para mostrar.
+                const displayValueMap = new Map(uniqueNormalizedValues.map(normalizedValue => {
+                    // Encontrar el item original para obtener el valor sin formato para fechas/números
+                    const originalItem = preFilteredData.find(item => normalizeFilterValue(item[filterBy]) === normalizedValue);
+                    let displayValue = normalizedValue; // Por defecto, el valor a mostrar es el normalizado.
+
                     if (filterBy.toLowerCase().includes('fecha')) {
-                        return formatDate(value);
-                    } else if (filterBy === 'monto' && typeof value === 'number') {
-                        return '$' + value.toLocaleString('es-MX');
-                    } else if (filterBy === 'kmAdjudicados' && typeof value === 'number') {
-                        return value.toLocaleString('es-MX');
-                    } else if (filterBy === 'costoPorKm' && typeof value === 'number') { // REFACTOR: costoPorKm
-                        return '$' + value.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        // Para fechas, el valor normalizado es 'YYYY-MM-DD', lo formateamos para mostrar.
+                        displayValue = formatDate(normalizedValue);
                     }
-                    // 2. Para todos los demás valores, reemplazar saltos de línea por espacios y luego aplicar trim.
-                    // Esto asegura que el valor en el dropdown coincida con el valor normalizado en `applyAllFilters`.
-                    return String(value).replace(/\n/g, ' ').trim();
-                    // --- FIN: Normalización robusta ---
-                }))].sort((a, b) => { // Convertir a string antes de comparar
-                    const valA = String(a);
+                    return [normalizedValue, displayValue];
+                }));
+
+                // 3. Ordenar los valores normalizados.
+                uniqueNormalizedValues.sort((a, b) => {
+                    const valA = String(a); // a y b ya son strings normalizados
                     const valB = String(b);
- 
                     // Lógica de ordenamiento personalizada para fechas en el filtro
                     if (filterBy.toLowerCase().includes('fecha')) {
                         try {
@@ -2481,16 +2474,16 @@
                 const dropdown = document.createElement('div');
                 dropdown.className = 'filter-dropdown p-2 space-y-1';
                 
-                const activeColumnFilters = activeFilters[filterKey][filterBy] || [];
+                const activeColumnFilters = activeFilters[filterKey][filterBy] || []; // Estos ya están normalizados
 
                 dropdown.innerHTML = `
                     <div class="p-1 border-b border-gray-200">
                         <input type="text" placeholder="Buscar opciones..." class="filter-search-input w-full text-xs p-1 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary">
                     </div>
                     <div class="filter-options-container max-h-48 overflow-y-auto">
-                        ${uniqueValues.map(value => `
+                        ${uniqueNormalizedValues.map((value, index) => `
                             <label class="flex items-center space-x-2 p-1 hover:bg-gray-100 rounded cursor-pointer filter-option-label">
-                                <input type="checkbox" class="filter-checkbox" value="${value}" ${activeColumnFilters.includes(value) ? 'checked' : ''}>
+                                <input type="checkbox" class="filter-checkbox" value="${index}" ${activeColumnFilters.includes(value) ? 'checked' : ''}>
                                 <span class="text-sm text-gray-700">${truncateText(value, 40)}</span>
                             </label>
                         `).join('')}
@@ -2519,11 +2512,14 @@
 
                 dropdown.addEventListener('change', e => {
                     if (e.target.classList.contains('filter-checkbox')) {
-                        const checkedValues = Array.from(dropdown.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
-                        activeFilters[filterKey][filterBy] = checkedValues;
-                        
-                        header.classList.toggle('active', checkedValues.length > 0);
+                        // Obtener los valores normalizados seleccionados
+                        const checkedIndices = Array.from(dropdown.querySelectorAll('.filter-checkbox:checked')).map(cb => parseInt(cb.value, 10));
+                        const selectedNormalizedValues = checkedIndices.map(index => uniqueNormalizedValues[index]);
 
+                        activeFilters[filterKey][filterBy] = selectedNormalizedValues;
+
+                        // CORRECCIÓN: Usar 'selectedNormalizedValues' en lugar de la variable inexistente 'checkedValues'.
+                        header.classList.toggle('active', selectedNormalizedValues.length > 0);
                         const filteredData = applyAllFilters(dataProvider(), filterKey);
                         renderFunc(document.getElementById(filterKey === 'main' ? 'licitacion-table-body' : 'historical-table-body'), filteredData, filterKey === 'historical');
                     }
