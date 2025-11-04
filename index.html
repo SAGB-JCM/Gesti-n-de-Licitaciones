@@ -1200,21 +1200,19 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="licitacion-nombre" class="label-left-align">Nombre</label>
-                            <div class="flex-with-buttons">
-                                <select id="licitacion-nombre" name="nombre"></select>
-                                <button type="button" id="edit-nombre-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
                             <label for="licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
                                 <select id="licitacion-siglasDependencia" name="siglasDependencia"></select>
                                 <button type="button" id="edit-siglasDependencia-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
+                            </div>
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="licitacion-nombre">Nombre de la Licitacion</label>
+                            <div class="flex-with-buttons">
+                                <textarea id="licitacion-nombre" name="nombre" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <button type="button" id="edit-nombre-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         <div class="form-field full-width">
@@ -1374,21 +1372,19 @@
                             </div>
                         </div>
                         <div class="form-field">
-                            <label for="edit-licitacion-nombre" class="label-left-align">Nombre</label>
-                            <div class="flex-with-buttons">
-                                <select id="edit-licitacion-nombre" name="nombre"></select>
-                                <button type="button" id="edit-nombre-edit-btn" class="edit-btn">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-field">
                             <label for="edit-licitacion-siglasDependencia" class="label-left-align">Siglas Dependencia</label>
                             <div class="flex-with-buttons">
                                 <select id="edit-licitacion-siglasDependencia" name="siglasDependencia"></select>
                                 <button type="button" id="edit-siglasDependencia-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
+                            </div>
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="edit-licitacion-nombre">Nombre de la Licitacion</label>
+                            <div class="flex-with-buttons">
+                                <textarea id="edit-licitacion-nombre" name="nombre" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"></textarea>
+                                <button type="button" id="edit-nombre-edit-btn" class="edit-btn"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </div>
                         <div class="form-field full-width">
@@ -1839,7 +1835,6 @@
             proyectos: [],
             tramos: [], // Añadido para el nuevo campo
             tiposTren: [],
-            nombres: [],
             siglasDependencias: [],
             procedimientosContratacion: [],
             tipos: [],
@@ -2779,9 +2774,8 @@
                 document.getElementById('edit-licitacion-costoPorKm').value = licitacionToEdit.costoPorKm || ''; // Se mantiene como string para el input
 
                 // Set select values
-                $('#edit-licitacion-proyecto').val(licitacionToEdit.proyecto || '').trigger('change');
+                $('#edit-licitacion-proyecto').val(licitacionToEdit.proyecto || '').trigger('change'); // No se dispara el change para nombre
                 $('#edit-licitacion-tramo').val(licitacionToEdit.tramo || '').trigger('change');
-                $('#edit-licitacion-nombre').val(licitacionToEdit.nombre || '').trigger('change');
                 $('#edit-licitacion-siglasDependencia').val(licitacionToEdit.siglasDependencia || '').trigger('change');
                 
                 // --- INICIO: Cargar valor para el nuevo campo "Tipo de Tren" ---
@@ -2792,6 +2786,9 @@
                 $('#edit-licitacion-procedimientoContratacion').val(licitacionToEdit.procedimientoContratacion || '').trigger('change');
                 $('#edit-licitacion-tipo').val(licitacionToEdit.tipo || '').trigger('change');
                 document.getElementById('edit-licitacion-anoPublicacion').value = licitacionToEdit.anoPublicacion || '';
+
+                // Cargar valor en el nuevo textarea de nombre
+                document.getElementById('edit-licitacion-nombre').value = licitacionToEdit.nombre || '';
 
                 openModal(editModal);
             });
@@ -3654,12 +3651,6 @@
             fieldOptions.tiposTren = combinedTiposTren;
             updateSelectOptions('tiposTren', fieldOptions.tiposTren);
 
-            // Nombres
-            const historicalNombres = getUniqueTrimmedOptions(allData, 'nombre');
-            const combinedNombres = [...new Set([...catalogoNombres, ...historicalNombres])].sort();
-            fieldOptions.nombres = combinedNombres;
-            updateSelectOptions('nombres', fieldOptions.nombres);
-
             // Siglas Dependencias
             const historicalSiglasDependencias = getUniqueTrimmedOptions(allData, 'siglasDependencia');
             const combinedSiglasDependencias = [...new Set([...catalogoSiglasDependencias, ...historicalSiglasDependencias])].sort();
@@ -3706,7 +3697,6 @@
                 'proyectos': ['licitacion-proyecto', 'edit-licitacion-proyecto'],
                 'tramos': ['licitacion-tramo', 'edit-licitacion-tramo'],
                 'tiposTren': ['licitacion-tipoTren', 'edit-licitacion-tipoTren'],
-                'nombres': ['licitacion-nombre', 'edit-licitacion-nombre'],
                 'siglasDependencias': ['licitacion-siglasDependencia', 'edit-licitacion-siglasDependencia'],
                 'procedimientosContratacion': ['licitacion-procedimientoContratacion', 'edit-licitacion-procedimientoContratacion'],
                 'tipos': ['licitacion-tipo', 'edit-licitacion-tipo'],
@@ -3778,7 +3768,6 @@
                 'proyectos': 'proyecto', 
                 'tramos': 'tramo',
                 'tiposTren': 'tipoTren',
-                'nombres': 'nombre',
                 'siglasDependencias': 'siglasDependencia',
                 'procedimientosContratacion': 'procedimientoContratacion',
                 'tipos': 'tipo',
@@ -3902,7 +3891,6 @@
                 'edit-proyecto-btn': 'proyectos',
                 'edit-tramo-btn': 'tramos',
                 'edit-tipoTren-btn': 'tiposTren',
-                'edit-nombre-btn': 'nombres',
                 'edit-descripcion-btn': 'descripcion',
                 'edit-generalidades-btn': 'generalidades',
                 'edit-siglasDependencia-btn': 'siglasDependencias',
@@ -3917,7 +3905,6 @@
                 'edit-proyecto-edit-btn': 'proyectos',
                 'edit-tramo-edit-btn': 'tramos',
                 'edit-tipoTren-edit-btn': 'tiposTren',
-                'edit-nombre-edit-btn': 'nombres',
                 'edit-descripcion-edit-btn': 'descripcion',
                 'edit-generalidades-edit-btn': 'generalidades',
                 'edit-siglasDependencia-edit-btn': 'siglasDependencias',
@@ -3927,7 +3914,8 @@
                 'edit-ganadorLicitacion-edit-btn': 'ganadoresLicitacion',
                 'edit-monto-edit-btn': 'monto',
                 'edit-costoPorKm-edit-btn': 'costosPorKm',                
-                'edit-linkComprasXM-edit-btn': 'linkComprasXM'
+                'edit-linkComprasXM-edit-btn': 'linkComprasXM',
+                'edit-nombre-btn': 'nombre' // Para el nuevo textarea
             };
             
             Object.entries(buttonToFieldMap).forEach(([buttonId, field]) => {
@@ -3937,7 +3925,7 @@
                 button.addEventListener('click', (e) => {
                     let inputElement;
                     
-                    if (['descripcion', 'generalidades', 'codigoExpediente', 'monto', 'costoPorKm', 'linkComprasXM'].includes(field)) {
+                    if (['nombre', 'descripcion', 'generalidades', 'codigoExpediente', 'monto', 'costoPorKm', 'linkComprasXM'].includes(field)) {
                         inputElement = e.currentTarget.parentElement.querySelector('input') || 
                                       e.currentTarget.parentElement.querySelector('textarea');
                     } else {
@@ -3974,7 +3962,7 @@
                 const formStateBeforeEdit = activeFormId ? getFormState(activeFormId) : null;
                 requirePassword(async () => {
                     try {
-                        if (['proyectos', 'tramos', 'tiposTren', 'nombres', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion', 'costosPorKm'].includes(currentEditingField)) {
+                        if (['proyectos', 'tramos', 'tiposTren', 'siglasDependencias', 'procedimientosContratacion', 'tipos', 'anosPublicacion', 'registradosInteres', 'nombreLicitantes', 'ganadoresLicitacion', 'costosPorKm'].includes(currentEditingField)) {
                             await findAndReplaceInDatabase(currentEditingField, currentEditingValue, newValue, activeFormId, formStateBeforeEdit);
                         } else {
                             // Lógica para campos de texto (no afecta a otros campos)
@@ -3991,6 +3979,8 @@
                                 inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-costoPorKm' : 'edit-licitacion-costoPorKm');
                             } else if (currentEditingField === 'linkComprasXM') {
                                 inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-linkComprasXM' : 'edit-licitacion-linkComprasXM');
+                            } else if (currentEditingField === 'nombre') {
+                                inputElement = document.getElementById(activeFormId === 'licitacion-form' ? 'licitacion-nombre' : 'edit-licitacion-nombre');
                             }
                             
                             if (inputElement) {
@@ -4018,29 +4008,23 @@
          */
         function updateDependentFields(selectedProject, formPrefix) {
             const tramoSelect = $(`#${formPrefix}tramo`);
-            const nombreSelect = $(`#${formPrefix}nombre`);
 
             // Guardar los valores actuales para intentar restaurarlos si es posible
             const currentTramo = tramoSelect.val();
-            const currentNombre = nombreSelect.val();
 
             if (!selectedProject) {
                 // Si no hay proyecto seleccionado, mostrar todas las opciones
                 updateSelectOptions('tramos', fieldOptions.tramos);
-                updateSelectOptions('nombres', fieldOptions.nombres);
                 return;
             }
 
             // Filtrar opciones basadas en el proyecto
             const allData = [...licitaciones, ...historicalLicitaciones];
             const relevantData = allData.filter(item => item.proyecto === selectedProject);
-
             const filteredTramos = [...new Set(relevantData.map(item => item.tramo).filter(Boolean))].sort();
-            const filteredNombres = [...new Set(relevantData.map(item => item.nombre).filter(Boolean))].sort();
 
             // Actualizar los selectores con las nuevas opciones
             updateSelectOptionsForElement(tramoSelect, filteredTramos, currentTramo);
-            updateSelectOptionsForElement(nombreSelect, filteredNombres, currentNombre);
         }
 
 
@@ -5180,7 +5164,7 @@
 
                 // Clear form
                 licitacionForm.reset();
-                $('#licitacion-proyecto, #licitacion-tramo, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-tipoTren').val(null).trigger('change');
+                $('#licitacion-proyecto, #licitacion-tramo, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #licitacion-tipoTren').val(null).trigger('change');
                 document.getElementById('licitacion-anoPublicacion').value = ''; // Limpia el nuevo input de año
 
                 openModalWithFocus(licitacionModal, document.getElementById('licitacion-proyecto'));
@@ -6325,7 +6309,7 @@
             });
 
             // Configurar Select2 para los selects
-            $('#licitacion-proyecto, #licitacion-tramo, #licitacion-tipoTren, #licitacion-nombre, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #edit-licitacion-proyecto, #edit-licitacion-tramo, #edit-licitacion-tipoTren, #edit-licitacion-nombre, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo').each(function() {
+            $('#licitacion-proyecto, #licitacion-tramo, #licitacion-tipoTren, #licitacion-siglasDependencia, #licitacion-procedimientoContratacion, #licitacion-tipo, #edit-licitacion-proyecto, #edit-licitacion-tramo, #edit-licitacion-tipoTren, #edit-licitacion-siglasDependencia, #edit-licitacion-procedimientoContratacion, #edit-licitacion-tipo').each(function() {
                  $(this).select2({
                      tags: true,
                      placeholder: "Seleccione o escriba una opción",
