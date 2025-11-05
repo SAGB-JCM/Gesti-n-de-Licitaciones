@@ -5899,11 +5899,11 @@
          * @param {string} tramo - El nombre del tramo.
          */
         function renderCostosDashboard(proyecto, tramo) {
-            // 1. Filtrar licitaciones "normales" (coincidencia exacta de proyecto y tramo).
+            // 1. Filtrar licitaciones "normales" (coincidencia exacta de proyecto y tramo)
             const licitacionesNormales = historicalLicitaciones.filter(
                 lic => lic.proyecto === proyecto && lic.tramo === tramo
             );
-
+ 
             // 2. Filtrar licitaciones "conjuntas" que incluyan el proyecto seleccionado pero no hayan sido ya contadas.
             // Se asume que una licitación conjunta tiene el nombre del proyecto y tramo en sus campos correspondientes, separados por saltos de línea.
             const licitacionesConjuntas = historicalLicitaciones.filter(lic =>
@@ -6037,7 +6037,12 @@
                  costosCardsGrid.innerHTML += separadorHTML;
  
                  licitacionesConjuntas.forEach(licitacion => {
-                     const tituloConjunto = `Proyecto: ${licitacion.proyecto.replace(/\n/g, '<br>')} <br> Tramo: ${licitacion.tramo.replace(/\n/g, '<br>')}`;
+                    // Preparamos un objeto especial para el título de licitaciones conjuntas
+                    const tituloConjunto = {
+                        isJoint: true,
+                        proyecto: licitacion.proyecto,
+                        tramo: licitacion.tramo
+                    };
                      costosCardsGrid.innerHTML += createCostoCardHTML([licitacion], tituloConjunto, licitacion.tipo);
                  });
              }
@@ -6077,9 +6082,31 @@
          * @param {string} tipo - El tipo de licitación (ej. "1.1 Obra").
          * @returns {string} El string HTML de la tarjeta.
          */
-        function createCostoCardHTML(data, title, tipo) {
+        function createCostoCardHTML(data, title, tipo) { // title puede ser string u objeto
             let subtitle = tipo === "1.1 Obra" ? "(No considera costos de supervisión, asesoría y servicios.)" : "";
             let tableContent = '<p class="text-center text-gray-500 py-4">No hay datos para este tipo de licitación.</p>';
+
+            // --- INICIO: Lógica para el título dinámico ---
+            let titleHTML;
+            if (typeof title === 'object' && title.isJoint) {
+                const selectedProyecto = costosProyectoSelector.value;
+                const selectedTramo = costosTramoSelector.value;
+                const proyectos = title.proyecto.split('\n').map(p => p.trim());
+                const tramos = title.tramo.split('\n').map(t => t.trim());
+
+                titleHTML = `
+                    <div class="grid grid-cols-2 gap-4 text-center border-b pb-2 mb-2">
+                        <h4 class="font-bold text-slate-600">Proyectos</h4>
+                        <h4 class="font-bold text-slate-600">Tramos</h4>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="text-left">${proyectos.map(p => `<p class="${p === selectedProyecto ? 'text-red-600 font-semibold' : ''}">${p}</p>`).join('')}</div>
+                        <div class="text-left">${tramos.map(t => `<p class="${t === selectedTramo ? 'text-red-600 font-semibold' : ''}">${t}</p>`).join('')}</div>
+                    </div>`;
+            } else {
+                titleHTML = `<h3 class="text-lg font-semibold text-center text-slate-800 mb-2">${title}</h3>`;
+            }
+            // --- FIN: Lógica para el título dinámico ---
 
             // --- INICIO: Cálculo del costo promedio por KM ---
             let footerContent = ''; // REFACTOR: footerContent
@@ -6147,7 +6174,7 @@
 
             return `
                 <div class="bg-slate-50 p-6 rounded-lg border">
-                    <h3 class="text-lg font-semibold text-center text-slate-800 mb-2">${title}</h3>
+                    ${titleHTML}
                     ${subtitle ? `<p class="text-sm text-center text-gray-500 mb-4">${subtitle}</p>` : ''}
                     <div>
                         ${tableContent}
