@@ -610,6 +610,12 @@
             vertical-align: middle; /* Centrado vertical para los encabezados */
         }
 
+        /* 1.1. Celdas de contenido (td) de la tabla de datos generales. */
+        .details-table.general-info-cols td {
+            vertical-align: middle; /* Centrado vertical para el contenido. */
+            /* text-align: justify;  */    /* Alineación de texto justificada para el contenido. */
+        }
+
         /* 2. Tabla de detalles de contratación: anchos personalizados. */
         .details-table.contract-details-cols th:nth-child(1),
         .details-table.contract-details-cols td:nth-child(1) { width: 33.33%; } /* 1/3 o 2/6 */
@@ -2897,8 +2903,8 @@
             detailsModalContent.innerHTML = `
                 <div class="details-header flex justify-between items-start">
                     <div>
-                        <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
-                        <p class="date">Tramo: ${highlightText(licitacionItem.tramo || 'N/A', searchText)}</p>
+                        <h3 class="project">${highlightText(formatTextWithLineBreaks(licitacionItem.proyecto || 'Proyecto no especificado'), searchText)}</h3>
+                        <p class="date">Tramo: ${highlightText(formatTextWithLineBreaks(licitacionItem.tramo || 'N/A'), searchText)}</p>
                         <p class="date">Contratante: ${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
                         <p class="date">Expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
                     </div>
@@ -3052,8 +3058,8 @@
                 <div class="multi-details-item">
                     <div class="details-header flex justify-between items-start">
                         <div>
-                           <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
-                            <p class="date">Tramo: ${highlightText(licitacionItem.tramo || 'N/A', searchText)}</p>
+                           <h3 class="project">${highlightText(formatTextWithLineBreaks(licitacionItem.proyecto || 'Proyecto no especificado'), searchText)}</h3>
+                            <p class="date">Tramo: ${highlightText(formatTextWithLineBreaks(licitacionItem.tramo || 'N/A'), searchText)}</p>
                             <p class="date">Contratante: ${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
                             <p class="date">Expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
                         </div>
