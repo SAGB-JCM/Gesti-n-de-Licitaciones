@@ -178,6 +178,12 @@
         .table-container::-webkit-scrollbar-thumb:hover {
             background: #a8a8a8;
         }
+
+        /* Estilo para resaltar filas en tablas de reportes que contienen saltos de línea. */
+        .dynamic-table tr.row-with-linebreak {
+            background-color: #fef2f2 !important; /* Tailwind red-50, con !important para asegurar la prioridad */
+        }
+        .dynamic-table tr.row-with-linebreak:hover { background-color: #fee2e2 !important; } /* Tailwind red-100 on hover */
         
         /* Encabezados de tabla fijos (sticky) para mantenerlos visibles al hacer scroll vertical. */
         .table-container thead th {
@@ -4434,7 +4440,14 @@
 
             projects.forEach(project => {
                 const row = document.createElement('tr');
+
+                // Si el nombre del proyecto contiene un salto de línea, aplicar la clase de resaltado.
+                if (String(project).includes('\n')) {
+                    row.classList.add('row-with-linebreak');
+                }
+
                 let rowHTML = `<td class="clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-project="${project}">${formatTextWithLineBreaks(project)}</td>`;
+
                 let projectTotalAmount = 0;
                 let projectTotalCount = 0;
 
@@ -4548,8 +4561,13 @@
             sortedStats.forEach(([value, stats]) => {
                 totalCount += stats.count;
                 totalSum += stats.sum;
-
+ 
                 const row = document.createElement('tr');
+
+                // Si el valor de la categoría contiene un salto de línea, aplicar la clase de resaltado.
+                if (String(value).includes('\n')) {
+                    row.classList.add('row-with-linebreak');
+                }
                 row.innerHTML = `
                     <td class="clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-variable="${selectedVariable}" data-filter-value="${value}">${formatTextWithLineBreaks(value)}</td>
                     <td class="clickable-cell hover:bg-slate-100 hover:text-primary">${stats.count}</td>
