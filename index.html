@@ -600,7 +600,7 @@
         
         /* Estilo base para las tablas dentro del modal de detalles. */
         .details-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        .details-table th, .details-table td { border: 1px solid #e5e7eb; padding: 0.75rem; text-align: left; vertical-align: top; }
+        .details-table th, .details-table td { border: 1px solid #e5e7eb; padding: 0.75rem; vertical-align: top; } /* Se quitó text-align: left; */
         .details-table th { background-color: var(--primary-color); font-weight: 600; color: white; }
 
         /* Utilidad para tablas con columnas de igual ancho. */
@@ -2890,8 +2890,8 @@
         
                 <div class="details-section">
                     <h4>DATOS GENERALES DE LA LICITACIÓN</h4>
-                    <table class="details-table">
-                        <tbody>
+                    <table class="details-table text-left">
+                        <tbody class="text-left">
                             <tr>
                                 <th>Nombre del Procedimiento de Contratación</th>
                                 <td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td>
@@ -2911,7 +2911,7 @@
                 <div class="details-section">
                     <h4>DETALLES DE CONTRATACIÓN</h4>
                     <table class="details-table">
-                        <thead>
+                        <thead class="text-center">
                             <tr>
                                 <th>Tipo de Procedimiento de Contratación</th>
                                 <th>Tipo de Contratación</th>
@@ -2920,7 +2920,7 @@
                                 <th>Costo Aprox. Por Km</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="text-center">
                             <tr>
                                 <td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td>
                                 <td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td>
@@ -2935,14 +2935,14 @@
                 <div class="details-section">
                     <h4>CRONOGRAMA DE EVENTOS</h4>
                     <table class="details-table">
-                        <thead>
+                        <thead class="text-center">
                             <tr>
-                                <th>Fecha y de Presentación y Apertura de Proposiciones</th>
+                                <th>Fecha y de Presentación y Apertura</th>
                                 <th>Fecha del Acto del Fallo</th>
                                 <th>Fecha Estimada de Inicio del Contrato</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="text-center">
                             <tr>
                                 <td>${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</td>
                                 <td class="highlight-fallo">${highlightText(formatDate(licitacionItem.fechaFallo) || 'N/A', searchText)}</td> 
@@ -2955,14 +2955,14 @@
                 <div class="details-section">
                     <h4>LICITANTES Y GANADORES</h4>
                     <table class="details-table equal-cols">
-                        <thead>
+                        <thead class="text-center">
                             <tr>
                                 <th>Registrados o Manifestaron Interés</th>
                                 <th>Licitantes</th>
                                 <th>Ganadores</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="text-left">
                             ${participantesTbody}
                         </tbody>
                     </table>
@@ -3048,8 +3048,8 @@
             
                     <div class="details-section">
                         <h4>DATOS GENERALES DE LA LICITACIÓN</h4>
-                        <table class="details-table">
-                            <tbody>
+                        <table class="details-table text-left">
+                            <tbody class="text-left">
                                 <tr><th>Nombre del Procedimiento de Contratación</th><td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td></tr>
                                 <tr><th>Descripción Detallada del Procedimiento de Contratación</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.descripcion), searchText)}</td></tr>
                                 <tr><th>Generalidades del Proyecto</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.generalidades), searchText)}</td></tr>
@@ -3060,7 +3060,7 @@
                     <div class="details-section">
                         <h4>DETALLES DE CONTRATACIÓN</h4>
                         <table class="details-table">
-                            <thead>
+                            <thead class="text-center">
                                 <tr>
                                     <th>Tipo de Procedimiento de Contratación</th>
                                     <th>Tipo de Contratación</th>
@@ -3069,7 +3069,7 @@
                                     <th>Costo Aprox. Por Km</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="text-center">
                                 <tr>
                                     <td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td>
                                     <td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td>
@@ -3084,14 +3084,14 @@
                     <div class="details-section">
                         <h4>CRONOGRAMA DE EVENTOS</h4>
                         <table class="details-table">
-                            <thead>
+                            <thead class="text-center">
                                 <tr>
-                                    <th>Fecha y de Presentación y Apertura de Proposiciones</th>
+                                    <th>Fecha y de Presentación y Apertura</th>
                                     <th>Fecha del Acto del Fallo</th>
                                     <th>Fecha Estimada de Inicio del Contrato</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="text-center">
                                 <tr>
                                     <td>${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</td>
                                     <td class="highlight-fallo">${highlightText(formatDate(licitacionItem.fechaFallo) || 'N/A', searchText)}</td>
@@ -3104,14 +3104,14 @@
                     <div class="details-section">
                         <h4>Participantes en el Proceso</h4>
                         <table class="details-table equal-cols">
-                            <thead>
+                            <thead class="text-center">
                                 <tr>
                                     <th>Registrados o manifestaron interés</th>
                                     <th>Licitantes</th>
                                     <th>Ganadores</th>
                                 </tr>
                             </thead>
-                            <tbody>${participantesTbody}</tbody>
+                            <tbody class="text-left">${participantesTbody}</tbody>
                         </table>
                     </div>
             
