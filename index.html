@@ -6078,14 +6078,14 @@
                              <div class="summary-card-content">
                                  <ul id="costo-total-breakdown-list" class="text-sm space-y-1 mt-2 border-t pt-2">
                                      ${Object.entries(costosPorTipo).sort(([,a],[,b]) => b-a).map(([tipo, monto]) => `
-                                         <li class="flex justify-between items-center">
+                                         <li class="flex justify-between items-center" data-tipo-li="${tipo}">
                                              <label class="flex items-center cursor-pointer text-slate-600 flex-grow">
                                                  <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mr-2" data-monto="${monto}" checked>
                                                  <span class="truncate" title="${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}">
                                                      ${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}:
                                                  </span>
                                              </label>
-                                             <span class="font-semibold text-primary ml-2">${monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span>
+                                             <span class="font-semibold text-primary ml-2" data-summary-tipo="${tipo}">${monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span>
                                          </li>
                                      `).join('')}
                                  </ul>
@@ -6198,7 +6198,7 @@
          * @returns {string} El string HTML de la tarjeta.
          */
         function createCostoCardHTML(data, title, tipo) { // title puede ser string u objeto
-            const uniqueCardId = `card-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
+            const uniqueCardId = `card-${(tipo || 'joint').replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
             let subtitle = tipo === "1.1 Obra" ? "(No considera costos de supervisión, asesoría y servicios.)" : "";
             let tableContent = '<p class="text-center text-gray-500 py-4">No hay datos para este tipo de licitación.</p>';
 
@@ -6295,7 +6295,7 @@
             }
 
             return `
-                <div id="${uniqueCardId}" class="bg-slate-50 p-6 rounded-lg border">
+                <div id="${uniqueCardId}" class="bg-slate-50 p-6 rounded-lg border" data-tipo-licitacion="${tipo || data[0]?.tipo}">
                     ${titleHTML}
                     ${subtitle ? `<p class="text-sm text-center text-gray-500 mb-4">${subtitle}</p>` : ''}
                     <div>
