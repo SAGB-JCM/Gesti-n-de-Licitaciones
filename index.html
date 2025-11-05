@@ -603,6 +603,22 @@
         .details-table th, .details-table td { border: 1px solid #e5e7eb; padding: 0.75rem; vertical-align: top; } /* Se quitó text-align: left; */
         .details-table th { background-color: var(--primary-color); font-weight: 600; color: white; }
 
+        /* --- INICIO: Mejoras de ancho de columna en modales de detalle --- */
+        /* 1. Tabla de datos generales: la primera columna (th) ocupa 2/9 del ancho. */
+        .details-table.general-info-cols th {
+            width: 22.22%; /* 2/9 */
+        }
+
+        /* 2. Tabla de detalles de contratación: anchos personalizados. */
+        .details-table.contract-details-cols th:nth-child(1),
+        .details-table.contract-details-cols td:nth-child(1) { width: 33.33%; } /* 1/3 o 2/6 */
+
+        .details-table.contract-details-cols th:nth-child(n+2),
+        .details-table.contract-details-cols td:nth-child(n+2) {
+            width: 16.66%; /* 1/6 para el resto */
+        }
+        /* --- FIN: Mejoras de ancho de columna --- */
+
         /* Utilidad para tablas con columnas de igual ancho. */
         .details-table.equal-cols th, .details-table.equal-cols td {
             width: 33.33%;
@@ -2890,14 +2906,14 @@
         
                 <div class="details-section">
                     <h4>DATOS GENERALES DE LA LICITACIÓN</h4>
-                    <table class="details-table text-left">
-                        <tbody class="text-left">
+                    <table class="details-table text-left general-info-cols">
+                        <tbody>
                             <tr>
                                 <th>Nombre del Procedimiento de Contratación</th>
                                 <td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td>
                             </tr>
                             <tr>
-                                <th>Descripción Detallada del Procedimiento de Contratación</th>
+                                <th>Descripción Detallada</th>
                                 <td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.descripcion), searchText)}</td>
                             </tr>
                             <tr>
@@ -2910,10 +2926,10 @@
 
                 <div class="details-section">
                     <h4>DETALLES DE CONTRATACIÓN</h4>
-                    <table class="details-table">
+                    <table class="details-table contract-details-cols">
                         <thead class="text-center">
                             <tr>
-                                <th>Tipo de Procedimiento de Contratación</th>
+                                <th>Tipo de Procedimiento</th>
                                 <th>Tipo de Contratación</th>
                                 <th>Monto Adjudicado</th>
                                 <th>Km Aplicables</th>
@@ -2934,7 +2950,7 @@
         
                 <div class="details-section">
                     <h4>CRONOGRAMA DE EVENTOS</h4>
-                    <table class="details-table">
+                    <table class="details-table equal-cols">
                         <thead class="text-center">
                             <tr>
                                 <th>Fecha y de Presentación y Apertura</th>
@@ -2953,12 +2969,12 @@
                 </div>
         
                 <div class="details-section">
-                    <h4>LICITANTES Y GANADORES</h4>
+                    <h4>PARTICIPANTES Y GANADORES</h4>
                     <table class="details-table equal-cols">
                         <thead class="text-center">
                             <tr>
                                 <th>Registrados o Manifestaron Interés</th>
-                                <th>Licitantes</th>
+                                <th>Licitantes Finales </th>
                                 <th>Ganadores</th>
                             </tr>
                         </thead>
@@ -3048,10 +3064,10 @@
             
                     <div class="details-section">
                         <h4>DATOS GENERALES DE LA LICITACIÓN</h4>
-                        <table class="details-table text-left">
-                            <tbody class="text-left">
+                        <table class="details-table text-left general-info-cols">
+                            <tbody>
                                 <tr><th>Nombre del Procedimiento de Contratación</th><td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td></tr>
-                                <tr><th>Descripción Detallada del Procedimiento de Contratación</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.descripcion), searchText)}</td></tr>
+                                <tr><th>Descripción Detallada</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.descripcion), searchText)}</td></tr>
                                 <tr><th>Generalidades del Proyecto</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.generalidades), searchText)}</td></tr>
                             </tbody>
                         </table>
@@ -3059,10 +3075,10 @@
 
                     <div class="details-section">
                         <h4>DETALLES DE CONTRATACIÓN</h4>
-                        <table class="details-table">
+                        <table class="details-table contract-details-cols">
                             <thead class="text-center">
                                 <tr>
-                                    <th>Tipo de Procedimiento de Contratación</th>
+                                    <th>Tipo de Procedimiento</th>
                                     <th>Tipo de Contratación</th>
                                     <th>Monto Adjudicado</th>
                                     <th>Km Aplicables</th>
@@ -3083,7 +3099,7 @@
             
                     <div class="details-section">
                         <h4>CRONOGRAMA DE EVENTOS</h4>
-                        <table class="details-table">
+                        <table class="details-table equal-cols">
                             <thead class="text-center">
                                 <tr>
                                     <th>Fecha y de Presentación y Apertura</th>
@@ -3102,12 +3118,12 @@
                     </div>
             
                     <div class="details-section">
-                        <h4>LICITANTES Y GANADORES</h4>
+                        <h4>PARTICIPANTES Y GANADORES</h4>
                         <table class="details-table equal-cols">
                             <thead class="text-center">
                                 <tr>
                                     <th>Registrados o manifestaron interés</th>
-                                    <th>Licitantes</th>
+                                    <th>Licitantes Finales</th>
                                     <th>Ganadores</th>
                                 </tr>
                             </thead>
