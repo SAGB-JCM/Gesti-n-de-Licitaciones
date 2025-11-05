@@ -5765,12 +5765,13 @@
         function updateAllCostTotals() {
             // 1. Actualizar la tarjeta de resumen principal
             updateCostoTotalTramo();
-        
+
             // 2. Actualizar cada una de las tarjetas de detalle
             const allDetailCards = document.querySelectorAll('#costos-cards-grid .bg-slate-50');
             allDetailCards.forEach(card => {
                 recalculateCardTotals(card);
             });
+            updateSummaryBreakdownByTipo(); // 3. Actualizar el desglose del resumen una sola vez al final.
         }
 
         /**
@@ -6191,6 +6192,33 @@
         // --- FIN: Nueva función ---
 
         /**
+         * Agrega los montos de todas las tarjetas de costos por tipo y actualiza el desglose en la tarjeta de resumen.
+         */
+        function updateSummaryBreakdownByTipo() {
+            const totalsByType = {};
+
+            // 1. Recorrer todas las tarjetas de detalle para agregar los montos de los checkboxes marcados.
+            const allDetailCards = document.querySelectorAll('#costos-cards-grid .bg-slate-50');
+            allDetailCards.forEach(card => {
+                const tipo = card.dataset.tipoLicitacion;
+                if (!tipo) return;
+                if (!totalsByType[tipo]) totalsByType[tipo] = 0;
+
+                card.querySelectorAll('tbody input[type="checkbox"]:checked').forEach(checkbox => {
+                    totalsByType[tipo] += parseFloat(checkbox.dataset.monto) || 0;
+                });
+            });
+
+            // 2. Actualizar cada elemento 'li' en la lista de desglose del resumen.
+            Object.entries(totalsByType).forEach(([tipo, total]) => {
+                const summarySpan = document.querySelector(`#costo-total-breakdown-list li[data-tipo-li="${tipo}"] span[data-summary-tipo]`);
+                if (summarySpan) {
+                    summarySpan.textContent = total.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+                }
+            });
+        }
+
+        /**
          * Crea el HTML para una tarjeta de costos individual.
          * @param {Array} data - Las licitaciones para esta tarjeta.
          * @param {string} title - El título de la tarjeta.
@@ -6339,16 +6367,6 @@
         
             const costoTotalPorKm = totalKm > 0 ? totalMonto / totalKm : 0;
         
-            // Actualiza las celdas de totales en el pie de la tabla
-            // --- INICIO: Actualización del desglose en la tarjeta de resumen ---
-            // Buscamos el span correspondiente en la tarjeta de resumen por su tipo.
-            const tipo = cardElement.dataset.tipoLicitacion;
-            // CORRECCIÓN: El atributo está en el LI, no en el SPAN. Se ajusta el selector.
-            const summaryCheckboxSpan = document.querySelector(`#costo-total-breakdown-list li[data-tipo-li="${tipo}"] span[data-summary-tipo]`);
-            if (summaryCheckboxSpan) {
-                summaryCheckboxSpan.textContent = totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
-            }
-            // --- FIN: Actualización del desglose en la tarjeta de resumen ---
             const totalKmCell = cardElement.querySelector('.total-km-cell');
             const costoTotalKmCell = cardElement.querySelector('.costo-total-km-cell');
             const totalMontoCell = cardElement.querySelector('.total-monto-cell');
@@ -6356,27 +6374,6 @@
             if (totalKmCell) totalKmCell.textContent = totalKm.toLocaleString('es-MX');
             if (costoTotalKmCell) costoTotalKmCell.textContent = costoTotalPorKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
             if (totalMontoCell) totalMontoCell.textContent = totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
-        
-            // --- INICIO: Actualización de la tarjeta de resumen general ---
-            const todosLosCheckboxes = document.querySelectorAll('#costos-cards-grid tbody input[type="checkbox"]');
-            let montoGeneral = 0;
-            let kmObraGeneral = 0;
-        
-            todosLosCheckboxes.forEach(cb => {
-                if (cb.checked) {
-                    const row = cb.closest('tr');
-                    const card = cb.closest('.bg-slate-50');
-                    const tipoLicitacion = card.id.includes('1-1-Obra') ? "1.1 Obra" : ""; // Identificar si es de obra
-        
-                    montoGeneral += parseFloat(cb.dataset.monto) || 0;
-                    if (tipoLicitacion === "1.1 Obra") {
-                        kmObraGeneral += parseFloat(cb.dataset.km) || 0;
-                    }
-                }
-            });
-        
-            const costoTotalPorKmGeneral = kmObraGeneral > 0 ? montoGeneral / kmObraGeneral : 0;
-            // --- FIN: Actualización de la tarjeta de resumen general ---
         }
 
         // =============================================
