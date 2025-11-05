@@ -5740,6 +5740,37 @@
 
                 sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
             });
+
+            // Listener para los checkboxes en las tablas de costos
+            costosCardsGrid.addEventListener('change', (e) => {
+                const checkbox = e.target;
+                if (checkbox.type !== 'checkbox') return;
+
+                const table = checkbox.closest('table');
+                if (!table) return;
+
+                // Si es el checkbox del encabezado (seleccionar/deseleccionar todo)
+                if (checkbox.closest('thead')) {
+                    const isChecked = checkbox.checked;
+                    table.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => {
+                        cb.checked = isChecked;
+                    });
+                }
+
+                // Recalcular los totales para la tarjeta actual
+                updateAllCostTotals();
+            });
+        }
+
+        function updateAllCostTotals() {
+            // 1. Actualizar la tarjeta de resumen principal
+            updateCostoTotalTramo();
+        
+            // 2. Actualizar cada una de las tarjetas de detalle
+            const allDetailCards = document.querySelectorAll('#costos-cards-grid .bg-slate-50');
+            allDetailCards.forEach(card => {
+                recalculateCardTotals(card);
+            });
         }
 
         /**
@@ -6143,19 +6174,19 @@
          * Se basa en los checkboxes seleccionados en la lista de desglose.
          */
         function updateCostoTotalTramo() {
-            const breakdownList = document.getElementById('costo-total-breakdown-list');
-            if (!breakdownList) return;
-
-            const checkboxes = breakdownList.querySelectorAll('input[type="checkbox"]');
-            let nuevoTotal = 0;
-            checkboxes.forEach(cb => {
-                if (cb.checked) {
-                    nuevoTotal += parseFloat(cb.dataset.monto) || 0;
-                }
+            // Selecciona TODOS los checkboxes marcados dentro de las tablas de detalle en la pestaña de costos.
+            const todosLosCheckboxesMarcados = document.querySelectorAll('#costos-cards-grid .bg-slate-50 tbody input[type="checkbox"]:checked');
+            
+            let nuevoTotalGeneral = 0;
+            
+            // Itera sobre cada checkbox marcado y suma su monto al total.
+            todosLosCheckboxesMarcados.forEach(checkbox => {
+                nuevoTotalGeneral += parseFloat(checkbox.dataset.monto) || 0;
             });
-
-            document.getElementById('costo-tramo-total-display').textContent = nuevoTotal.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
-            document.getElementById('costo-tramo-total-millones-display').textContent = `(${(nuevoTotal / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Millones)`;
+            
+            // Actualiza los elementos visuales en la tarjeta de resumen principal.
+            document.getElementById('costo-tramo-total-display').textContent = nuevoTotalGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+            document.getElementById('costo-tramo-total-millones-display').textContent = `(${(nuevoTotalGeneral / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Millones)`;
         }
         // --- FIN: Nueva función ---
 
@@ -6167,6 +6198,7 @@
          * @returns {string} El string HTML de la tarjeta.
          */
         function createCostoCardHTML(data, title, tipo) { // title puede ser string u objeto
+            const uniqueCardId = `card-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
             let subtitle = tipo === "1.1 Obra" ? "(No considera costos de supervisión, asesoría y servicios.)" : "";
             let tableContent = '<p class="text-center text-gray-500 py-4">No hay datos para este tipo de licitación.</p>';
 
@@ -6210,13 +6242,13 @@
                 footerContent = `
                     <tfoot class="bg-slate-200 font-semibold">
                         <tr>
-                            <td colspan="5" class="py-2 px-3 text-right">Totales y Promedios</td>
-                            <td class="py-2 px-3 text-center text-white bg-secondary">${totalKm.toLocaleString('es-MX')}</td>
-                            <td class="py-2 px-3 text-center text-white bg-accent">${costoTotalPorKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
-                            <td class="py-2 px-3 text-center text-white bg-success">${totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
+                            <td colspan="6" class="py-2 px-3 text-right">Totales</td>
+                            <td class="py-2 px-3 text-center text-white bg-secondary total-km-cell">${totalKm.toLocaleString('es-MX')}</td>
+                            <td class="py-2 px-3 text-center text-white bg-accent costo-total-km-cell">${costoTotalPorKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
+                            <td class="py-2 px-3 text-center text-white bg-success total-monto-cell">${totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
                         </tr>
                         <tr>
-                            <td colspan="6" class="py-2 px-3 text-right italic">Costo Promedio por KM (de la columna)</td>
+                            <td colspan="7" class="py-2 px-3 text-right italic">Costo Promedio por Km</td>
                             <td class="py-2 px-3 text-center italic text-accent">${promedioCostoKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
                             <td></td>
                         </tr>
@@ -6228,6 +6260,9 @@
                     <table class="w-full text-sm text-left">
                         <thead class="text-xs text-slate-700 uppercase bg-slate-200">
                             <tr>
+                                <th class="py-2 px-1 text-center">
+                                    <input type="checkbox" class="h-4 w-4 rounded border-gray-400 text-primary focus:ring-primary cursor-pointer" title="Seleccionar/Deseleccionar Todo" checked>
+                                </th>
                                 <th class="py-2 px-3">Dependencia</th>
                                 <th class="py-2 px-3">Nombre</th>
                                 <th class="py-2 px-3">Procedimiento</th>
@@ -6241,6 +6276,9 @@
                         <tbody>
                             ${data.map(item => `
                                 <tr class="border-b">
+                                    <td class="py-2 px-1 text-center">
+                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" data-monto="${item.monto || 0}" data-km="${item.kmAdjudicados || 0}" checked>
+                                    </td>
                                     <td class="py-2 px-3">${item.siglasDependencia || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.nombre || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.procedimientoContratacion || 'N/A'}</td>
@@ -6257,7 +6295,7 @@
             }
 
             return `
-                <div class="bg-slate-50 p-6 rounded-lg border">
+                <div id="${uniqueCardId}" class="bg-slate-50 p-6 rounded-lg border">
                     ${titleHTML}
                     ${subtitle ? `<p class="text-sm text-center text-gray-500 mb-4">${subtitle}</p>` : ''}
                     <div>
@@ -6278,6 +6316,58 @@
             if (contentElement) { // REFACTOR: contentElement
                 contentElement.classList.toggle('expanded');
             }
+        }
+
+        /**
+         * Recalcula y actualiza los totales en el pie de una tarjeta de costos.
+         * Se activa cuando se marca o desmarca un checkbox de licitación.
+         * @param {HTMLElement} cardElement - El elemento contenedor de la tarjeta de costos.
+         */
+        function recalculateCardTotals(cardElement) {
+            if (!cardElement) return;
+        
+            let totalMonto = 0;
+            let totalKm = 0;
+        
+            // Encuentra todos los checkboxes marcados en el cuerpo de la tabla de esta tarjeta
+            const checkedRows = cardElement.querySelectorAll('tbody input[type="checkbox"]:checked');
+        
+            checkedRows.forEach(checkbox => {
+                totalMonto += parseFloat(checkbox.dataset.monto) || 0;
+                totalKm += parseFloat(checkbox.dataset.km) || 0;
+            });
+        
+            const costoTotalPorKm = totalKm > 0 ? totalMonto / totalKm : 0;
+        
+            // Actualiza las celdas de totales en el pie de la tabla
+            const totalKmCell = cardElement.querySelector('.total-km-cell');
+            const costoTotalKmCell = cardElement.querySelector('.costo-total-km-cell');
+            const totalMontoCell = cardElement.querySelector('.total-monto-cell');
+        
+            if (totalKmCell) totalKmCell.textContent = totalKm.toLocaleString('es-MX');
+            if (costoTotalKmCell) costoTotalKmCell.textContent = costoTotalPorKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+            if (totalMontoCell) totalMontoCell.textContent = totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+        
+            // --- INICIO: Actualización de la tarjeta de resumen general ---
+            const todosLosCheckboxes = document.querySelectorAll('#costos-cards-grid tbody input[type="checkbox"]');
+            let montoGeneral = 0;
+            let kmObraGeneral = 0;
+        
+            todosLosCheckboxes.forEach(cb => {
+                if (cb.checked) {
+                    const row = cb.closest('tr');
+                    const card = cb.closest('.bg-slate-50');
+                    const tipoLicitacion = card.id.includes('1-1-Obra') ? "1.1 Obra" : ""; // Identificar si es de obra
+        
+                    montoGeneral += parseFloat(cb.dataset.monto) || 0;
+                    if (tipoLicitacion === "1.1 Obra") {
+                        kmObraGeneral += parseFloat(cb.dataset.km) || 0;
+                    }
+                }
+            });
+        
+            const costoTotalPorKmGeneral = kmObraGeneral > 0 ? montoGeneral / kmObraGeneral : 0;
+            // --- FIN: Actualización de la tarjeta de resumen general ---
         }
 
         // =============================================
