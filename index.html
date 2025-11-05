@@ -6198,7 +6198,7 @@
          * @returns {string} El string HTML de la tarjeta.
          */
         function createCostoCardHTML(data, title, tipo) { // title puede ser string u objeto
-            const uniqueCardId = `card-${(tipo || 'joint').replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
+            const uniqueCardId = `card-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
             let subtitle = tipo === "1.1 Obra" ? "(No considera costos de supervisión, asesoría y servicios.)" : "";
             let tableContent = '<p class="text-center text-gray-500 py-4">No hay datos para este tipo de licitación.</p>';
 
@@ -6295,7 +6295,7 @@
             }
 
             return `
-                <div id="${uniqueCardId}" class="bg-slate-50 p-6 rounded-lg border" data-tipo-licitacion="${tipo || data[0]?.tipo}">
+                <div id="${uniqueCardId}" class="bg-slate-50 p-6 rounded-lg border" data-tipo-licitacion="${(typeof title === 'object' && title.isJoint) ? data[0]?.tipo : tipo}">
                     ${titleHTML}
                     ${subtitle ? `<p class="text-sm text-center text-gray-500 mb-4">${subtitle}</p>` : ''}
                     <div>
@@ -6340,6 +6340,15 @@
             const costoTotalPorKm = totalKm > 0 ? totalMonto / totalKm : 0;
         
             // Actualiza las celdas de totales en el pie de la tabla
+            // --- INICIO: Actualización del desglose en la tarjeta de resumen ---
+            // Buscamos el span correspondiente en la tarjeta de resumen por su tipo.
+            const tipo = cardElement.dataset.tipoLicitacion;
+            // CORRECCIÓN: El atributo está en el LI, no en el SPAN. Se ajusta el selector.
+            const summaryCheckboxSpan = document.querySelector(`#costo-total-breakdown-list li[data-tipo-li="${tipo}"] span[data-summary-tipo]`);
+            if (summaryCheckboxSpan) {
+                summaryCheckboxSpan.textContent = totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+            }
+            // --- FIN: Actualización del desglose en la tarjeta de resumen ---
             const totalKmCell = cardElement.querySelector('.total-km-cell');
             const costoTotalKmCell = cardElement.querySelector('.costo-total-km-cell');
             const totalMontoCell = cardElement.querySelector('.total-monto-cell');
