@@ -5899,9 +5899,22 @@
          * @param {string} tramo - El nombre del tramo.
          */
         function renderCostosDashboard(proyecto, tramo) {
-            const licitacionesFiltradas = historicalLicitaciones.filter(lic => lic.proyecto === proyecto && lic.tramo === tramo);
+            // 1. Filtrar licitaciones "normales" (coincidencia exacta de proyecto y tramo).
+            const licitacionesNormales = historicalLicitaciones.filter(
+                lic => lic.proyecto === proyecto && lic.tramo === tramo
+            );
+
+            // 2. Filtrar licitaciones "conjuntas" que incluyan el proyecto seleccionado pero no hayan sido ya contadas.
+            // Se asume que una licitación conjunta tiene el nombre del proyecto y tramo en sus campos correspondientes, separados por saltos de línea.
+            const licitacionesConjuntas = historicalLicitaciones.filter(lic =>
+                (lic.proyecto && lic.proyecto.includes(proyecto) && lic.proyecto.includes('\n')) &&
+                (lic.tramo && lic.tramo.includes(tramo) && lic.tramo.includes('\n'))
+            );
  
-             if (licitacionesFiltradas.length === 0) {
+            // 3. Combinar ambos grupos de licitaciones.
+            const todasLasLicitaciones = [...licitacionesNormales, ...licitacionesConjuntas];
+
+             if (todasLasLicitaciones.length === 0) {
                  costosDashboardContainer.classList.add('hidden');
                  noCostosSelected.classList.remove('hidden');
                  return;
@@ -5917,7 +5930,7 @@
              const costosPorTipo = {};
              const licitacionesDeObra = [];
  
-             licitacionesFiltradas.forEach(lic => {
+             todasLasLicitaciones.forEach(lic => {
                  const monto = parseFloat(lic.monto) || 0;
                  const km = parseFloat(lic.kmAdjudicados) || 0;
                  const tipo = lic.tipo || 'Sin Tipo';
@@ -6003,12 +6016,31 @@
              costosCardsGrid.innerHTML += resumenHTML;
              // --- FIN: Sección de Resumen Financiero General ---
  
-            // Iterar sobre los tipos de licitación definidos para crear una tarjeta para cada uno
-            for (const [tipo, titulo] of Object.entries(tiposDeLicitacionParaCostos)) {
-                const datosParaTarjeta = licitacionesFiltradas.filter(lic => lic.tipo === tipo);
-                costosCardsGrid.innerHTML += createCostoCardHTML(datosParaTarjeta, titulo, tipo);
-            }
-
+             // 4. Renderizar tarjetas para licitaciones "normales"
+             for (const [tipo, titulo] of Object.entries(tiposDeLicitacionParaCostos)) {
+                 const datosParaTarjeta = licitacionesNormales.filter(lic => lic.tipo === tipo);
+                 // Solo renderizar la tarjeta si hay datos para ese tipo
+                 if (datosParaTarjeta.length > 0) {
+                     costosCardsGrid.innerHTML += createCostoCardHTML(datosParaTarjeta, titulo, tipo);
+                 }
+             }
+ 
+             // 5. Renderizar tarjetas para licitaciones "conjuntas"
+             if (licitacionesConjuntas.length > 0) {
+                 const separadorHTML = `
+                    <div class="col-span-1 my-8 flex items-center text-center">
+                        <div class="flex-grow border-t-2 border-dashed border-primary"></div>
+                        <h3 class="flex-shrink mx-4 text-primary font-bold text-xl">Licitaciones Conjuntas Asociadas</h3>
+                        <div class="flex-grow border-t-2 border-dashed border-primary"></div>
+                    </div>
+                `;
+                 costosCardsGrid.innerHTML += separadorHTML;
+ 
+                 licitacionesConjuntas.forEach(licitacion => {
+                     const tituloConjunto = `Proyecto: ${licitacion.proyecto.replace(/\n/g, '<br>')} <br> Tramo: ${licitacion.tramo.replace(/\n/g, '<br>')}`;
+                     costosCardsGrid.innerHTML += createCostoCardHTML([licitacion], tituloConjunto, licitacion.tipo);
+                 });
+             }
             // Añadir el listener para la actualización interactiva del costo total
             const breakdownList = document.getElementById('costo-total-breakdown-list');
             if (breakdownList) {
