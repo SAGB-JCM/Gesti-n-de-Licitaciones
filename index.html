@@ -5951,17 +5951,16 @@
  
              let resumenHTML = `
                  <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-primary mb-8">
-                     <h3 class="text-xl font-bold text-primary mb-4 text-center">Resumen Financiero del Tramo: ${tramo}</h3>
+                    <h3 class="text-xl font-bold text-primary mb-4 text-center">Resumen Financiero</h3>
+                    <h2 class="text-3xl font-extrabold text-primary text-center mt-2 mb-1">${proyecto}</h2>
+                    <h4 class="text-2xl font-semibold text-primary text-center mb-4">Tramo: ${tramo}</h4>                     
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 summary-card-container">
                          <!-- Card Costo Total -->
                          <div class="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-shadow">
                              <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this, event)">
                                  <p class="text-sm font-medium text-slate-500">Costo Total del Tramo <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
                                  <p id="costo-tramo-total-display" class="text-2xl font-bold text-primary mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
-                                 <p id="costo-tramo-total-millones-display" class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toFixed(2)} Millones)</p>
-                             </div>
-                             <div class="summary-card-content">
-                                 <ul id="costo-total-breakdown-list" class="text-sm space-y-1 mt-2 border-t pt-2">
+                                 <p id="costo-tramo-total-millones-display" class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } Millones)</p>                                 <ul id="costo-total-breakdown-list" class="text-sm space-y-1 mt-2 border-t pt-2">
                                      ${Object.entries(costosPorTipo).sort(([,a],[,b]) => b-a).map(([tipo, monto]) => `
                                          <li class="flex justify-between items-center">
                                              <label class="flex items-center cursor-pointer text-slate-600 flex-grow">
@@ -5986,7 +5985,10 @@
                              <div id="km-obra-details" class="summary-card-content">
                                  <ul class="text-sm space-y-1 mt-2 border-t pt-2">
                                      ${licitacionesDeObra.map(lic => `
-                                         <li class="flex justify-between"><span class="text-slate-600 truncate pr-2" title="${lic.nombre}">${lic.nombre}:</span> <span class="font-semibold text-secondary">${(parseFloat(lic.kmAdjudicados) || 0).toLocaleString('es-MX')} km</span></li>
+                                         <li class="flex justify-between">
+                                             <span class="text-slate-600 truncate pr-2 min-w-0" title="${lic.nombre}">${lic.nombre}:</span>
+                                             <span class="font-semibold text-secondary whitespace-nowrap">${(parseFloat(lic.kmAdjudicados) || 0).toLocaleString('es-MX')} km</span>
+                                         </li>
                                      `).join('')}
                                  </ul>
                              </div>
