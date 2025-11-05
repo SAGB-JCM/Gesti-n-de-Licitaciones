@@ -840,10 +840,8 @@
                 <div id="tabs" class="border-b border-gray-200">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                         <button data-tab="historico" class="tab-btn active whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Licitaciones</button>
+                        <button data-tab="costos" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Costos</button>
                         <button data-tab="reportes" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Reportes</button>
-                        <button data-tab="costos" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                            Costos
-                        </button>
                     </nav>
                 </div>
             </div>
@@ -2884,23 +2882,22 @@
                     <div>
                         <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
                         <p class="date">Tramo: ${highlightText(licitacionItem.tramo || 'N/A', searchText)}</p>
-                        <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
-                        <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
-                        <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
+                        <p class="date">Contratante: ${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
+                        <p class="date">Expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
                     </div>
                     ${downloadButtonHTML}
                 </div>
         
                 <div class="details-section">
-                    <h4>Información General de la Licitación</h4>
+                    <h4>DATOS GENERALES DE LA LICITACIÓN</h4>
                     <table class="details-table">
                         <tbody>
                             <tr>
-                                <th>Nombre</th>
+                                <th>Nombre del Procedimiento de Contratación</th>
                                 <td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td>
                             </tr>
                             <tr>
-                                <th>Descripción</th>
+                                <th>Descripción Detallada del Procedimiento de Contratación</th>
                                 <td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.descripcion), searchText)}</td>
                             </tr>
                             <tr>
@@ -2912,13 +2909,15 @@
                 </div>
 
                 <div class="details-section">
-                    <h4>Detalles de Contratación</h4>
+                    <h4>DETALLES DE CONTRATACIÓN</h4>
                     <table class="details-table">
                         <thead>
                             <tr>
-                                <th>Procedimiento de Contratación</th>
-                                <th>Tipo</th>
-                                <th>Monto</th>
+                                <th>Tipo de Procedimiento de Contratación</th>
+                                <th>Tipo de Contratación</th>
+                                <th>Monto Adjudicado</th>
+                                <th>Km Aplicables</th>
+                                <th>Costo Aprox. Por Km</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2926,24 +2925,6 @@
                                 <td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td>
                                 <td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td>
                                 <td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="details-section">
-                    <h4>Costo por Kilómetro</h4>
-                    <table class="details-table">
-                        <thead>
-                            <tr>
-                                <th>KM del Proyecto</th>
-                                <th>KM Adjudicados</th>
-                                <th>Costo por KM</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>N/A</td>
                                 <td>${highlightText(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A', searchText)}</td>
                                 <td class="highlight-fallo">${highlightText(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A', searchText)}</td>
                             </tr>
@@ -2952,13 +2933,13 @@
                 </div>
         
                 <div class="details-section">
-                    <h4>Cronología del Proceso</h4>
+                    <h4>CRONOGRAMA DE EVENTOS</h4>
                     <table class="details-table">
                         <thead>
                             <tr>
-                                <th>Fecha de Presentación y Apertura</th>
-                                <th>Fecha de Fallo</th>
-                                <th>Fecha Estimada de Inicio</th>
+                                <th>Fecha y de Presentación y Apertura de Proposiciones</th>
+                                <th>Fecha del Acto del Fallo</th>
+                                <th>Fecha Estimada de Inicio del Contrato</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2972,13 +2953,13 @@
                 </div>
         
                 <div class="details-section">
-                    <h4>Participantes en el Proceso</h4>
+                    <h4>LICITANTES Y GANADORES</h4>
                     <table class="details-table equal-cols">
                         <thead>
                             <tr>
-                                <th>Registrados o manifestaron interés</th>
-                                <th>Nombre de licitantes</th>
-                                <th>Ganador de la licitación</th>
+                                <th>Registrados o Manifestaron Interés</th>
+                                <th>Licitantes</th>
+                                <th>Ganadores</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2988,7 +2969,7 @@
                 </div>
         
                 <div class="details-section">
-                    <h4>Link de Compras MX</h4>
+                    <h4>LINK DE COMPRAS MX</h4>
                     ${sourceLink}
                 </div>
             `;
@@ -3056,9 +3037,8 @@
                         <div>
                            <h3 class="project">${highlightText(licitacionItem.proyecto || 'Proyecto no especificado', searchText)}</h3>
                             <p class="date">Tramo: ${highlightText(licitacionItem.tramo || 'N/A', searchText)}</p>
-                            <p class="date">${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
-                            <p class="date">Código de expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
-                            <p class="date">Fecha de presentación y apertura: ${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</p>
+                            <p class="date">Contratante: ${highlightText(licitacionItem.siglasDependencia || 'Dependencia no especificada', searchText)}</p>
+                            <p class="date">Expediente: ${highlightText(licitacionItem.codigoExpediente || 'N/A', searchText)}</p>
                         </div>
                         <div class="flex items-center space-x-3">
                             <span class="text-lg font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">${index + 1}</span>
@@ -3067,27 +3047,33 @@
                     </div>
             
                     <div class="details-section">
-                        <h4>Información General de la Licitación</h4>
-                        <table class="details-table"><tbody><tr><th>Nombre</th><td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td></tr><tr><th>Descripción</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.descripcion), searchText)}</td></tr><tr><th>Generalidades del Proyecto</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.generalidades), searchText)}</td></tr></tbody></table>
-                    </div>
-
-                    <div class="details-section">
-                        <h4>Detalles de Contratación</h4>
+                        <h4>DATOS GENERALES DE LA LICITACIÓN</h4>
                         <table class="details-table">
-                            <thead><tr><th>Procedimiento de Contratación</th><th>Tipo</th><th>Monto</th></tr></thead>
-                            <tbody><tr><td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td><td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td></tr></tbody>
+                            <tbody>
+                                <tr><th>Nombre del Procedimiento de Contratación</th><td>${highlightText(licitacionItem.nombre || 'No especificado.', searchText)}</td></tr>
+                                <tr><th>Descripción Detallada del Procedimiento de Contratación</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.descripcion), searchText)}</td></tr>
+                                <tr><th>Generalidades del Proyecto</th><td class="formatted-content">${highlightText(formatTextWithLineBreaks(licitacionItem.generalidades), searchText)}</td></tr>
+                            </tbody>
                         </table>
                     </div>
 
                     <div class="details-section">
-                        <h4>Costo por Kilómetro</h4>
+                        <h4>DETALLES DE CONTRATACIÓN</h4>
                         <table class="details-table">
                             <thead>
-                                <tr><th>KM del Proyecto</th><th>KM Adjudicados</th><th>Costo por KM</th></tr>
+                                <tr>
+                                    <th>Tipo de Procedimiento de Contratación</th>
+                                    <th>Tipo de Contratación</th>
+                                    <th>Monto Adjudicado</th>
+                                    <th>Km Aplicables</th>
+                                    <th>Costo Aprox. Por Km</th>
+                                </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>N/A</td>
+                                    <td>${highlightText(licitacionItem.procedimientoContratacion || 'N/A', searchText)}</td>
+                                    <td>${highlightText(licitacionItem.tipo || 'N/A', searchText)}</td>
+                                    <td class="highlight-fallo">${highlightText(licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A', searchText)}</td>
                                     <td>${highlightText(licitacionItem.kmAdjudicados ? Number(licitacionItem.kmAdjudicados).toLocaleString('es-MX') : 'N/A', searchText)}</td>
                                     <td class="highlight-fallo">${highlightText(licitacionItem.costoPorKm ? '$' + Number(licitacionItem.costoPorKm).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A', searchText)}</td>
                                 </tr>
@@ -3096,16 +3082,40 @@
                     </div>
             
                     <div class="details-section">
-                        <h4>Cronología del Proceso</h4>
-                        <table class="details-table"><thead><tr><th>Fecha de Presentación y Apertura</th><th>Fecha de Fallo</th><th>Fecha Estimada de Inicio</th></tr></thead><tbody><tr><td>${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</td><td class="highlight-fallo">${highlightText(formatDate(licitacionItem.fechaFallo) || 'N/A', searchText)}</td><td>${highlightText(formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A', searchText)}</td></tr></tbody></table>
+                        <h4>CRONOGRAMA DE EVENTOS</h4>
+                        <table class="details-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha y de Presentación y Apertura de Proposiciones</th>
+                                    <th>Fecha del Acto del Fallo</th>
+                                    <th>Fecha Estimada de Inicio del Contrato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${highlightText(formatDate(licitacionItem.fechaPresentacionApertura) || 'N/A', searchText)}</td>
+                                    <td class="highlight-fallo">${highlightText(formatDate(licitacionItem.fechaFallo) || 'N/A', searchText)}</td>
+                                    <td>${highlightText(formatDate(licitacionItem.fechaEstimadaInicio) || 'N/A', searchText)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
             
                     <div class="details-section">
                         <h4>Participantes en el Proceso</h4>
-                        <table class="details-table equal-cols"><thead><tr><th>Registrados o manifestaron interés</th><th>Nombre de licitantes</th><th>Ganador de la licitación</th></tr></thead><tbody>${participantesTbody}</tbody></table>
+                        <table class="details-table equal-cols">
+                            <thead>
+                                <tr>
+                                    <th>Registrados o manifestaron interés</th>
+                                    <th>Licitantes</th>
+                                    <th>Ganadores</th>
+                                </tr>
+                            </thead>
+                            <tbody>${participantesTbody}</tbody>
+                        </table>
                     </div>
             
-                    <div class="details-section"><h4>Link de Compras MX</h4>${sourceLink}</div>
+                    <div class="details-section"><h4>LINK DE COMPRAS MX</h4>${sourceLink}</div>
                 </div>`;
         }
 
@@ -5957,8 +5967,8 @@
                          <div class="bg-slate-50 p-4 rounded-lg hover:shadow-md transition-shadow">
                              <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this, event)">
                                  <p class="text-sm font-medium text-slate-500">Costo Total del Tramo <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
-                                 <p id="costo-tramo-total-display" class="text-2xl font-bold text-primary mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>
-                                 <p id="costo-tramo-total-millones-display" class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toFixed(2)} Millones)</p>
+                                 <p id="costo-tramo-total-display" class="text-2xl font-bold text-primary mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>                                 
+                                 <p id="costo-tramo-total-millones-display" class="text-md text-slate-600">(${(totalMontoGeneral / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Millones)</p>
                              </div>
                              <div class="summary-card-content">
                                  <ul id="costo-total-breakdown-list" class="text-sm space-y-1 mt-2 border-t pt-2">
@@ -5985,8 +5995,8 @@
                              </div>
                              <div id="km-obra-details" class="summary-card-content">
                                  <ul class="text-sm space-y-1 mt-2 border-t pt-2">
-                                     ${licitacionesDeObra.map(lic => `
-                                         <li class="flex justify-between"><span class="text-slate-600 truncate pr-2" title="${lic.nombre}">${lic.nombre}:</span> <span class="font-semibold text-secondary">${(parseFloat(lic.kmAdjudicados) || 0).toLocaleString('es-MX')} km</span></li>
+                                     ${licitacionesDeObra.map(lic => `                                         
+                                         <li class="flex justify-between items-center"><span class="text-slate-600 truncate pr-2 flex-grow" title="${lic.nombre}">${lic.nombre}:</span> <span class="font-semibold text-secondary ml-2 flex-shrink-0">${(parseFloat(lic.kmAdjudicados) || 0).toLocaleString('es-MX')} km</span></li>
                                      `).join('')}
                                  </ul>
                              </div>
@@ -6052,7 +6062,7 @@
                 breakdownList.addEventListener('change', updateCostoTotalTramo);
             }
         }
-
+ 
         // --- INICIO: Nueva función para actualizar el costo total del tramo interactivamente ---
         /**
          * Recalcula y actualiza el costo total del tramo mostrado en la tarjeta de resumen.
@@ -6071,7 +6081,7 @@
             });
 
             document.getElementById('costo-tramo-total-display').textContent = nuevoTotal.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
-            document.getElementById('costo-tramo-total-millones-display').textContent = `(${(nuevoTotal / 1000000).toFixed(2)} Millones)`;
+            document.getElementById('costo-tramo-total-millones-display').textContent = `(${(nuevoTotal / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Millones)`;
         }
         // --- FIN: Nueva función ---
 
