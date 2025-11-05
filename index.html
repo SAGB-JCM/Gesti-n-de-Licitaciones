@@ -427,7 +427,7 @@
 
         /* Ancho específico para modales que necesitan más espacio horizontal. */
         .wide-modal .relative {
-            max-width: 76rem !important;
+            max-width: 88rem !important; /* Aumentado de 76rem para más espacio */
         }
 
         /* Bloquea el scroll del body cuando un modal está abierto para evitar scroll dual. */
@@ -606,7 +606,8 @@
         /* --- INICIO: Mejoras de ancho de columna en modales de detalle --- */
         /* 1. Tabla de datos generales: la primera columna (th) ocupa 2/9 del ancho. */
         .details-table.general-info-cols th {
-            width: 22.22%; /* 2/9 */
+            width: 22.22%; /* 2/9 del ancho */
+            vertical-align: middle; /* Centrado vertical para los encabezados */
         }
 
         /* 2. Tabla de detalles de contratación: anchos personalizados. */
