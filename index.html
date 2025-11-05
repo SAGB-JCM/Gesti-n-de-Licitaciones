@@ -4417,7 +4417,7 @@
             let headerRow2 = `<tr>`;
 
             sortedProcedures.forEach(proc => {
-                headerRow1 += `<th colspan="2" class="text-center">${proc}</th>`;
+                headerRow1 += `<th colspan="2" class="text-center">${formatTextWithLineBreaks(proc)}</th>`;
                 headerRow2 += `<th class="text-center">Cantidad</th><th class="text-center">Monto (mdp)</th>`;
             });
             headerRow1 += `<th colspan="2" class="text-center">Total</th></tr>`;
@@ -4434,7 +4434,7 @@
 
             projects.forEach(project => {
                 const row = document.createElement('tr');
-                let rowHTML = `<td class="clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-project="${project}">${project}</td>`;
+                let rowHTML = `<td class="clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-project="${project}">${formatTextWithLineBreaks(project)}</td>`;
                 let projectTotalAmount = 0;
                 let projectTotalCount = 0;
 
@@ -4551,7 +4551,7 @@
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-variable="${selectedVariable}" data-filter-value="${value}">${value}</td>
+                    <td class="clickable-cell hover:bg-slate-100 hover:text-primary" data-filter-variable="${selectedVariable}" data-filter-value="${value}">${formatTextWithLineBreaks(value)}</td>
                     <td class="clickable-cell hover:bg-slate-100 hover:text-primary">${stats.count}</td>
                     <td class="text-right">${(stats.sum / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 `;
