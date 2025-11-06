@@ -5755,6 +5755,13 @@
                     table.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => {
                         cb.checked = isChecked;
                     });
+                    // --- INICIO DE LA MODIFICACIÓN ---
+                    // Después de actualizar los hijos, sincronizar el estado del checkbox maestro.
+                    const detailCard = checkbox.closest('.bg-slate-50[data-tipo-licitacion]');
+                    if (detailCard) {
+                        syncMasterCheckboxState(detailCard.dataset.tipoLicitacion);
+                    }
+                    // --- FIN DE LA MODIFICACIÓN ---
                 }
 
                 // Recalcular los totales para la tarjeta actual
@@ -5769,12 +5776,18 @@
                 const tipo = masterCheckbox.dataset.masterCheckboxFor;
                 const isChecked = masterCheckbox.checked;
 
-                // Seleccionar todos los checkboxes hijos para este tipo y actualizar su estado
+                // 1. Seleccionar y actualizar todos los checkboxes hijos (en las filas)
                 const childCheckboxes = document.querySelectorAll(`[data-child-checkbox-of="${tipo}"]`);
                 childCheckboxes.forEach(child => {
                     child.checked = isChecked;
                 });
 
+                // 2. Seleccionar y actualizar el checkbox del encabezado de la tabla correspondiente
+                const detailCard = document.querySelector(`.bg-slate-50[data-tipo-licitacion="${tipo}"]`);
+                if (detailCard) {
+                    const headerCheckbox = detailCard.querySelector('thead input[type="checkbox"]');
+                    if (headerCheckbox) headerCheckbox.checked = isChecked;
+                }
                 // Después de cambiar el estado de los hijos, recalcular todos los totales
                 updateAllCostTotals();
             });
