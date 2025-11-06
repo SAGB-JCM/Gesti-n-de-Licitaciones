@@ -345,7 +345,11 @@
         }
 
         /* Ancho específico solo para los campos con botones adicionales (Proyecto y Tramo) */
-        /* Ya no se necesita un ancho fijo, el contenedor se ajustará a su contenido. */
+        .form-field:has(#licitacion-proyecto) .flex-with-buttons, .form-field:has(#edit-licitacion-proyecto) .flex-with-buttons,
+        .form-field:has(#licitacion-tramo) .flex-with-buttons, .form-field:has(#edit-licitacion-tramo) .flex-with-buttons {
+            min-width: 340px;
+            max-width: 340px;
+        }
 
         /* Estilos para el contenedor de Select2 dentro del layout flexible. */
         .flex-with-buttons .select2-container {
@@ -6881,6 +6885,10 @@
 
         // Iniciar la aplicación
         // La inicialización ahora ocurre dentro del listener DOMContentLoaded
+
+    </script>
+</body> 
+</html> // La inicialización ahora ocurre dentro del listener DOMContentLoaded
 
     </script>
 </body> 
