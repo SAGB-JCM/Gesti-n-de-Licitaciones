@@ -6240,19 +6240,44 @@
          * Se basa en los checkboxes seleccionados en la lista de desglose.
          */
         function updateCostoTotalTramo() {
-            // Selecciona TODOS los checkboxes marcados dentro de las tablas de detalle en la pestaña de costos.
+            // 1. Selecciona TODOS los checkboxes marcados en las tablas de detalle.
             const todosLosCheckboxesMarcados = document.querySelectorAll('#costos-cards-grid .bg-slate-50 tbody input[type="checkbox"]:checked');
             
             let nuevoTotalGeneral = 0;
+            let nuevoTotalKmObra = 0; // Variable para sumar los KM de obra.
             
-            // Itera sobre cada checkbox marcado y suma su monto al total.
+            // 2. Itera sobre cada checkbox marcado para sumar su monto y, si aplica, sus KM.
             todosLosCheckboxesMarcados.forEach(checkbox => {
+                // Suma el monto de todas las licitaciones seleccionadas.
                 nuevoTotalGeneral += parseFloat(checkbox.dataset.monto) || 0;
+
+                // Verifica si el checkbox pertenece a una licitación de tipo "1.1 Obra".
+                // El tipo está en el dataset del contenedor de la tarjeta.
+                const card = checkbox.closest('[data-tipo-licitacion]');
+                if (card && card.dataset.tipoLicitacion === "1.1 Obra") {
+                    nuevoTotalKmObra += parseFloat(checkbox.dataset.km) || 0;
+                }
             });
             
-            // Actualiza los elementos visuales en la tarjeta de resumen principal.
+            // 3. Actualiza la tarjeta de "Costo Total del Tramo".
             document.getElementById('costo-tramo-total-display').textContent = nuevoTotalGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
             document.getElementById('costo-tramo-total-millones-display').textContent = `(${(nuevoTotalGeneral / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Millones)`;
+
+            // 4. Actualiza la tarjeta de "KM Adjudicados (Solo Obra)".
+            const kmDisplayElement = document.querySelector('.summary-card-container .bg-yellow-50 .text-2xl');
+            if (kmDisplayElement) {
+                kmDisplayElement.textContent = `${nuevoTotalKmObra.toLocaleString('es-MX')} km`;
+            }
+
+            // 5. Calcula y actualiza la tarjeta de "Costo Total por KM (Obra)".
+            // Se asegura de no dividir por cero si no hay KM de obra seleccionados.
+            const nuevoCostoTotalPorKm = nuevoTotalKmObra > 0 ? nuevoTotalGeneral / nuevoTotalKmObra : 0;
+            const costoPorKmDisplayElement = document.querySelector('.summary-card-container .bg-slate-50:not(.hover\\:shadow-md) .text-2xl'); // Selector más específico para la tercera tarjeta
+            
+            if (costoPorKmDisplayElement) {
+                costoPorKmDisplayElement.textContent = nuevoCostoTotalPorKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+            }
+
         }
         // --- FIN: Nueva función ---
 
