@@ -5339,18 +5339,21 @@
                     return showAlert("Por favor, complete todos los campos obligatorios marcados.", "warning");
                 }
                 
-                // --- INICIO: Lógica para selección múltiple ---
-                // Si hay píldoras, une los valores con saltos de línea.
-                if (multiSelectState.add.proyecto.length > 0) {
-                    document.getElementById('licitacion-proyecto').value = multiSelectState.add.proyecto.join('\n');
-                }
-                if (multiSelectState.add.tramo.length > 0) {
-                    document.getElementById('licitacion-tramo').value = multiSelectState.add.tramo.join('\n');
-                }
-                // --- FIN: Lógica para selección múltiple ---
-
+                // --- INICIO: Construcción manual de datos para evitar problemas con FormData ---
+                const licitacionData = {};
                 const formData = new FormData(licitacionForm);
-                const licitacionData = Object.fromEntries(formData.entries());
+                formData.forEach((value, key) => {
+                    // Ignorar proyecto y tramo por ahora, los manejaremos explícitamente
+                    if (key !== 'proyecto' && key !== 'tramo') {
+                        licitacionData[key] = value;
+                    }
+                });
+
+                // Lógica explícita para proyecto y tramo
+                licitacionData.proyecto = multiSelectState.add.proyecto.length > 0 ? multiSelectState.add.proyecto.join('\n') : formData.get('proyecto');
+                licitacionData.tramo = multiSelectState.add.tramo.length > 0 ? multiSelectState.add.tramo.join('\n') : formData.get('tramo');
+                // --- FIN: Construcción manual de datos ---
+
                 licitacionData.kmAdjudicados = parseFloat(licitacionData.kmAdjudicados) || 0; // Asegurar que sea número
                 licitacionData.costoPorKm = parseFloat(licitacionData.costoPorKm) || 0; // Asegurar que sea número
                 saveLicitacion(licitacionData, true); // Guardar directamente en el histórico
@@ -5369,18 +5372,21 @@
                     return showAlert("Por favor, complete todos los campos obligatorios marcados.", "warning");
                 }
                 
-                // --- INICIO: Lógica para selección múltiple ---
-                // Si hay píldoras, une los valores con saltos de línea.
-                if (multiSelectState.edit.proyecto.length > 0) {
-                    document.getElementById('edit-licitacion-proyecto').value = multiSelectState.edit.proyecto.join('\n');
-                }
-                if (multiSelectState.edit.tramo.length > 0) {
-                    document.getElementById('edit-licitacion-tramo').value = multiSelectState.edit.tramo.join('\n');
-                }
-                // --- FIN: Lógica para selección múltiple ---
-
+                // --- INICIO: Construcción manual de datos para evitar problemas con FormData ---
+                const updateData = {};
                 const formData = new FormData(editForm);
-                const updateData = Object.fromEntries(formData.entries());
+                formData.forEach((value, key) => {
+                    // Ignorar proyecto y tramo por ahora, los manejaremos explícitamente
+                    if (key !== 'proyecto' && key !== 'tramo') {
+                        updateData[key] = value;
+                    }
+                });
+
+                // Lógica explícita para proyecto y tramo
+                updateData.proyecto = multiSelectState.edit.proyecto.length > 0 ? multiSelectState.edit.proyecto.join('\n') : formData.get('proyecto');
+                updateData.tramo = multiSelectState.edit.tramo.length > 0 ? multiSelectState.edit.tramo.join('\n') : formData.get('tramo');
+                // --- FIN: Construcción manual de datos ---
+
                 updateData.kmAdjudicados = parseFloat(updateData.kmAdjudicados) || 0; // Asegurar que sea número
                 updateData.costoPorKm = parseFloat(updateData.costoPorKm) || 0; // Asegurar que sea número
                 const id = document.getElementById('edit-id').value;
