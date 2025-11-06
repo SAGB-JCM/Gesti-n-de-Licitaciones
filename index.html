@@ -5799,6 +5799,19 @@
 
                 const tipo = childCheckbox.dataset.childCheckboxOf;
                 syncMasterCheckboxState(tipo);
+
+                // --- INICIO DE LA MODIFICACIÓN FINAL ---
+                // Lógica para Hijos -> Checkbox del Encabezado de su propia tabla.
+                // Si todos los hijos de una tabla están marcados, el encabezado se marca.
+                // Si ninguno está marcado, el encabezado se desmarca.
+                const table = childCheckbox.closest('table');
+                if (table) {
+                    const headerCheckbox = table.querySelector('thead input[type="checkbox"]');
+                    const allBodyCheckboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+                    const allChecked = Array.from(allBodyCheckboxes).every(cb => cb.checked);
+                    if (headerCheckbox) headerCheckbox.checked = allChecked;
+                }
+                // --- FIN DE LA MODIFICACIÓN FINAL ---
             });
         }
 
