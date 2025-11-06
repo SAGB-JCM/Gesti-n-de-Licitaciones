@@ -3764,19 +3764,25 @@
             
             // Función de ayuda para procesar opciones de forma segura
             const getUniqueTrimmedOptions = (data, field) => {
-                return data.map(item => item[field])
-                           .filter(Boolean) // Elimina nulos o undefined
-                           .map(value => String(value).trim()); // Convierte a string y luego aplica trim
+                return [...new Set( // Usar Set para obtener valores únicos de forma eficiente
+                    data.map(item => item[field])
+                       .filter(Boolean) // Elimina nulos o undefined
+                       .map(value => String(value).trim()) // Convierte a string y luego aplica trim
+                )];
             };
 
             // Proyectos
-            const historicalProyectos = getUniqueTrimmedOptions(allData, 'proyecto');
+            const historicalProyectos = getUniqueTrimmedOptions(allData, 'proyecto')
+                .filter(p => !p.includes('\n')); // Excluir valores con saltos de línea
+
             const combinedProyectos = [...new Set([...catalogoProyectos, ...historicalProyectos])].sort();
             fieldOptions.proyectos = combinedProyectos;
             updateSelectOptions('proyectos', fieldOptions.proyectos);
         
             // Tramos
-            const historicalTramos = getUniqueTrimmedOptions(allData, 'tramo');
+            const historicalTramos = getUniqueTrimmedOptions(allData, 'tramo')
+                .filter(t => !t.includes('\n')); // Excluir valores con saltos de línea
+
             const combinedTramos = [...new Set([...catalogoTramos, ...historicalTramos])].sort();
             fieldOptions.tramos = combinedTramos;
             updateSelectOptions('tramos', fieldOptions.tramos);
