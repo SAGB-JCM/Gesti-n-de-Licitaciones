@@ -2275,8 +2275,9 @@
             data.forEach((licitacionItem, index) => {
                 const row = document.createElement('tr');
                 row.className = 'bg-white border-b hover:bg-gray-50';
-                // Si el proyecto contiene un salto de línea, es una licitación múltiple y se resalta la fila.
-                if (licitacionItem.proyecto && String(licitacionItem.proyecto).includes('\n')) {
+                // Si el proyecto o el tramo contienen un salto de línea, es una licitación múltiple y se resalta la fila.
+                if ((licitacionItem.proyecto && String(licitacionItem.proyecto).includes('\n')) || 
+                    (licitacionItem.tramo && String(licitacionItem.tramo).includes('\n'))) {
                     row.classList.add('main-table-row-with-linebreak');
                 }
 
@@ -4466,8 +4467,8 @@
             projects.forEach(project => {
                 const row = document.createElement('tr');
 
-                // Si el nombre del proyecto contiene un salto de línea, aplicar la clase de resaltado.
-                if (String(project).includes('\n')) {
+                // Si el nombre del proyecto o el tramo asociado contienen un salto de línea, aplicar la clase de resaltado.
+                if (String(project).includes('\n') || data.some(item => item.proyecto === project && item.tramo && item.tramo.includes('\n'))) {
                     row.classList.add('row-with-linebreak');
                 }
 
@@ -4589,8 +4590,9 @@
  
                 const row = document.createElement('tr');
 
-                // Si el valor de la categoría contiene un salto de línea, aplicar la clase de resaltado.
-                if (String(value).includes('\n')) {
+                // Si el valor de la categoría (o su tramo asociado, si aplica) contiene un salto de línea, aplicar la clase de resaltado.
+                if (String(value).includes('\n') || 
+                    (selectedVariable === 'proyecto' && data.some(item => item.proyecto === value && item.tramo && item.tramo.includes('\n')))) {
                     row.classList.add('row-with-linebreak');
                 }
                 row.innerHTML = `
