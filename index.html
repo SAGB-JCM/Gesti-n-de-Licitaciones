@@ -5760,6 +5760,45 @@
                 // Recalcular los totales para la tarjeta actual
                 updateAllCostTotals();
             });
+
+            // --- INICIO: Lógica para Checkbox Maestro -> Hijos ---
+            costosCardsGrid.addEventListener('change', (e) => {
+                const masterCheckbox = e.target.closest('[data-master-checkbox-for]');
+                if (!masterCheckbox) return;
+
+                const tipo = masterCheckbox.dataset.masterCheckboxFor;
+                const isChecked = masterCheckbox.checked;
+
+                // Seleccionar todos los checkboxes hijos para este tipo y actualizar su estado
+                const childCheckboxes = document.querySelectorAll(`[data-child-checkbox-of="${tipo}"]`);
+                childCheckboxes.forEach(child => {
+                    child.checked = isChecked;
+                });
+
+                // Después de cambiar el estado de los hijos, recalcular todos los totales
+                updateAllCostTotals();
+            });
+
+            // --- INICIO: Lógica para Hijos -> Checkbox Maestro ---
+            costosCardsGrid.addEventListener('change', (e) => {
+                const childCheckbox = e.target.closest('[data-child-checkbox-of]');
+                if (!childCheckbox) return;
+
+                const tipo = childCheckbox.dataset.childCheckboxOf;
+                syncMasterCheckboxState(tipo);
+            });
+        }
+
+        /**
+         * Sincroniza el estado de un checkbox maestro basado en el estado de sus hijos.
+         * Si al menos un hijo está marcado, el maestro se marca. Si todos están desmarcados, el maestro se desmarca.
+         * @param {string} tipo - El tipo de licitación que identifica al grupo de checkboxes.
+         */
+        function syncMasterCheckboxState(tipo) {
+            const masterCheckbox = document.querySelector(`[data-master-checkbox-for="${tipo}"]`);
+            const childCheckboxes = document.querySelectorAll(`[data-child-checkbox-of="${tipo}"]`);
+            const anyChildChecked = Array.from(childCheckboxes).some(child => child.checked);
+            if (masterCheckbox) masterCheckbox.checked = anyChildChecked;
         }
 
         function updateAllCostTotals() {
@@ -6080,8 +6119,8 @@
                                  <ul id="costo-total-breakdown-list" class="text-sm space-y-1 mt-2 border-t pt-2">
                                      ${Object.entries(costosPorTipo).sort(([,a],[,b]) => b-a).map(([tipo, monto]) => `
                                          <li class="flex justify-between items-center" data-tipo-li="${tipo}">
-                                             <label class="flex items-center cursor-pointer text-slate-600 flex-grow">
-                                                 <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mr-2" data-monto="${monto}" checked>
+                                             <label class="flex items-center cursor-pointer text-slate-600 flex-grow" for="master-checkbox-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}">
+                                                 <input type="checkbox" id="master-checkbox-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mr-2" data-monto="${monto}" data-master-checkbox-for="${tipo}" checked>
                                                  <span class="truncate" title="${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}">
                                                      ${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}:
                                                  </span>
@@ -6305,7 +6344,7 @@
                             ${data.map(item => `
                                 <tr class="border-b">
                                     <td class="py-2 px-1 text-center">
-                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" data-monto="${item.monto || 0}" data-km="${item.kmAdjudicados || 0}" checked>
+                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" data-child-checkbox-of="${(typeof title === 'object' && title.isJoint) ? item.tipo : tipo}" data-monto="${item.monto || 0}" data-km="${item.kmAdjudicados || 0}" checked>
                                     </td>
                                     <td class="py-2 px-3">${item.siglasDependencia || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.nombre || 'N/A'}</td>
