@@ -678,6 +678,31 @@
             margin-top: 1rem; /* Espacio cuando está expandido */
         }
         /* --- FIN: Estilos para tarjetas de resumen desplegables --- */
+        
+        /* --- INICIO: Estilos para selecciones múltiples (píldoras/tags) --- */
+        .multi-select-pills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            min-height: 40px; /* Altura mínima para que se vea el contenedor */
+        }
+        .multi-select-pill {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px; /* fully rounded */
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .multi-select-pill .remove-pill-btn { margin-left: 0.5rem; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
+        .multi-select-pill .remove-pill-btn:hover { opacity: 1; }
+        /* --- FIN: Estilos para selecciones múltiples --- */
 
 
         /* ============================================= */
@@ -1248,20 +1273,28 @@
                         <div class="form-field">
                             <label for="licitacion-proyecto" class="label-left-align">Proyecto</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-proyecto" name="proyecto" required></select>
+                                <select id="licitacion-proyecto" name="proyecto" data-multi-select-target="proyecto"></select>
+                                <button type="button" id="add-proyecto-btn" class="bg-secondary hover:bg-secondary-dark text-white" title="Agregar a la lista">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
                                 <button type="button" id="edit-proyecto-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
+                            <div id="licitacion-proyecto-pills" class="multi-select-pills-container"></div>
                         </div>
                         <div class="form-field">
                             <label for="licitacion-tramo" class="label-left-align">Tramo</label>
                             <div class="flex-with-buttons">
-                                <select id="licitacion-tramo" name="tramo" required></select>
+                                <select id="licitacion-tramo" name="tramo" data-multi-select-target="tramo"></select>
+                                <button type="button" id="add-tramo-btn" class="bg-secondary hover:bg-secondary-dark text-white" title="Agregar a la lista">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
                                 <button type="button" id="edit-tramo-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
+                            <div id="licitacion-tramo-pills" class="multi-select-pills-container"></div>
                         </div>
                         <div class="form-field full-width">
                             <label for="licitacion-nombre">Nombre de la Licitacion</label>
@@ -1426,20 +1459,28 @@
                         <div class="form-field">
                             <label for="edit-licitacion-proyecto" class="label-left-align">Proyecto</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-proyecto" name="proyecto" required></select>
+                                <select id="edit-licitacion-proyecto" name="proyecto" data-multi-select-target="proyecto"></select>
+                                <button type="button" id="add-proyecto-edit-btn" class="bg-secondary hover:bg-secondary-dark text-white" title="Agregar a la lista">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
                                 <button type="button" id="edit-proyecto-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
+                            <div id="edit-licitacion-proyecto-pills" class="multi-select-pills-container"></div>
                         </div>
                         <div class="form-field">
                             <label for="edit-licitacion-tramo" class="label-left-align">Tramo</label>
                             <div class="flex-with-buttons">
-                                <select id="edit-licitacion-tramo" name="tramo" required></select>
+                                <select id="edit-licitacion-tramo" name="tramo" data-multi-select-target="tramo"></select>
+                                <button type="button" id="add-tramo-edit-btn" class="bg-secondary hover:bg-secondary-dark text-white" title="Agregar a la lista">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
                                 <button type="button" id="edit-tramo-edit-btn" class="edit-btn">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </div>
+                            <div id="edit-licitacion-tramo-pills" class="multi-select-pills-container"></div>
                         </div>
                         <div class="form-field full-width">
                             <label for="edit-licitacion-nombre">Nombre de la Licitacion</label>
@@ -1925,6 +1966,16 @@
         let isProjectChartStacked = true; // Variable de estado para el tipo de la segunda gráfica
         let activeFalloDashboardFilter = null; // Para el filtro del radar de fallo
         let activeTrainTypeFilter = 'todos'; // 'todos', 'trenes', 'trenes-del-norte'
+
+        // --- INICIO: Variables para la selección múltiple ---
+        let multiSelectState = {
+            add: { proyecto: [], tramo: [] },
+            edit: { proyecto: [], tramo: [] }
+        };
+        // --- FIN: Variables para la selección múltiple ---
+
+
+
 
         // --- INICIO: Variables para el ordenamiento dinámico de tablas de reportes ---
         let dynamicChartSortBy = 'amount'; // 'count' o 'amount'
@@ -2857,6 +2908,12 @@
                 // Cargar valor en el nuevo textarea de nombre
                 document.getElementById('edit-licitacion-nombre').value = licitacionToEdit.nombre || '';
 
+                // --- INICIO: Lógica para selección múltiple en edición ---
+                // Limpiar estado anterior y píldoras
+                resetMultiSelectState('edit');
+                parseAndRenderPills(licitacionToEdit.proyecto, 'proyecto', 'edit');
+                parseAndRenderPills(licitacionToEdit.tramo, 'tramo', 'edit');
+                // --- FIN: Lógica para selección múltiple ---
                 openModal(editModal);
             });
         }
@@ -5113,6 +5170,10 @@
             setupQuickViewTooltip();
             setupAddEditButtons();
             // Listener para el nuevo botón de limpiar filtros
+            // --- INICIO: Configuración de listeners para selección múltiple ---
+            setupMultiSelectListeners('add');
+            setupMultiSelectListeners('edit');
+            // --- FIN: Configuración de listeners ---
             document.getElementById('clear-all-filters-btn').addEventListener('click', () => clearAllFilters('historical'));
 
             // Listener para el botón de cerrar el modal de carga de plantillas
@@ -5278,11 +5339,24 @@
                     return showAlert("Por favor, complete todos los campos obligatorios marcados.", "warning");
                 }
                 
+                // --- INICIO: Lógica para selección múltiple ---
+                // Si hay píldoras, une los valores con saltos de línea.
+                if (multiSelectState.add.proyecto.length > 0) {
+                    document.getElementById('licitacion-proyecto').value = multiSelectState.add.proyecto.join('\n');
+                }
+                if (multiSelectState.add.tramo.length > 0) {
+                    document.getElementById('licitacion-tramo').value = multiSelectState.add.tramo.join('\n');
+                }
+                // --- FIN: Lógica para selección múltiple ---
+
                 const formData = new FormData(licitacionForm);
                 const licitacionData = Object.fromEntries(formData.entries());
                 licitacionData.kmAdjudicados = parseFloat(licitacionData.kmAdjudicados) || 0; // Asegurar que sea número
                 licitacionData.costoPorKm = parseFloat(licitacionData.costoPorKm) || 0; // Asegurar que sea número
                 saveLicitacion(licitacionData, true); // Guardar directamente en el histórico
+                
+                // Limpiar estado de selección múltiple después de guardar
+                resetMultiSelectState('add');
                 closeModal(licitacionModal);
             });
             
@@ -5295,12 +5369,25 @@
                     return showAlert("Por favor, complete todos los campos obligatorios marcados.", "warning");
                 }
                 
+                // --- INICIO: Lógica para selección múltiple ---
+                // Si hay píldoras, une los valores con saltos de línea.
+                if (multiSelectState.edit.proyecto.length > 0) {
+                    document.getElementById('edit-licitacion-proyecto').value = multiSelectState.edit.proyecto.join('\n');
+                }
+                if (multiSelectState.edit.tramo.length > 0) {
+                    document.getElementById('edit-licitacion-tramo').value = multiSelectState.edit.tramo.join('\n');
+                }
+                // --- FIN: Lógica para selección múltiple ---
+
                 const formData = new FormData(editForm);
                 const updateData = Object.fromEntries(formData.entries());
                 updateData.kmAdjudicados = parseFloat(updateData.kmAdjudicados) || 0; // Asegurar que sea número
                 updateData.costoPorKm = parseFloat(updateData.costoPorKm) || 0; // Asegurar que sea número
                 const id = document.getElementById('edit-id').value;
                 
+                // Limpiar estado de selección múltiple después de guardar
+                resetMultiSelectState('edit');
+
                 await updateLicitacion(id, updateData, currentEditIsHistorical);
                 closeModal(editModal);
             });
@@ -5839,6 +5926,103 @@
                 recalculateCardTotals(card);
             });
             updateSummaryBreakdownByTipo(); // 3. Actualizar el desglose del resumen una sola vez al final.
+        }
+
+        // =============================================
+        // MÓDULO: Selección Múltiple (Píldoras/Tags)
+        // =============================================
+
+        /**
+         * Configura los listeners para los botones de añadir (+) y para la eliminación de píldoras.
+         * @param {'add'|'edit'} mode - El modo del formulario ('add' para nuevo, 'edit' para edición).
+         */
+        function setupMultiSelectListeners(mode) {
+            const formPrefix = mode === 'add' ? 'licitacion-' : 'edit-licitacion-';
+
+            // Listener para el botón de añadir Proyecto
+            document.getElementById(`add-proyecto-${mode === 'add' ? 'btn' : 'edit-btn'}`).addEventListener('click', () => {
+                const select = document.getElementById(`${formPrefix}proyecto`);
+                const value = select.value;
+                if (value && !multiSelectState[mode].proyecto.includes(value)) {
+                    multiSelectState[mode].proyecto.push(value);
+                    renderPills('proyecto', mode);
+                    $(select).val(null).trigger('change'); // Limpiar el select
+                }
+            });
+
+            // Listener para el botón de añadir Tramo
+            document.getElementById(`add-tramo-${mode === 'add' ? 'btn' : 'edit-btn'}`).addEventListener('click', () => {
+                const select = document.getElementById(`${formPrefix}tramo`);
+                const value = select.value;
+                if (value && !multiSelectState[mode].tramo.includes(value)) {
+                    multiSelectState[mode].tramo.push(value);
+                    renderPills('tramo', mode);
+                    $(select).val(null).trigger('change'); // Limpiar el select
+                }
+            });
+
+            // Listener delegado para eliminar píldoras de Proyecto
+            document.getElementById(`${formPrefix}proyecto-pills`).addEventListener('click', (e) => {
+                if (e.target.matches('.remove-pill-btn')) {
+                    const valueToRemove = e.target.dataset.value;
+                    multiSelectState[mode].proyecto = multiSelectState[mode].proyecto.filter(item => item !== valueToRemove);
+                    renderPills('proyecto', mode);
+                }
+            });
+
+            // Listener delegado para eliminar píldoras de Tramo
+            document.getElementById(`${formPrefix}tramo-pills`).addEventListener('click', (e) => {
+                if (e.target.matches('.remove-pill-btn')) {
+                    const valueToRemove = e.target.dataset.value;
+                    multiSelectState[mode].tramo = multiSelectState[mode].tramo.filter(item => item !== valueToRemove);
+                    renderPills('tramo', mode);
+                }
+            });
+        }
+
+        /**
+         * Renderiza las píldoras (tags) en su contenedor correspondiente.
+         * @param {'proyecto'|'tramo'} field - El campo para el cual renderizar las píldoras.
+         * @param {'add'|'edit'} mode - El modo del formulario.
+         */
+        function renderPills(field, mode) {
+            const container = document.getElementById(`${mode === 'add' ? 'licitacion' : 'edit-licitacion'}-${field}-pills`);
+            container.innerHTML = '';
+            multiSelectState[mode][field].forEach(item => {
+                const pill = document.createElement('div');
+                pill.className = 'multi-select-pill';
+                pill.innerHTML = `
+                    <span>${item}</span>
+                    <i class="fa-solid fa-times remove-pill-btn" data-value="${item}"></i>
+                `;
+                container.appendChild(pill);
+            });
+        }
+
+        /**
+         * Parsea un string con saltos de línea y lo convierte en píldoras para un campo.
+         * @param {string} text - El texto a parsear (ej. "Proyecto A\nProyecto B").
+         * @param {'proyecto'|'tramo'} field - El campo al que pertenecen los datos.
+         * @param {'add'|'edit'} mode - El modo del formulario.
+         */
+        function parseAndRenderPills(text, field, mode) {
+            if (text && typeof text === 'string' && text.includes('\n')) {
+                const items = text.split('\n').map(s => s.trim()).filter(Boolean);
+                multiSelectState[mode][field] = items;
+            } else if (text) {
+                multiSelectState[mode][field] = [text];
+            }
+            renderPills(field, mode);
+        }
+
+        /**
+         * Limpia el estado de selección múltiple y las píldoras de la UI para un modo de formulario.
+         * @param {'add'|'edit'} mode - El modo del formulario a limpiar.
+         */
+        function resetMultiSelectState(mode) {
+            multiSelectState[mode] = { proyecto: [], tramo: [] };
+            renderPills('proyecto', mode);
+            renderPills('tramo', mode);
         }
 
         /**
