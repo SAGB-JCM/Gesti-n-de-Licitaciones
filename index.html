@@ -6665,6 +6665,41 @@
             if (totalMontoCell) totalMontoCell.textContent = totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
         }
 
+        /**
+         * Maneja los parámetros de la URL al cargar la página para pre-filtrar la aplicación.
+         * Específicamente, puede cambiar a la pestaña "Costos" y seleccionar un proyecto y tramo.
+         */
+        function handleUrlQueryParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            const proyecto = urlParams.get('proyecto');
+            const tramo = urlParams.get('tramo');
+
+            if (tab === 'costos' && proyecto && tramo) {
+                // Usar un timeout para asegurar que todos los datos y la UI estén listos
+                setTimeout(() => {
+                    // 1. Cambiar a la pestaña de Costos
+                    const costosTabButton = document.querySelector('button[data-tab="costos"]');
+                    if (costosTabButton) costosTabButton.click();
+
+                    // 2. Seleccionar el proyecto
+                    if (costosProyectoSelector) {
+                        costosProyectoSelector.value = proyecto;
+                        // Disparar el evento 'change' para que se pueble el selector de tramos
+                        costosProyectoSelector.dispatchEvent(new Event('change'));
+
+                        // 3. Seleccionar el tramo (con otro timeout para dar tiempo a que se pueble)
+                        setTimeout(() => {
+                            if (costosTramoSelector) {
+                                costosTramoSelector.value = tramo;
+                                costosTramoSelector.dispatchEvent(new Event('change'));
+                            }
+                        }, 200); // Un pequeño delay es suficiente
+                    }
+                }, 500); // Delay inicial para asegurar que todo esté cargado
+            }
+        }
+
         // =============================================
         // MÓDULO: Inicialización
         // =============================================
@@ -6758,6 +6793,9 @@
             setupFalloDashboardFilter();
             setupDynamicDatePicker();
             
+            // Manejar parámetros de URL para filtrado automático
+            handleUrlQueryParameters();
+
             setupCostosTabListeners();
             // --- Lógica de Autenticación ---
             loginBtn.addEventListener('click', () => {
