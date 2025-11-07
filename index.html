@@ -4360,13 +4360,6 @@
                 updateCharts(); // Actualiza los gráficos de reportes
                 updateFalloDashboard(selectedBaseDate); // Actualiza el radar con la fecha base actual
                 updateDynamicSelectOptions();
-
-                // --- INICIO: Notificar al padre que el iframe está listo ---
-                // Si esta ventana es un iframe, envía un mensaje a su padre.
-                if (window.self !== window.top) {
-                    window.parent.postMessage({ status: 'ready' }, '*');
-                }
-                // --- FIN: Notificar al padre ---
             }, (error) => console.error("Error en listener de histórico:", error));
         }
 
@@ -6834,20 +6827,6 @@
             
             // Manejar parámetros de URL para filtrado automático
             handleUrlQueryParameters();
-
-            // --- INICIO: Notificar al padre que la app está lista (si no hay datos) ---
-            // Si la app se carga y no hay datos en el listener de snapshot,
-            // es posible que nunca se envíe el mensaje 'ready'.
-            // Añadimos un fallback para asegurar la comunicación.
-            setTimeout(() => {
-                if (window.self !== window.top) {
-                    // Si después de un tiempo prudencial no se ha enviado el mensaje 'ready'
-                    // (porque no hay datos), lo enviamos de todas formas.
-                    // La app padre puede entonces intentar enviar los filtros.
-                    window.parent.postMessage({ status: 'ready' }, '*');
-                }
-            }, 2000); // 2 segundos es un tiempo razonable de espera.
-            // --- FIN: Notificar al padre ---
 
             setupCostosTabListeners();
             // --- Lógica de Autenticación ---
