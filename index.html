@@ -6694,11 +6694,47 @@
                                 costosTramoSelector.value = tramo;
                                 costosTramoSelector.dispatchEvent(new Event('change'));
                             }
-                        }, 200); // Un pequeño delay es suficiente
+                        }, 2000); // Un pequeño delay es suficiente
                     }
-                }, 500); // Delay inicial para asegurar que todo esté cargado
+                }, 3000); // Delay inicial para asegurar que todo esté cargado
             }
         }
+
+        // =================================================================
+        // MÓDULO: Comunicación Inter-aplicaciones (postMessage)
+        // =================================================================
+        /**
+         * Escucha los mensajes enviados desde una ventana padre (como la APP DE FICHAS).
+         * Esto permite que la APP DE FICHAS controle los filtros de esta aplicación
+         * después de que se haya cargado completamente.
+         */
+        window.addEventListener('message', (event) => {
+            // Por seguridad, podrías verificar el origen del mensaje con:
+            // if (event.origin !== 'https://tu-dominio-de-fichas.com') return;
+            
+            const message = event.data;
+
+            if (message && message.action === 'selectFilters' && message.payload) {
+                const { proyecto, tramo } = message.payload;
+
+                // 1. Cambiar a la pestaña de Costos
+                const costosTabButton = document.querySelector('button[data-tab="costos"]');
+                if (costosTabButton) {
+                    costosTabButton.click();
+                }
+
+                // 2. Seleccionar el proyecto y tramo en los selectores de la pestaña de Costos.
+                // Usamos un pequeño timeout para asegurar que la pestaña ha cambiado y los selectores están listos.
+                setTimeout(() => {
+                    if (costosProyectoSelector) costosProyectoSelector.value = proyecto;
+                    if (costosProyectoSelector) costosProyectoSelector.dispatchEvent(new Event('change')); // Dispara el evento para poblar tramos
+                    setTimeout(() => { // Segundo timeout para dar tiempo a que se pueble el selector de tramos
+                        if (costosTramoSelector) costosTramoSelector.value = tramo;
+                        if (costosTramoSelector) costosTramoSelector.dispatchEvent(new Event('change')); // Dispara el evento para cargar el dashboard
+                    }, 200);
+                }, 100);
+            }
+        });
 
         // =============================================
         // MÓDULO: Inicialización
