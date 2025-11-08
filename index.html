@@ -836,7 +836,7 @@
         <div class="login-card">
             <!-- Columna de Arte y Logo -->
             <div class="login-art">
-                <img src="https://github.com/SAGB-JCM/Fichas-Propuestas/blob/main/unnamed.png?raw=true" alt="Logo Sistema Licitaciones" class="h-40 w-auto">
+                <img src="https://github.com/SAGB-JCM/Fichas-Propuestas/blob/main/unnamed.png?raw=true" alt="Logo Sistema Licitaciones" class="h-45 w-auto">
                 <h2 class="text-2xl font-bold text-center mb-2">Seguimiento de Licitaciones de Proyectos Ferroviarios</h2>
                 <p class="text-center text-sm opacity-80">Bienvenido. Por favor, inicie sesión para continuar.</p>
             </div>
@@ -880,7 +880,7 @@
         <header class="bg-primary shadow-lg sticky top-0 z-30">
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <img src="https://github.com/SAGB-JCM/Fichas-Propuestas/blob/main/unnamed.png?raw=true" alt="Logo Sistema Licitaciones" class="h-40 w-auto">
+                    <img src="https://github.com/SAGB-JCM/Gesti-n-de-Licitaciones/blob/main/icono_licitaciones.png?raw=true" alt="Logo Sistema Licitaciones" class="h-16 w-auto">
                     <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Seguimiento de Licitaciones de Proyectos Ferroviarios</h1>
                 </div>
                 <!-- Contenedor para mostrar información del usuario (ej. ID anónimo) -->
@@ -1982,12 +1982,6 @@
         let dynamicChartSortBy = 'amount'; // 'count' o 'amount'
         let projectChartSortBy = 'amount'; // 'count' o 'amount'
         // --- FIN: Variables para el ordenamiento dinámico ---
-        // =============================================
-        // MÓDULO: Filtros de URL
-        // =============================================
-        // Variable para almacenar temporalmente los filtros de la URL
-        // hasta que la aplicación esté lista para aplicarlos.
-        let urlFiltersToApply = null;
         // =============================================
         // MÓDULO: Normalización de Filtros
         // =============================================
@@ -4308,28 +4302,6 @@
         }
 
         /**
-         * @summary Aplica los filtros que se encontraron en la URL al cargar la página.
-         * Se llama después de que los datos de Firebase se han cargado para evitar condiciones de carrera.
-         */
-        function applyUrlFiltersIfPresent() {
-            if (urlFiltersToApply) {
-                const { tab, proyecto, tramo } = urlFiltersToApply;
-
-                // Usar timeouts cortos para asegurar que la UI se actualice en el orden correcto.
-                setTimeout(() => {
-                    // 1. Cambiar a la pestaña de Costos
-                    const costosTabButton = document.querySelector(`button[data-tab="${tab}"]`);
-                    if (costosTabButton) costosTabButton.click();
-
-                    // 2. Seleccionar el proyecto y tramo (ahora los selectores ya tienen datos)
-                    if (costosProyectoSelector) costosProyectoSelector.value = proyecto;
-                    if (costosProyectoSelector) costosProyectoSelector.dispatchEvent(new Event('change'));
-                    if (costosTramoSelector) costosTramoSelector.value = tramo;
-                    if (costosTramoSelector) costosTramoSelector.dispatchEvent(new Event('change'));
-             }
-        }
-
-        /**
          * @summary Inicializa la autenticación de Firebase. Reutiliza la sesión existente o crea una anónima si no hay ninguna.
          */
          function initializeAppWithAuth() {
@@ -4395,11 +4367,6 @@
                     window.parent.postMessage({ status: 'ready' }, '*');
                 }
                 // --- FIN: Notificar al padre ---
-            }, (error) => console.error("Error en listener de histórico:", error));
-        }
-        // --- FIN: Notificar al padre ---
-
-                applyUrlFiltersIfPresent(); // Aplicar filtros de URL ahora que los datos están listos
             }, (error) => console.error("Error en listener de histórico:", error));
         }
 
@@ -6710,18 +6677,29 @@
          * Específicamente, puede cambiar a la pestaña "Costos" y seleccionar un proyecto y tramo.
          */
         function handleUrlQueryParameters() {
-            // Lee los parámetros de la URL (tanto '?' como '#')
-            const paramsString = window.location.search.substring(1) || window.location.hash.substring(1);
-            const urlParams = new URLSearchParams(paramsString);
+            const urlParams = new URLSearchParams(window.location.search);
             const tab = urlParams.get('tab');
             const proyecto = urlParams.get('proyecto');
             const tramo = urlParams.get('tramo');
 
             if (tab === 'costos' && proyecto && tramo) {
-                // En lugar de aplicar los filtros directamente, los guardamos para más tarde.
-                // Esto evita la condición de carrera con la carga de datos de Firebase.
-                console.log("Filtros de URL detectados. Guardando para aplicar más tarde:", { tab, proyecto, tramo });
-                urlFiltersToApply = { tab, proyecto, tramo };
+                // Usar timeouts cortos para asegurar que la UI se actualice en el orden correcto.
+                setTimeout(() => {
+                    // 1. Cambiar a la pestaña de Costos
+                    const costosTabButton = document.querySelector('button[data-tab="costos"]');
+                    if (costosTabButton) costosTabButton.click();
+
+                    // 2. Seleccionar el proyecto
+                    if (costosProyectoSelector) {
+                        costosProyectoSelector.value = proyecto;
+                        costosProyectoSelector.dispatchEvent(new Event('change')); // Dispara el evento para poblar tramos
+                        // 3. Seleccionar el tramo (con otro timeout para dar tiempo a que se pueble)
+                        setTimeout(() => {
+                            if (costosTramoSelector) costosTramoSelector.value = tramo;
+                            if (costosTramoSelector) costosTramoSelector.dispatchEvent(new Event('change')); // Dispara el evento para cargar el dashboard
+                        }, 200);
+                    }
+                }, 100); // Delay inicial para asegurar que la pestaña ha cambiado.
             }
         }
 
