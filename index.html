@@ -6631,7 +6631,7 @@
                         </thead>
                         <tbody>
                             ${data.map(item => `
-                                <tr class="border-b" data-id="${item.id}">
+                                <tr class="border-b hover:bg-slate-100" data-id="${item.id}" style="cursor: pointer;" title="Doble clic para ver detalles">
                                     <td class="py-2 px-1 text-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" data-child-checkbox-of="${(typeof title === 'object' && title.isJoint) ? item.tipo : tipo}" data-monto="${item.monto || 0}" data-km="${item.kmAdjudicados || 0}" checked></td>
                                     <td class="py-2 px-3">${item.siglasDependencia || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.nombre || 'N/A'}</td>
