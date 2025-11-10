@@ -6403,8 +6403,8 @@
                                  <p class="text-2xl font-bold text-secondary mt-1">${totalKmAdjudicadosGeneral.toLocaleString('es-MX')} km</p>
                                  <p class="text-md text-slate-600">Suma de KM de licitaciones tipo "1.1 Obra"</p>
                              </div>
-                             <div id="km-obra-details" class="summary-card-content">
-                                 <ul class="text-sm space-y-1 mt-2 border-t pt-2">
+                             <div class="summary-card-content">
+                                 <ul id="km-obra-details-list" class="text-sm space-y-1 mt-2 border-t pt-2">
                                      ${licitacionesDeObra.map(lic => `                                         
                                          <li class="flex justify-between items-center"><span class="text-slate-600 truncate pr-2 flex-grow" title="${lic.nombre}">${lic.nombre}:</span> <span class="font-semibold text-secondary ml-2 flex-shrink-0">${(parseFloat(lic.kmAdjudicados) || 0).toLocaleString('es-MX')} km</span></li>
                                      `).join('')}
@@ -6478,10 +6478,11 @@
          * Recalcula y actualiza el costo total del tramo mostrado en la tarjeta de resumen.
          * Se basa en los checkboxes seleccionados en la lista de desglose.
          */
-        function updateCostoTotalTramo() {
+        function updateCostoTotalTramo() { // REFACTORIZADO para actualizar también la lista de KM de obra
             // 1. Selecciona TODOS los checkboxes marcados en las tablas de detalle.
             const todosLosCheckboxesMarcados = document.querySelectorAll('#costos-cards-grid .bg-slate-50 tbody input[type="checkbox"]:checked');
             
+            const licitacionesDeObraSeleccionadas = [];
             let nuevoTotalGeneral = 0;
             let nuevoTotalKmObra = 0; // Variable para sumar los KM de obra.
             
@@ -6495,6 +6496,13 @@
                 const card = checkbox.closest('[data-tipo-licitacion]');
                 if (card && card.dataset.tipoLicitacion === "1.1 Obra") {
                     nuevoTotalKmObra += parseFloat(checkbox.dataset.km) || 0;
+                    // Encontrar la fila y extraer el nombre para la lista
+                    const row = checkbox.closest('tr');
+                    const nombreLicitacion = row.querySelector('td:nth-child(3)').textContent;
+                    licitacionesDeObraSeleccionadas.push({
+                        nombre: nombreLicitacion,
+                        km: parseFloat(checkbox.dataset.km) || 0
+                    });
                 }
             });
             
@@ -6502,10 +6510,20 @@
             document.getElementById('costo-tramo-total-display').textContent = nuevoTotalGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
             document.getElementById('costo-tramo-total-millones-display').textContent = `(${(nuevoTotalGeneral / 1000000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Millones)`;
 
-            // 4. Actualiza la tarjeta de "KM Adjudicados (Solo Obra)".
+            // 4. Actualiza la tarjeta de "KM Adjudicados (Solo Obra)" y su lista desplegable.
             const kmDisplayElement = document.querySelector('.summary-card-container .bg-yellow-50 .text-2xl');
             if (kmDisplayElement) {
                 kmDisplayElement.textContent = `${nuevoTotalKmObra.toLocaleString('es-MX')} km`;
+            }
+            
+            const kmDetailsList = document.getElementById('km-obra-details-list');
+            if (kmDetailsList) {
+                kmDetailsList.innerHTML = licitacionesDeObraSeleccionadas.map(lic => `
+                    <li class="flex justify-between items-center">
+                        <span class="text-slate-600 truncate pr-2 flex-grow" title="${lic.nombre}">${lic.nombre}:</span>
+                        <span class="font-semibold text-secondary ml-2 flex-shrink-0">${lic.km.toLocaleString('es-MX')} km</span>
+                    </li>
+                `).join('');
             }
 
             // 5. Calcula y actualiza la tarjeta de "Costo Total por KM (Obra)".
