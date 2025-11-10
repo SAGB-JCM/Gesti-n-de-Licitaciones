@@ -5479,7 +5479,7 @@
                 document.body.removeChild(fileInput);
             }
 
-        licitacionTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, false));
+            licitacionTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, false));
 
             historicalTableBody.addEventListener('click', e => {
                 const target = e.target.closest('button');
@@ -5489,7 +5489,10 @@
                 if (target.classList.contains('generate-doc-btn')) handleGenerateDocClick(target);
             });
 
-        historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
+            historicalTableBody.addEventListener('dblclick', (e) => handleRowDoubleClick(e, true));
+
+            // Listener para el doble clic en las tablas de la pestaña de costos
+            costosCardsGrid.addEventListener('dblclick', handleCostosRowDoubleClick);
 
             cancelDeleteBtn.addEventListener('click', () => {
                 closeModal(confirmModal);
@@ -5922,6 +5925,25 @@
                 }
                 // --- FIN DE LA MODIFICACIÓN FINAL ---
             });
+        }
+
+        /**
+         * Maneja el evento de doble clic en las tablas de la pestaña de Costos.
+         * Abre el modal de detalles para la licitación correspondiente.
+         * @param {MouseEvent} e - El evento de doble clic.
+         */
+        function handleCostosRowDoubleClick(e) {
+            // Excluir clics en el checkbox o su celda contenedora
+            if (e.target.closest('input[type="checkbox"]') || e.target.closest('td:first-child')) {
+                return;
+            }
+
+            const row = e.target.closest('tr[data-id]');
+            if (!row) return;
+
+            const licitacionId = row.dataset.id;
+            const licitacionItem = historicalLicitaciones.find(item => item.id === licitacionId);
+            if (licitacionItem) showDetailsModal(licitacionItem, true);
         }
 
         /**
@@ -6599,10 +6621,8 @@
                         </thead>
                         <tbody>
                             ${data.map(item => `
-                                <tr class="border-b">
-                                    <td class="py-2 px-1 text-center">
-                                        <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" data-child-checkbox-of="${(typeof title === 'object' && title.isJoint) ? item.tipo : tipo}" data-monto="${item.monto || 0}" data-km="${item.kmAdjudicados || 0}" checked>
-                                    </td>
+                                <tr class="border-b" data-id="${item.id}">
+                                    <td class="py-2 px-1 text-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" data-child-checkbox-of="${(typeof title === 'object' && title.isJoint) ? item.tipo : tipo}" data-monto="${item.monto || 0}" data-km="${item.kmAdjudicados || 0}" checked></td>
                                     <td class="py-2 px-3">${item.siglasDependencia || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.nombre || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.procedimientoContratacion || 'N/A'}</td>
