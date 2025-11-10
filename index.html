@@ -6737,6 +6737,20 @@
                     }, 200);
                 }, 100);
             }
+            // --- INICIO: Manejo del mensaje para aplicar estilos (zoom) ---
+            else if (message && message.action === 'applyStyles' && message.payload) {
+                const { target, styles } = message.payload;
+                if (target === 'body' && styles && styles.zoom) {
+                    const zoomValue = styles.zoom;
+                    // Aplicar el zoom al body de esta ventana (el iframe)
+                    document.body.style.zoom = zoomValue;
+                    console.log(`APP DE LICITACIONES: Aplicado zoom de ${zoomValue} al body.`);
+                } else {
+                    console.warn('APP DE LICITACIONES: Mensaje applyStyles recibido con payload inválido:', message.payload);
+                }
+            }
+            // --- FIN: Manejo del mensaje para aplicar estilos (zoom) ---
+
         });
 
         // =============================================
