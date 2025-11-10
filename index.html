@@ -3035,7 +3035,7 @@
                                 <th>Tipo de Procedimiento</th>
                                 <th>Tipo de Contratación</th>
                                 <th>Monto Adjudicado</th>
-                                <th>Km Adjudicados</th>
+                                <th>Km Aplicables</th>
                                 <th>Costo Aprox. Por Km</th>
                             </tr>
                         </thead>
@@ -3184,7 +3184,7 @@
                                     <th>Tipo de Procedimiento</th>
                                     <th>Tipo de Contratación</th>
                                     <th>Monto Adjudicado</th>
-                                    <th>Km Adjudicados</th>
+                                    <th>Km Aplicables</th>
                                     <th>Costo Aprox. Por Km</th>
                                 </tr>
                             </thead>
@@ -3371,6 +3371,7 @@
                     palabra_clave_13: record.nombreLicitantes || 'No especificado',
                     palabra_clave_14: record.ganadorLicitacion || 'No especificado',
                     palabra_clave_15: record.monto ? '$' + Number(record.monto).toLocaleString('es-MX') : 'No especificado',
+                    palabra_clave_15_0: record.kmAdjudicados ? Number(record.kmAdjudicados).toLocaleString('es-MX') : 'No especificado', // KM Adjudicados
                     palabra_clave_15_1: record.costoPorKm ? '$' + Number(record.costoPorKm).toLocaleString('es-MX') : 'No especificado', // Nuevo campo
                     palabra_clave_16: record.linkComprasXM || 'No especificado',
                 };
