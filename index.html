@@ -216,6 +216,12 @@
             color: var(--primary-color);
         }
 
+        /* Estilo para filas de tabla interactivas (doble clic) */
+        #historical-table-body tr[data-id] {
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
         /* Contenedor del menú desplegable para los filtros de columna. */
         .filter-dropdown {
             position: absolute;
@@ -232,6 +238,7 @@
         .clickable-cell {
             cursor: pointer;
             font-weight: 500;
+            color: var(--primary-color); /* Make it look clickable */
             transition: all 0.2s ease-in-out;
         }
         
@@ -2332,11 +2339,9 @@
                     (licitacionItem.tramo && String(licitacionItem.tramo).includes('\n'))) {
                     row.classList.add('main-table-row-with-linebreak');
                 }
-
                 // Añadir atributos de datos para el tooltip de vista rápida
                 // SOLUCIÓN: Añadir el ID directamente a la fila para un acceso fiable.
                 row.dataset.id = licitacionItem.id;
-
                 row.dataset.quickview = 'true';
                 
                 row.dataset.nombre = licitacionItem.nombre || 'N/A';
@@ -6090,6 +6095,11 @@
                 const monto = licitacionItem.monto ? '$' + Number(licitacionItem.monto).toLocaleString('es-MX') : 'N/A';
                 // Construcción del contenido del tooltip usando la función auxiliar
                 quickViewTooltip.innerHTML = `
+                    ${(licitacionItem.proyecto && String(licitacionItem.proyecto).includes('\n')) || 
+                      (licitacionItem.tramo && String(licitacionItem.tramo).includes('\n'))
+                      ? '<p class="text-xs text-red-500 mb-2">Licitación Múltiple</p>'
+                      : ''
+                    }
                     <p><strong>Dependencia:</strong> ${truncateText(licitacionItem.siglasDependencia, 100)}</p>
                     <p><strong>Proyecto:</strong> ${truncateText(licitacionItem.proyecto, 100)}</p>
                     <p><strong>Tramo:</strong> ${truncateText(licitacionItem.tramo, 100)}</p>
