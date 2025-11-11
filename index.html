@@ -6410,6 +6410,7 @@
                                                     <input type="checkbox" id="master-checkbox-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}-multi" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mr-2" data-monto="${costosPorTipoMultiples[tipo]}" data-master-checkbox-for="${tipo}--multi" checked>
                                                     <span class="truncate text-white/80 text-xs">(Múltiples)</span>
                                                 </label>
+                                                <span class="font-semibold text-white/80 text-xs ml-2" data-summary-tipo="${tipo}--multi">${(costosPorTipoMultiples[tipo] || 0).toLocaleString('es-MX', { style: 'currency', 'currency': 'MXN' })}</span>
                                             </li>
                                           ` : ''}
                                         `;
