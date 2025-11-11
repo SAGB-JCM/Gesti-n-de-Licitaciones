@@ -6373,8 +6373,23 @@
                  <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-primary mb-8">
                      <h3 class="text-xl font-bold text-primary mb-4 text-center">Resumen Financiero del Tramo: ${tramo}</h3>
                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 summary-card-container">
+                         <!-- Card KM Adjudicados (Obra) - Color Secondary -->
+                         <div class="bg-secondary text-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow" title="Clic para desplegar">
+                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this, event)">
+                                 <p class="text-sm font-medium text-white/80">KM Adjudicados (Solo Obra) <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
+                                 <p class="text-2xl font-bold mt-1">${totalKmAdjudicadosGeneral.toLocaleString('es-MX')} km</p>
+                                 <p class="text-md text-white/90">Suma de KM de licitaciones tipo "1.1 Obra"</p>
+                             </div>
+                             <div class="summary-card-content">
+                                 <ul id="km-obra-details-list" class="text-sm space-y-1 mt-2 border-t pt-2">
+                                     ${licitacionesDeObra.map(lic => `                                         
+                                         <li class="flex justify-between items-center"><span class="text-white/90 truncate pr-2 flex-grow" title="${lic.nombre}">${lic.nombre}:</span> <span class="font-semibold text-white ml-2 flex-shrink-0">${(parseFloat(lic.kmAdjudicados) || 0).toLocaleString('es-MX')} km</span></li>
+                                     `).join('')}
+                                 </ul>
+                             </div>
+                         </div>
                          <!-- Card Costo Total (Monto) - Color Success -->
-                         <div class="bg-success text-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                         <div class="bg-success text-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow" title="Clic para desplegar">
                              <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this, event)">
                                  <p class="text-sm font-medium text-white/80">Costo Total del Tramo <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
                                  <p id="costo-tramo-total-display" class="text-2xl font-bold mt-1">${totalMontoGeneral.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</p>                                 
@@ -6392,21 +6407,6 @@
                                              </label>
                                              <span class="font-semibold text-white ml-2" data-summary-tipo="${tipo}">${monto.toLocaleString('es-MX', { style: 'currency', 'currency': 'MXN' })}</span>
                                          </li>
-                                     `).join('')}
-                                 </ul>
-                             </div>
-                         </div>
-                         <!-- Card KM Adjudicados (Obra) - Color Secondary -->
-                         <div class="bg-secondary text-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                             <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this, event)">
-                                 <p class="text-sm font-medium text-white/80">KM Adjudicados (Solo Obra) <i class="fa-solid fa-chevron-down fa-xs ml-1"></i></p>
-                                 <p class="text-2xl font-bold mt-1">${totalKmAdjudicadosGeneral.toLocaleString('es-MX')} km</p>
-                                 <p class="text-md text-white/90">Suma de KM de licitaciones tipo "1.1 Obra"</p>
-                             </div>
-                             <div class="summary-card-content">
-                                 <ul id="km-obra-details-list" class="text-sm space-y-1 mt-2 border-t pt-2">
-                                     ${licitacionesDeObra.map(lic => `                                         
-                                         <li class="flex justify-between items-center"><span class="text-white/90 truncate pr-2 flex-grow" title="${lic.nombre}">${lic.nombre}:</span> <span class="font-semibold text-white ml-2 flex-shrink-0">${(parseFloat(lic.kmAdjudicados) || 0).toLocaleString('es-MX')} km</span></li>
                                      `).join('')}
                                  </ul>
                              </div>
