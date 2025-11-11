@@ -1205,14 +1205,19 @@
             <div id="tab-content-costos" class="tab-content hidden">
                 <section class="bg-white p-8 rounded-xl shadow-md">
                     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <h2 class="text-2xl font-bold text-primary">Análisis de Costos por KM</h2>
-                        <div class="flex items-center gap-4 w-full md:w-auto">
-                            <select id="costos-proyecto-selector" class="w-full md:w-80 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                                <option value="">-- Seleccione un Proyecto --</option>
-                            </select>
-                            <select id="costos-tramo-selector" class="w-full md:w-80 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" disabled>
-                                <option value="">-- Seleccione un Tramo --</option>
-                            </select>
+                        <h2 class="text-2xl font-bold text-primary">Análisis de Costos por KM</h2>                        
+                        <div class="flex items-center gap-4 w-full md:w-auto flex-wrap justify-end">
+                            <div class="flex items-center gap-4">
+                                <select id="costos-proyecto-selector" class="w-full md:w-80 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="">-- Seleccione un Proyecto --</option>
+                                </select>
+                                <select id="costos-tramo-selector" class="w-full md:w-80 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" disabled>
+                                    <option value="">-- Seleccione un Tramo --</option>
+                                </select>
+                            </div>
+                            <button id="view-ficha-btn" class="bg-secondary hover:bg-secondary-dark text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all duration-200 ease-in-out flex items-center space-x-2 whitespace-nowrap hidden">
+                                <i class="fa-solid fa-file-invoice"></i><span>Ver Ficha del Tramo</span>
+                            </button>
                         </div>
                     </div>
 
@@ -1797,6 +1802,25 @@
         </div>
     </div>
 
+    <!-- MODAL PARA IFRAME DE FICHAS -->
+    <div id="ficha-iframe-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 overflow-y-auto h-full w-full z-[60] flex items-center justify-center p-4">
+        <div class="relative bg-white rounded-lg shadow-xl w-full h-full max-w-7xl mx-auto flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b gap-4">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-xl font-bold text-primary">Visor de Fichas de Trabajo</h3>
+                    <a id="go-to-fichas-site-btn" href="#" target="_blank" class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1 px-3 rounded-lg transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>Ir al Sitio de Fichas</span>
+                    </a>
+                </div>
+                <button id="close-ficha-iframe-modal-btn" class="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
+                    <i class="fa-solid fa-times-circle fa-lg"></i>
+                </button>
+            </div>
+            <div class="flex-grow p-2"><iframe id="ficha-iframe" class="w-full h-full border-0 rounded-b-lg"></iframe></div>
+        </div>
+    </div>
+
     <!-- DATALIST GLOBAL: Contiene las opciones para el campo de año de publicación. -->
     <datalist id="anos-datalist">
         <option value="2017"></option>
@@ -1914,7 +1938,7 @@
         let loader, appContainer, userInfo, tabsContainer, tabContents, addLicitacionBtn, licitacionTableBody, noLicitacionMessage, historicalTableBody, noHistoricalMessage, historicalFileInput, historicalFileName, dynamicChartCanvas, dynamicChartVariable, toggleLabelsBtn, dynamicTableBody, dynamicTableHeader, dynamicChart, licitacionModal, licitacionForm, closeModalBtn, editModal, editForm, closeEditModalBtn, confirmModal, cancelDeleteBtn, confirmDeleteBtn, replaceHistoricalModal, cancelReplaceBtn, confirmReplaceBtn, editOptionModal, editOptionInput, cancelEditOptionBtn, confirmEditOptionBtn, passwordModal, passwordInput, cancelPasswordBtn, confirmPasswordBtn, webviewModal, webviewFrame, closeWebviewBtn, uploadTemplateBtn, viewDetailsModal, closeDetailsModalBtn, detailsModalContent, templateUploadModal, closeTemplateUploadModalBtn, multiDetailsModal, closeMultiDetailsModalBtn, multiDetailsContentContainer;
 
         // --- Variables para el login ---
-        let loginScreen, loginForm, loginBtn, logoutBtn, userEmailSpan, loginError, togglePasswordVisibility;
+        let loginScreen, loginForm, loginBtn, logoutBtn, userEmailSpan, loginError, togglePasswordVisibility, fichaIframeModal, closeFichaIframeModalBtn, fichaIframe, goToFichasSiteBtn, viewFichaBtn;
 
         // --- INICIO: Variables para la nueva funcionalidad ---
         let reportSettingsModal, reportSettingsBtn, closeReportSettingsModalBtn, openTemplateUploaderBtn;
@@ -6276,12 +6300,15 @@
             costosProyectoSelector.addEventListener('change', () => {
                 const selectedProyecto = costosProyectoSelector.value;
                 populateCostosTramoSelector(selectedProyecto);
-                // Resetear la vista si se cambia el proyecto
+                // Resetear la vista y ocultar el botón si se cambia el proyecto
                 costosDashboardContainer.classList.add('hidden');
                 noCostosSelected.classList.remove('hidden');
+                viewFichaBtn.classList.add('hidden');
             });
 
             costosTramoSelector.addEventListener('change', () => {
+                // Mostrar u ocultar el botón según si hay un tramo seleccionado
+                viewFichaBtn.classList.toggle('hidden', !costosTramoSelector.value);
                 const selectedProyecto = costosProyectoSelector.value;
                 const selectedTramo = costosTramoSelector.value;
                 if (selectedProyecto && selectedTramo) {
@@ -6289,6 +6316,60 @@
                 }
             });
         }
+
+        /**
+         * @summary Abre el modal del visor de fichas y envía los filtros al iframe.
+         * @param {string} proyecto - El nombre del proyecto ferroviario a filtrar.
+         * @param {string} tramo - El nombre del tramo correspondiente a filtrar.
+         */
+        function openFichaViewer(proyecto, tramo) {
+            // 1. Abrir el modal del iframe inmediatamente.
+            openModal(fichaIframeModal);
+
+            // 2. Preparar la URL base para el botón "Ir al Sitio".
+            const siteUrlBase = `https://sagb-jcm.github.io/Fichas-Propuestas/`;
+            
+            // 3. Clonar y reemplazar para eliminar listeners anteriores y tener control total.
+            const newGoToSiteBtn = goToFichasSiteBtn.cloneNode(true);
+            goToFichasSiteBtn.parentNode.replaceChild(newGoToSiteBtn, goToFichasSiteBtn);
+            goToFichasSiteBtn = newGoToSiteBtn; // Actualizar la referencia
+
+            goToFichasSiteBtn.href = siteUrlBase;
+
+            goToFichasSiteBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                const newTab = window.open(siteUrlBase, '_blank');
+                
+                const handleNewTabReady = (messageEvent) => {
+                    if (messageEvent.source === newTab && messageEvent.data.status === 'ready') {
+                        newTab.postMessage({ action: 'selectFilters', payload: { proyecto, tramo } }, '*');
+                        window.removeEventListener('message', handleNewTabReady);
+                    }
+                };
+                window.addEventListener('message', handleNewTabReady);
+            });
+
+            // 4. Configurar el iframe para recibir los filtros cuando esté listo.
+            fichaIframe.onload = () => {
+                const handleIframeReady = (event) => {
+                    if (event.source === fichaIframe.contentWindow && event.data.status === 'ready') {
+                        const filterMessage = { action: 'selectFilters', payload: { proyecto, tramo } };
+                        fichaIframe.contentWindow.postMessage(filterMessage, '*');
+                        
+                        const styleMessage = { action: 'applyStyles', payload: { target: 'body', styles: { zoom: '163%' } } };
+                        fichaIframe.contentWindow.postMessage(styleMessage, '*');
+                        
+                        window.removeEventListener('message', handleIframeReady);
+                    }
+                };
+                window.addEventListener('message', handleIframeReady);
+            };
+
+            // 5. Asignar el src al iframe para iniciar la carga.
+            fichaIframe.src = siteUrlBase;
+        }
+
+
 
         /**
          * Puebla el selector de proyectos en la pestaña de Costos.
@@ -6955,6 +7036,14 @@
             loginError = document.getElementById('login-error');
             togglePasswordVisibility = document.getElementById('toggle-password-visibility');
 
+            // --- Asignación de elementos para el nuevo modal de fichas ---
+            fichaIframeModal = document.getElementById('ficha-iframe-modal');
+            closeFichaIframeModalBtn = document.getElementById('close-ficha-iframe-modal-btn');
+            fichaIframe = document.getElementById('ficha-iframe');
+            goToFichasSiteBtn = document.getElementById('go-to-fichas-site-btn');
+            viewFichaBtn = document.getElementById('view-ficha-btn');
+
+
             // --- INICIO: Asignación de elementos para la nueva funcionalidad ---
             reportSettingsModal = document.getElementById('report-settings-modal');
             reportSettingsBtn = document.getElementById('report-settings-btn');
@@ -6983,6 +7072,27 @@
             
             // Manejar parámetros de URL para filtrado automático
             handleUrlQueryParameters();
+
+            // --- INICIO: Listeners para el nuevo modal de fichas ---
+            viewFichaBtn.addEventListener('click', () => {
+                const selectedProyecto = costosProyectoSelector.value;
+                const selectedTramo = costosTramoSelector.value;
+                if (selectedProyecto && selectedTramo) {
+                    openFichaViewer(selectedProyecto, selectedTramo);
+                } else {
+                    showAlert("Por favor, seleccione un proyecto y un tramo.", "warning");
+                }
+            });
+
+            const closeFichaModal = () => {
+                if (fichaIframe) fichaIframe.src = 'about:blank';
+                closeModal(fichaIframeModal);
+            };
+
+            closeFichaIframeModalBtn.addEventListener('click', closeFichaModal);
+            fichaIframeModal.addEventListener('click', (e) => { if (e.target === fichaIframeModal) closeFichaModal(); });
+            // --- FIN: Listeners para el nuevo modal de fichas ---
+
 
             // --- INICIO: Notificar al padre que la app está lista (si no hay datos) ---
             // Si la app se carga y no hay datos en el listener de snapshot,
