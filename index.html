@@ -6307,8 +6307,11 @@
             });
 
             costosTramoSelector.addEventListener('change', () => {
-                // Mostrar u ocultar el botón según si hay un tramo seleccionado
-                viewFichaBtn.classList.toggle('hidden', !costosTramoSelector.value);
+                // --- INICIO: Lógica de visibilidad del botón de ficha ---
+                // El botón solo se muestra si se ha seleccionado un tramo Y la app NO está en un iframe.
+                const isInIframe = window.self !== window.top;
+                viewFichaBtn.classList.toggle('hidden', !costosTramoSelector.value || isInIframe);
+                // --- FIN: Lógica de visibilidad ---
                 const selectedProyecto = costosProyectoSelector.value;
                 const selectedTramo = costosTramoSelector.value;
                 if (selectedProyecto && selectedTramo) {
