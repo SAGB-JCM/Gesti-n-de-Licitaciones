@@ -5894,18 +5894,23 @@
                 const tipo = masterCheckbox.dataset.masterCheckboxFor;
                 const isChecked = masterCheckbox.checked;
 
-                // 1. Seleccionar y actualizar todos los checkboxes hijos (en las filas)
+                // 1. Seleccionar y actualizar todos los checkboxes hijos (en las filas).
                 const childCheckboxes = document.querySelectorAll(`[data-child-checkbox-of="${tipo}"]`);
                 childCheckboxes.forEach(child => {
                     child.checked = isChecked;
                 });
 
                 // 2. Seleccionar y actualizar el checkbox del encabezado de la tabla correspondiente
-                const detailCard = document.querySelector(`.bg-slate-50[data-tipo-licitacion="${tipo}"]`);
-                if (detailCard) {
-                    const headerCheckbox = detailCard.querySelector('thead input[type="checkbox"]');
+                // Para tipos múltiples, debemos encontrar todas las tablas que contienen esos hijos.
+                const tablesToUpdate = new Set();
+                childCheckboxes.forEach(child => {
+                    const table = child.closest('table');
+                    if (table) tablesToUpdate.add(table);
+                });
+                tablesToUpdate.forEach(table => {
+                    const headerCheckbox = table.querySelector('thead input[type="checkbox"]');
                     if (headerCheckbox) headerCheckbox.checked = isChecked;
-                }
+                });
                 // Después de cambiar el estado de los hijos, recalcular todos los totales
                 updateAllCostTotals();
             });
@@ -6531,12 +6536,12 @@
         // --- INICIO: Nueva función para actualizar el costo total del tramo interactivamente ---
         /**
          * Recalcula y actualiza el costo total del tramo mostrado en la tarjeta de resumen.
-         * Se basa en los checkboxes seleccionados en la lista de desglose.
+         * Se basa en los checkboxes seleccionados en las tablas de detalle.
          */
         function updateCostoTotalTramo() {
             // Filtro para sumar solo checkboxes visibles, evitando errores si hay tarjetas ocultas.
             const getVisibleCheckboxes = (selector) => Array.from(document.querySelectorAll(selector)).filter(cb => cb.offsetParent !== null);
-
+ 
             // 1. Selecciona TODOS los checkboxes marcados en las tablas de detalle.
             const costosPorTipoSeleccionado = {};
             const todosLosCheckboxesMarcados = getVisibleCheckboxes('#costos-cards-grid .bg-slate-50 tbody input[type="checkbox"]:checked');
@@ -6545,24 +6550,22 @@
             let nuevoTotalGeneral = 0;
             let nuevoTotalKmObra = 0; // Variable para sumar los KM de obra.
             
-            // 2. Itera sobre cada checkbox marcado para sumar su monto y, si aplica, sus KM.
+            // 2. Itera sobre cada checkbox marcado para sumar su monto y, si aplica, sus KM, usando la clave de tipo correcta.
             todosLosCheckboxesMarcados.forEach(checkbox => {
                 // Suma el monto de todas las licitaciones seleccionadas.
                 const monto = parseFloat(checkbox.dataset.monto) || 0;
                 const km = parseFloat(checkbox.dataset.km) || 0;
                 nuevoTotalGeneral += monto;
-
-                // Verifica si el checkbox pertenece a una licitación de tipo "1.1 Obra".
-                // El tipo está en el dataset del contenedor de la tarjeta.
-                const card = checkbox.closest('[data-tipo-licitacion]');
-                const tipo = card ? card.dataset.tipoLicitacion : null;
-
-                if (tipo) {
-                    if (!costosPorTipoSeleccionado[tipo]) costosPorTipoSeleccionado[tipo] = { monto: 0, km: 0 };
-                    costosPorTipoSeleccionado[tipo].monto += monto;
-                    costosPorTipoSeleccionado[tipo].km += km;
+ 
+                // Derivar el tipo desde el checkbox para separar normales de múltiples.
+                const tipoKey = checkbox.dataset.childCheckboxOf || (checkbox.closest('.bg-slate-50')?.dataset.tipoLicitacion) || 'Sin Tipo';
+ 
+                if (tipoKey) {
+                    if (!costosPorTipoSeleccionado[tipoKey]) costosPorTipoSeleccionado[tipoKey] = { monto: 0, km: 0 };
+                    costosPorTipoSeleccionado[tipoKey].monto += monto;
+                    costosPorTipoSeleccionado[tipoKey].km += km;
                 }
-                if (tipo === "1.1 Obra") {
+                if (tipoKey === "1.1 Obra") { // Sumar KM solo para licitaciones de obra (no múltiples)
                     nuevoTotalKmObra += parseFloat(checkbox.dataset.km) || 0;
                     // Encontrar la fila y extraer el nombre para la lista
                     const row = checkbox.closest('tr');
@@ -6619,39 +6622,49 @@
          * Agrega los montos de todas las tarjetas de costos por tipo y actualiza el desglose en la tarjeta de resumen.
          */
         function updateSummaryBreakdownByTipo() {
-            const totalsByType = {};
-
-            // 1. Recorrer todas las tarjetas de detalle para agregar los montos de los checkboxes marcados.
-            const allDetailCards = document.querySelectorAll('#costos-cards-grid .bg-slate-50');
-            allDetailCards.forEach(card => {
-                const tipo = card.dataset.tipoLicitacion;
-                if (!tipo) return;
-                if (!totalsByType[tipo]) totalsByType[tipo] = 0;
-
-                card.querySelectorAll('tbody input[type="checkbox"]:checked').forEach(checkbox => {
-                    totalsByType[tipo] += parseFloat(checkbox.dataset.monto) || 0;
-                });
-            });
-
-            // 2. Actualizar cada elemento 'li' en la lista de desglose del resumen.
-            Object.entries(totalsByType).forEach(([tipo, total]) => {
-                const summarySpan = document.querySelector(`#costo-total-breakdown-list li[data-tipo-li="${tipo}"] span[data-summary-tipo]`);
-                if (summarySpan) {
-                    summarySpan.textContent = total.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+            // Primero, resetear todos los valores del resumen a $0.00 para evitar datos fantasma.
+            document.querySelectorAll('#costo-total-breakdown-list li[data-tipo-li]').forEach(li => {
+                const span = li.querySelector('span[data-summary-tipo]');
+                if (span) {
+                    span.textContent = (0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
                 }
             });
+
+             const totalsByType = {};
+             // tomar solo checkboxes visibles en el grid
+             const checkboxes = Array.from(document.querySelectorAll('#costos-cards-grid .bg-slate-50 tbody input[type="checkbox"]:checked'))
+                 .filter(cb => cb.offsetParent !== null);
+ 
+             checkboxes.forEach(cb => {
+                 const monto = parseFloat(cb.dataset.monto) || 0;
+                 let key = cb.dataset.childCheckboxOf || null;
+                 if (!key) {
+                     const card = cb.closest('.bg-slate-50[data-tipo-licitacion]');
+                     key = card ? card.dataset.tipoLicitacion : 'Sin Tipo';
+                 }
+                 if (!totalsByType[key]) totalsByType[key] = 0;
+                 totalsByType[key] += monto;
+             });
+ 
+             Object.entries(totalsByType).forEach(([tipo, total]) => {
+                 const summarySpan = document.querySelector(`#costo-total-breakdown-list li[data-tipo-li="${tipo}"] span[data-summary-tipo]`);
+                 if (summarySpan) summarySpan.textContent = total.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+             });
         }
 
         /**
          * Crea el HTML para una tarjeta de costos individual.
          * @param {Array} data - Las licitaciones para esta tarjeta.
-         * @param {string} title - El título de la tarjeta.
+         * @param {string|object} title - El título de la tarjeta o un objeto para tarjetas conjuntas.
          * @param {string} tipo - El tipo de licitación (ej. "1.1 Obra").
          * @returns {string} El string HTML de la tarjeta.
          */
         function createCostoCardHTML(data, title, tipo) { // title puede ser string u objeto
             const uniqueCardId = `card-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
-            let subtitleHTML = tipo === "1.1 Obra" ? `<p class="text-xs text-center text-gray-500 mt-1">${"(No considera costos de supervisión, asesoría y servicios.)"}</p>` : "";
+            let subtitleHTML = '';
+            if (tipo === "1.1 Obra" && !(typeof title === 'object' && title.isJoint)) {
+                subtitleHTML = `<p class="text-xs text-center text-gray-500 mt-1">${"(No considera costos de supervisión, asesoría y servicios.)"}</p>`;
+            }
             let tableContent = '<p class="text-center text-gray-500 py-4">No hay datos para este tipo de licitación.</p>';
 
             // Ordenar los datos por nombre para un renderizado estable y predecible.
