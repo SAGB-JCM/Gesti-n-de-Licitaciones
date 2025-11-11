@@ -1014,12 +1014,8 @@
                         <div class="flex flex-wrap items-center gap-4">
                             <h2 class="text-xl font-bold text-primary">Licitaciones Registradas</h2>
                             <!-- INICIO: Marcadores de filtro de tipo de tren -->
-                            <div id="train-type-filter-container" class="flex items-center space-x-2 bg-slate-200 p-1 rounded-lg">
+                            <div id="train-type-filter-container" class="flex items-center flex-wrap gap-2 bg-slate-200 p-1 rounded-lg">
                                 <button data-filter="todos" class="train-filter-btn active text-xs font-medium py-1 px-3 rounded-md">Todos</button>
-                                <button data-filter="trenes-del-norte" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Trenes del Norte</button>
-                                <button data-filter="tren-maya" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Tren Maya</button>
-                                <button data-filter="trolebus" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Trolebús</button>
-                                <button data-filter="trenes" class="train-filter-btn text-xs font-medium py-1 px-3 rounded-md">Otros Trenes</button>
                             </div>
                             <!-- INICIO: Marcador para licitaciones múltiples -->
                             <div class="flex items-center gap-2 text-xs text-slate-500 ml-2">
@@ -2425,17 +2421,11 @@
             return data.filter(item => {
                 // -1. Check train type filter (only for historical table)
                 if (filterKey === 'historical' && activeTrainTypeFilter !== 'todos') {
-                    const tipoTren = (item.tipoTren || '').toLowerCase().trim();
-                    if (activeTrainTypeFilter === 'trenes') {
-                        if (tipoTren !== 'trenes') return false;
-                    } else if (activeTrainTypeFilter === 'trenes-del-norte') { // Añadir la nueva condición
-                        if (tipoTren !== 'trenes del norte') return false;
-                    } else if (activeTrainTypeFilter === 'tren-maya') { // CORRECCIÓN: Comparar con 'tren maya'
-                        if (tipoTren !== 'tren maya') return false;
-                    } else if (activeTrainTypeFilter === 'trolebus') {
-                        if (tipoTren !== 'trolebús') return false;
-                    }
-                    // Si se añade otro filtro, se puede extender aquí.
+                    // Lógica de filtro simplificada y dinámica.
+                    // El `activeTrainTypeFilter` ahora es el valor normalizado (ej: 'tren maya').
+                    // Comparamos directamente contra el valor normalizado del item.
+                    const itemTipoTrenNormalizado = (item.tipoTren || '').toLowerCase().trim();
+                    if (itemTipoTrenNormalizado !== activeTrainTypeFilter) return false;
                 }
 
 
@@ -2488,23 +2478,9 @@
             return allData.filter(item => {
                 // 1. Aplicar filtro de tipo de tren (botones superiores)
                 if (filterKey === 'historical' && activeTrainTypeFilter !== 'todos') {
-                    const tipoTren = (item.tipoTren || '').toLowerCase().trim();
-                    let match = true;
-                    switch (activeTrainTypeFilter) {
-                        case 'trenes':
-                            if (tipoTren !== 'trenes') match = false;
-                            break;
-                        case 'trenes-del-norte':
-                            if (tipoTren !== 'trenes del norte') match = false;
-                            break;
-                        case 'tren-maya':
-                            if (tipoTren !== 'tren maya') match = false;
-                            break;
-                        case 'trolebus':
-                            if (tipoTren !== 'trolebús') match = false;
-                            break;
-                    }
-                    if (!match) return false;
+                    // Lógica simplificada: Compara el valor normalizado del item con el filtro activo.
+                    const itemTipoTrenNormalizado = (item.tipoTren || '').toLowerCase().trim();
+                    if (itemTipoTrenNormalizado !== activeTrainTypeFilter) return false;
                 }
 
                 // Primero, aplicar el filtro del dashboard si está activo
@@ -2718,6 +2694,42 @@
 
             // 5. Re-renderizar la tabla con los datos completos y el orden por defecto
             sortAndRenderTable(historicalTableBody, historicalLicitaciones, true);
+        }
+
+        /**
+         * Puebla dinámicamente los botones de filtro por tipo de tren.
+         * Se basa en los valores únicos de `fieldOptions.tiposTren`.
+         */
+        function populateTrainTypeFilters() {
+            const container = document.getElementById('train-type-filter-container');
+            if (!container) return;
+
+            // 1. Limpiar filtros existentes, excepto el de "Todos".
+            const existingButtons = container.querySelectorAll('.train-filter-btn:not([data-filter="todos"])');
+            existingButtons.forEach(btn => btn.remove());
+
+            // 2. Obtener y ordenar los tipos de tren únicos.
+            const uniqueTrainTypes = [...fieldOptions.tiposTren].sort();
+
+            // 3. Crear y añadir un botón para cada tipo de tren.
+            uniqueTrainTypes.forEach(trainType => {
+                if (!trainType) return; // Ignorar valores vacíos
+
+                const button = document.createElement('button');
+                button.className = 'train-filter-btn text-xs font-medium py-1 px-3 rounded-md';
+                
+                // El texto del botón es el valor original (ej: "Tren Maya").
+                // El `data-filter` es el valor normalizado en minúsculas para la lógica de filtrado (ej: "tren maya").
+                button.textContent = trainType;
+                button.dataset.filter = trainType.toLowerCase().trim();
+
+                // Manejo especial para el caso "Trenes" que el usuario quiere como "Otros Trenes"
+                if (trainType.toLowerCase().trim() === 'trenes') {
+                    button.textContent = 'Otros Trenes';
+                }
+
+                container.appendChild(button);
+            });
         }
 
         /**
@@ -3432,6 +3444,7 @@
                 
                 updateDynamicSelectOptions();
                 renderTable(historicalTableBody, historicalLicitaciones, true);
+                populateTrainTypeFilters(); // <-- Llamar aquí para actualizar los filtros de tren
 
             } catch (error) {
                 console.error("Error al importar datos históricos:", error);
@@ -4366,6 +4379,7 @@
                 updateCharts(); // Actualiza los gráficos de reportes
                 updateFalloDashboard(selectedBaseDate); // Actualiza el radar con la fecha base actual
                 updateDynamicSelectOptions();
+                populateTrainTypeFilters(); // <-- Llamar aquí para actualizar los filtros de tren
 
                 // --- INICIO: Notificar al padre que el iframe está listo ---
                 // Si esta ventana es un iframe, envía un mensaje a su padre.
