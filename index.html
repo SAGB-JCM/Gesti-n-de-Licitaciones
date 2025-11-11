@@ -6452,35 +6452,43 @@
              // --- FIN: Sección de Resumen Financiero General ---
  
              // 4. Renderizar tarjetas para licitaciones "normales"
-             for (const [tipo, titulo] of Object.entries(tiposDeLicitacionParaCostos)) {
-                 const datosParaTarjeta = licitacionesNormales.filter(lic => lic.tipo === tipo);
-                 // Solo renderizar la tarjeta si hay datos para ese tipo
-                 if (datosParaTarjeta.length > 0) {
-                     costosCardsGrid.innerHTML += createCostoCardHTML(datosParaTarjeta, titulo, tipo);
-                 }
-             }
+            for (const [tipo, titulo] of Object.entries(tiposDeLicitacionParaCostos)) {
+                const datosParaTarjeta = licitacionesNormales.filter(lic => lic.tipo === tipo);
+                // Solo renderizar la tarjeta si hay datos para ese tipo
+                if (datosParaTarjeta.length > 0) {
+                    costosCardsGrid.innerHTML += createCostoCardHTML(datosParaTarjeta, titulo, tipo);
+                }
+            }
  
-             // 5. Renderizar tarjetas para licitaciones "conjuntas"
-             if (licitacionesConjuntas.length > 0) {
-                 const separadorHTML = `
+            // 5. Agrupar y renderizar tarjetas para licitaciones "conjuntas"
+            if (licitacionesConjuntas.length > 0) {
+                const separadorHTML = `
                     <div class="col-span-1 my-8 flex items-center text-center">
                         <div class="flex-grow border-t-2 border-dashed border-primary"></div>
                         <h3 class="flex-shrink mx-4 text-primary font-bold text-xl">Licitación de Proyectos Múltiples</h3>
                         <div class="flex-grow border-t-2 border-dashed border-primary"></div>
                     </div>
                 `;
-                 costosCardsGrid.innerHTML += separadorHTML;
+                costosCardsGrid.innerHTML += separadorHTML;
  
-                 licitacionesConjuntas.forEach(licitacion => {
-                    // Preparamos un objeto especial para el título de licitaciones conjuntas
-                    const tituloConjunto = {
-                        isJoint: true,
-                        proyecto: licitacion.proyecto,
-                        tramo: licitacion.tramo
-                    };
-                     costosCardsGrid.innerHTML += createCostoCardHTML([licitacion], tituloConjunto, licitacion.tipo);
-                 });
-             }
+                // Agrupar licitaciones conjuntas por la combinación exacta de proyecto y tramo
+                const groupedJointLicitaciones = licitacionesConjuntas.reduce((acc, lic) => {
+                    const key = `${lic.proyecto}#${lic.tramo}`; // Clave única para el grupo
+                    if (!acc[key]) {
+                        acc[key] = [];
+                    }
+                    acc[key].push(lic);
+                    return acc;
+                }, {});
+
+                // Iterar sobre los grupos y renderizar una tarjeta para cada uno
+                Object.values(groupedJointLicitaciones).forEach(group => {
+                    const firstItem = group[0]; // Usar el primer item para definir el título
+                    const tituloConjunto = { isJoint: true, proyecto: firstItem.proyecto, tramo: firstItem.tramo };
+                    // Pasar el grupo completo a la función de renderizado
+                    costosCardsGrid.innerHTML += createCostoCardHTML(group, tituloConjunto, firstItem.tipo);
+                });
+            }
              // Añadir el listener para la actualización interactiva del costo total
              const breakdownList = document.getElementById('costo-total-breakdown-list');
              if (breakdownList) {
