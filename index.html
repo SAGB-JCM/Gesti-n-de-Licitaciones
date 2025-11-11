@@ -6598,6 +6598,10 @@
  
              // Llamar a la función de actualización aquí para poblar los datos iniciales
              updateAllCostTotals();
+
+             // Después de renderizar todo, volvemos a llamar a la actualización de totales
+             // para asegurar que los valores iniciales (con todo seleccionado) se muestren correctamente. (esta linea se comento por que esta en revision, no tocar)
+             //updateCostoTotalTramo();
         }
  
         // --- INICIO: Nueva función para actualizar el costo total del tramo interactivamente ---
