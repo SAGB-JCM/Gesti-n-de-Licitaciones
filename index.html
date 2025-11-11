@@ -6318,43 +6318,33 @@
         }
 
         /**
-         * @summary Abre el modal del visor de fichas y envía los filtros al iframe.
+         * @summary Abre el modal del visor de fichas, espera a que esté listo y envía los filtros.
          * @param {string} proyecto - El nombre del proyecto ferroviario a filtrar.
          * @param {string} tramo - El nombre del tramo correspondiente a filtrar.
          */
          function openFichaViewer(proyecto, tramo) {
-             const siteUrlBase = `https://sagb-jcm.github.io/Fichas-Propuestas/`;
+             const siteUrlBase = `https://sagb-jcm.github.io/Fichas-Propuestas/`; // URL de la App de Fichas
  
-             // 1. Abrir el modal del iframe.
+             // 1. Abrir el modal del iframe inmediatamente.
              openModal(fichaIframeModal);
  
-             // 2. Configurar el botón "Ir al Sitio" para abrir en una nueva pestaña.
+             // 2. Configurar el botón "Ir al Sitio" para que abra la URL en una nueva pestaña.
              goToFichasSiteBtn.href = siteUrlBase;
-             goToFichasSiteBtn.onclick = (event) => {
-                 event.preventDefault();
-                 const newTab = window.open(siteUrlBase, '_blank');
-                 const handleNewTabReady = (messageEvent) => {
-                     if (messageEvent.source === newTab && messageEvent.data.status === 'ready') {
-                         newTab.postMessage({ action: 'selectFilters', payload: { proyecto, tramo } }, '*');
-                         window.removeEventListener('message', handleNewTabReady);
-                     }
-                 };
-                 window.addEventListener('message', handleNewTabReady);
-             };
  
-             // 3. Función para enviar los filtros al iframe.
+             // 3. Función reutilizable para enviar los filtros al iframe.
              const sendFiltersToIframe = () => {
                  const filterMessage = { action: 'selectFilters', payload: { proyecto, tramo } };
                  if (fichaIframe.contentWindow) {
                      fichaIframe.contentWindow.postMessage(filterMessage, '*');
-                     console.log("APP LICITACIONES: Mensaje de filtros enviado al iframe.", filterMessage);
+                     console.log("APP LICITACIONES: Mensaje de filtros enviado al iframe de Fichas.", filterMessage);
                  }
              };
  
-             // 4. Lógica de carga y comunicación con el iframe.
+             // 4. Lógica de comunicación robusta con el iframe.
              const handleIframeReady = (event) => {
                  // Asegurarse de que el mensaje viene del iframe correcto y tiene el estado 'ready'.
                  if (event.source === fichaIframe.contentWindow && event.data.status === 'ready') {
+                     console.log("APP LICITACIONES: Recibido 'ready' del iframe de Fichas. Enviando filtros...");
                      sendFiltersToIframe();
                      // Una vez que la comunicación es exitosa, removemos el listener para no duplicar acciones.
                      window.removeEventListener('message', handleIframeReady);
@@ -6362,14 +6352,15 @@
              };
  
              // Si el iframe no está cargado o tiene una URL diferente, lo cargamos.
+             // Esto asegura que siempre se inicie una comunicación limpia.
              if (fichaIframe.src !== siteUrlBase) {
                  // Añadimos el listener que esperará el mensaje 'ready' del iframe.
                  window.addEventListener('message', handleIframeReady);
                  // Establecemos la URL, lo que iniciará la carga del iframe.
                  fichaIframe.src = siteUrlBase;
              } else {
-                 // Si el iframe ya está cargado, asumimos que está listo y enviamos los filtros.
-                 // Esto es útil si el usuario cierra y vuelve a abrir el modal sin recargar la página.
+                 // Si el iframe ya tiene la URL correcta (ej. al reabrir el modal),
+                 // asumimos que está listo y enviamos los filtros directamente.
                  sendFiltersToIframe();
              }
          }
