@@ -6685,15 +6685,15 @@
                 const costoTotalPorKm = totalKm > 0 ? totalMonto / totalKm : 0;
  
                 footerContent = `
-                    <tfoot class="bg-slate-200 font-semibold">
+                    <tfoot class="bg-slate-200 font-semibold text-xs">
                         <tr>
-                            <td colspan="6" class="py-2 px-3 text-right">Costo Total por Km</td>
+                            <td colspan="7" class="py-2 px-3 text-right">Costo Total por Km</td>
                             <td class="py-2 px-3 text-center text-white bg-secondary total-km-cell">${totalKm.toLocaleString('es-MX')}</td>
                             <td class="py-2 px-3 text-center text-white bg-success total-monto-cell">${totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
                             <td class="py-2 px-3 text-center text-white bg-accent costo-total-km-cell">${costoTotalPorKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
                         </tr>
                         <tr>
-                            <td colspan="8" class="py-2 px-3 text-right italic text-accent">Costo Promedio por Km</td>
+                            <td colspan="9" class="py-2 px-3 text-right italic text-accent">Costo Promedio por Km</td>
                             <td class="py-2 px-3 text-center italic text-accent">${promedioCostoKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
                             <td></td>
                         </tr>
@@ -6711,6 +6711,7 @@
                                 <th class="py-2 px-3">Dependencia</th>
                                 <th class="py-2 px-3">Nombre</th>
                                 <th class="py-2 px-3">Procedimiento</th>
+                                <th class="py-2 px-3">Tipo de Licitación</th>
                                 <th class="py-2 px-3">Fallo</th>
                                 <th class="py-2 px-3">Ganador</th>
                                 <th class="py-2 px-3 text-center">KM Adjudicados</th>
@@ -6725,6 +6726,7 @@
                                     <td class="py-2 px-3">${item.siglasDependencia || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.nombre || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.procedimientoContratacion || 'N/A'}</td>
+                                    <td class="py-2 px-3">${item.tipo || 'N/A'}</td>
                                     <td class="py-2 px-3">${formatDate(item.fechaFallo)}</td>
                                     <td class="py-2 px-3">${item.ganadorLicitacion || 'N/A'}</td>
                                     <td class="py-2 px-3 text-center">${item.kmAdjudicados || 0}</td>
