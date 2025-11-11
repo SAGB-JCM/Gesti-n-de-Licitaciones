@@ -6302,7 +6302,7 @@
 
             const tramos = [...new Set(
                 historicalLicitaciones
-                    .filter(item => item.proyecto === proyecto && item.tramo)
+                    .filter(item => item.proyecto === proyecto && item.tramo && !item.tramo.includes('\n')) // Excluir tramos múltiples
                     .map(item => item.tramo)
             )].sort();
 
@@ -6319,16 +6319,18 @@
          * @param {string} tramo - El nombre del tramo.
          */
         function renderCostosDashboard(proyecto, tramo) {
-            // 1. Filtrar licitaciones "normales" (coincidencia exacta de proyecto y tramo)
+            // 1. Filtrar licitaciones "normales" (coincidencia exacta de proyecto y tramo, sin saltos de línea)
             const licitacionesNormales = historicalLicitaciones.filter(
-                lic => lic.proyecto === proyecto && lic.tramo === tramo
+                lic => lic.proyecto === proyecto && lic.tramo === tramo && !lic.proyecto.includes('\n') && !lic.tramo.includes('\n')
             );
  
-            // 2. Filtrar licitaciones "conjuntas" que incluyan el proyecto seleccionado pero no hayan sido ya contadas.
-            // Se asume que una licitación conjunta tiene el nombre del proyecto y tramo en sus campos correspondientes, separados por saltos de línea.
+            // 2. Filtrar licitaciones "conjuntas" (proyecto múltiple o tramo múltiple) que incluyan el proyecto y tramo seleccionados.
             const licitacionesConjuntas = historicalLicitaciones.filter(lic =>
-                (lic.proyecto && lic.proyecto.includes(proyecto) && lic.proyecto.includes('\n')) &&
-                (lic.tramo && lic.tramo.includes(tramo) && lic.tramo.includes('\n'))
+                // La licitación debe incluir el proyecto y tramo seleccionados
+                (lic.proyecto && lic.proyecto.includes(proyecto)) &&
+                (lic.tramo && lic.tramo.includes(tramo)) &&
+                // Y debe ser una licitación múltiple (ya sea por proyecto o por tramo)
+                (lic.proyecto.includes('\n') || lic.tramo.includes('\n'))
             );
  
             // 3. Combinar ambos grupos de licitaciones.
