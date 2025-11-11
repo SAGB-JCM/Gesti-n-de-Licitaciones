@@ -6565,7 +6565,8 @@
                     costosPorTipoSeleccionado[tipoKey].monto += monto;
                     costosPorTipoSeleccionado[tipoKey].km += km;
                 }
-                if (tipoKey === "1.1 Obra") { // Sumar KM solo para licitaciones de obra (no múltiples)
+                // Si el tipo es "1.1 Obra" o es una múltiple de "1.1 Obra", sumar sus KM.
+                if (tipoKey === "1.1 Obra" || tipoKey.startsWith("1.1 Obra--")) {
                     nuevoTotalKmObra += parseFloat(checkbox.dataset.km) || 0;
                     // Encontrar la fila y extraer el nombre para la lista
                     const row = checkbox.closest('tr');
