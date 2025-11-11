@@ -7090,7 +7090,10 @@
             });
 
             const closeFichaModal = () => {
-                if (fichaIframe) fichaIframe.src = 'about:blank';
+                if (fichaIframe) {
+                    fichaIframe.src = 'about:blank';
+                    window.removeEventListener('message', () => {}); // Limpia listeners residuales
+                }
                 closeModal(fichaIframeModal);
             };
 
