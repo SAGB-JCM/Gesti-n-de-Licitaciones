@@ -6417,6 +6417,7 @@
                                  </ul>
                              </div>
                          </div>
+
                          <!-- Card Costo por KM General - REFORZADA -->
                          <div class="bg-accent text-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow" title="Clic para desplegar">
                              <div class="text-center cursor-pointer" onclick="toggleSummaryContent(this, event)">
@@ -6425,14 +6426,31 @@
                              </div>
                              <div class="summary-card-content">
                                  <ul id="costo-km-breakdown-list" class="text-sm space-y-1 mt-2 border-t pt-2">
-                                     ${Object.keys(tiposDeLicitacionParaCostos).map(tipo => `
-                                         <li class="flex justify-between items-center" data-costo-km-li="${tipo}">
-                                             <span class="truncate text-white" title="${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}">
-                                                 ${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}:
-                                             </span>
-                                             <span class="font-semibold text-white ml-2" data-summary-costo-km-tipo="${tipo}">$0.00</span>
-                                         </li>
-                                     `).join('')}
+                                     ${Object.keys(tiposDeLicitacionParaCostos).map(tipo => {
+                                         // Verificar si existen licitaciones múltiples para este tipo
+                                         const costosPorTipoMultiples = {};
+                                         todasLasLicitaciones.forEach(lic => {
+                                             if (((lic.proyecto && lic.proyecto.includes('\n')) || (lic.tramo && lic.tramo.includes('\n'))) && lic.tipo === tipo) {
+                                                 costosPorTipoMultiples[tipo] = (costosPorTipoMultiples[tipo] || 0) + (parseFloat(lic.monto) || 0);
+                                             }
+                                         });
+                                         const tieneMultiples = costosPorTipoMultiples[tipo] > 0;
+ 
+                                         return `
+                                             <li class="flex justify-between items-center" data-costo-km-li="${tipo}">
+                                                 <span class="truncate text-white" title="${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}">
+                                                     ${(tiposDeLicitacionParaCostos[tipo] || tipo).replace(' - Costo por Km', '')}:
+                                                 </span>
+                                                 <span class="font-semibold text-white ml-2" data-summary-costo-km-tipo="${tipo}">$0.00</span>
+                                             </li>
+                                             ${tieneMultiples ? `
+                                             <li class="flex justify-between items-center pl-6" data-costo-km-li="${tipo}--multi">
+                                                 <span class="truncate text-white/80 text-xs">(Múltiples):</span>
+                                                 <span class="font-semibold text-white/80 text-xs ml-2" data-summary-costo-km-tipo="${tipo}--multi">$0.00</span>
+                                             </li>
+                                             ` : ''}
+                                         `;
+                                     }).join('')}
                                  </ul>
                              </div>
                          </div>
