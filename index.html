@@ -6322,53 +6322,57 @@
          * @param {string} proyecto - El nombre del proyecto ferroviario a filtrar.
          * @param {string} tramo - El nombre del tramo correspondiente a filtrar.
          */
-        function openFichaViewer(proyecto, tramo) {
-            const siteUrlBase = `https://sagb-jcm.github.io/Fichas-Propuestas/`;
-
-            // 1. Abrir el modal del iframe.
-            openModal(fichaIframeModal);
-
-            // 2. Configurar el botón "Ir al Sitio" para abrir en una nueva pestaña.
-            // Este botón ahora solo abre la URL. La comunicación se maneja por separado.
-            goToFichasSiteBtn.href = siteUrlBase;
-            goToFichasSiteBtn.onclick = (event) => {
-                event.preventDefault();
-                const newTab = window.open(siteUrlBase, '_blank');
-                // Esperar a que la nueva pestaña esté lista para enviarle los filtros.
-                const handleNewTabReady = (messageEvent) => {
-                    if (messageEvent.source === newTab && messageEvent.data.status === 'ready') {
-                        newTab.postMessage({ action: 'selectFilters', payload: { proyecto, tramo } }, '*');
-                        window.removeEventListener('message', handleNewTabReady); // Limpiar listener.
-                    }
-                };
-                window.addEventListener('message', handleNewTabReady);
-            };
-
-            // 3. Función para enviar los filtros al iframe cuando esté listo.
-            const sendFiltersToIframe = () => {
-                const filterMessage = { action: 'selectFilters', payload: { proyecto, tramo } };
-                if (fichaIframe.contentWindow) {
-                    fichaIframe.contentWindow.postMessage(filterMessage, '*');
-                }
-            };
-
-            // 4. Lógica de carga y comunicación con el iframe.
-            if (fichaIframe.src !== siteUrlBase) {
-                // Si el iframe no está cargado o tiene una URL diferente, lo cargamos.
-                // La comunicación se iniciará cuando el iframe envíe el mensaje "ready".
-                const handleIframeReady = (event) => {
-                    if (event.source === fichaIframe.contentWindow && event.data.status === 'ready') {
-                        sendFiltersToIframe();
-                        window.removeEventListener('message', handleIframeReady); // Limpiar listener.
-                    }
-                };
-                window.addEventListener('message', handleIframeReady);
-                fichaIframe.src = siteUrlBase;
-            } else {
-                // Si el iframe ya está cargado con la URL correcta, enviamos los filtros directamente.
-                sendFiltersToIframe();
-            }
-        }
+         function openFichaViewer(proyecto, tramo) {
+             const siteUrlBase = `https://sagb-jcm.github.io/Fichas-Propuestas/`;
+ 
+             // 1. Abrir el modal del iframe.
+             openModal(fichaIframeModal);
+ 
+             // 2. Configurar el botón "Ir al Sitio" para abrir en una nueva pestaña.
+             goToFichasSiteBtn.href = siteUrlBase;
+             goToFichasSiteBtn.onclick = (event) => {
+                 event.preventDefault();
+                 const newTab = window.open(siteUrlBase, '_blank');
+                 const handleNewTabReady = (messageEvent) => {
+                     if (messageEvent.source === newTab && messageEvent.data.status === 'ready') {
+                         newTab.postMessage({ action: 'selectFilters', payload: { proyecto, tramo } }, '*');
+                         window.removeEventListener('message', handleNewTabReady);
+                     }
+                 };
+                 window.addEventListener('message', handleNewTabReady);
+             };
+ 
+             // 3. Función para enviar los filtros al iframe.
+             const sendFiltersToIframe = () => {
+                 const filterMessage = { action: 'selectFilters', payload: { proyecto, tramo } };
+                 if (fichaIframe.contentWindow) {
+                     fichaIframe.contentWindow.postMessage(filterMessage, '*');
+                     console.log("APP LICITACIONES: Mensaje de filtros enviado al iframe.", filterMessage);
+                 }
+             };
+ 
+             // 4. Lógica de carga y comunicación con el iframe.
+             const handleIframeReady = (event) => {
+                 // Asegurarse de que el mensaje viene del iframe correcto y tiene el estado 'ready'.
+                 if (event.source === fichaIframe.contentWindow && event.data.status === 'ready') {
+                     sendFiltersToIframe();
+                     // Una vez que la comunicación es exitosa, removemos el listener para no duplicar acciones.
+                     window.removeEventListener('message', handleIframeReady);
+                 }
+             };
+ 
+             // Si el iframe no está cargado o tiene una URL diferente, lo cargamos.
+             if (fichaIframe.src !== siteUrlBase) {
+                 // Añadimos el listener que esperará el mensaje 'ready' del iframe.
+                 window.addEventListener('message', handleIframeReady);
+                 // Establecemos la URL, lo que iniciará la carga del iframe.
+                 fichaIframe.src = siteUrlBase;
+             } else {
+                 // Si el iframe ya está cargado, asumimos que está listo y enviamos los filtros.
+                 // Esto es útil si el usuario cierra y vuelve a abrir el modal sin recargar la página.
+                 sendFiltersToIframe();
+             }
+         }
 
 
 
