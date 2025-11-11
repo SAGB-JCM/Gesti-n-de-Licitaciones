@@ -7064,6 +7064,17 @@
             // Listener para el tooltip de vista rápida
             quickViewTooltip = document.getElementById('quick-view-tooltip');
 
+            // --- INICIO: Ocultar botón de ficha si está en un iframe ---
+            // Comprueba si la ventana actual no es la ventana de nivel superior.
+            // Si no lo es, significa que la app está dentro de un iframe.
+            if (window.self !== window.top) {
+                const fichaButton = document.getElementById('view-ficha-btn');
+                if (fichaButton) {
+                    fichaButton.classList.add('hidden');
+                }
+            }
+            // --- FIN: Ocultar botón de ficha si está en un iframe ---
+
             // Inicializar la autenticación y los listeners
             initializeAppWithAuth();
             setupEventListeners();
