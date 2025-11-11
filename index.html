@@ -1995,6 +1995,9 @@
         let activeFalloDashboardFilter = null; // Para el filtro del radar de fallo
         let activeTrainTypeFilter = 'todos'; // 'todos', 'trenes', 'trenes-del-norte'
 
+        // Variable para detectar si la app corre en un iframe
+        const isRunningInIframe = window.self !== window.top;
+
         // --- INICIO: Variables para la selección múltiple ---
         let multiSelectState = {
             add: { proyecto: [], tramo: [] },
@@ -6308,9 +6311,8 @@
 
             costosTramoSelector.addEventListener('change', () => {
                 // --- INICIO: Lógica de visibilidad del botón de ficha ---
-                // El botón solo se muestra si se ha seleccionado un tramo Y la app NO está en un iframe.
-                const isInIframe = window.self !== window.top;
-                viewFichaBtn.classList.toggle('hidden', !costosTramoSelector.value || isInIframe);
+                // El botón solo se muestra si se ha seleccionado un tramo Y la app NO está en un iframe. (Lógica replicada de APP DE FICHAS)
+                viewFichaBtn.classList.toggle('hidden', !costosTramoSelector.value || isRunningInIframe);
                 // --- FIN: Lógica de visibilidad ---
                 const selectedProyecto = costosProyectoSelector.value;
                 const selectedTramo = costosTramoSelector.value;
@@ -7066,17 +7068,6 @@
             
             // Listener para el tooltip de vista rápida
             quickViewTooltip = document.getElementById('quick-view-tooltip');
-
-            // --- INICIO: Ocultar botón de ficha si está en un iframe ---
-            // Comprueba si la ventana actual no es la ventana de nivel superior.
-            // Si no lo es, significa que la app está dentro de un iframe.
-            if (window.self !== window.top) {
-                const fichaButton = document.getElementById('view-ficha-btn');
-                if (fichaButton) {
-                    fichaButton.classList.add('hidden');
-                }
-            }
-            // --- FIN: Ocultar botón de ficha si está en un iframe ---
 
             // Inicializar la autenticación y los listeners
             initializeAppWithAuth();
