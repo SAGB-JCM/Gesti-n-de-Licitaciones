@@ -6275,15 +6275,18 @@
          * Puebla el selector de proyectos en la pestaña de Costos.
          */
         function populateCostosProyectoSelector() {
-            const proyectos = [...new Set(
-                historicalLicitaciones
-                    .map(item => item.proyecto)
-                    .filter(p => p && !p.includes('\n')) // Filtrar proyectos nulos/vacíos Y que no contengan saltos de línea
-            )].sort();
-            costosProyectoSelector.innerHTML = '<option value="">-- Seleccione un Proyecto --</option>';
-            proyectos.forEach(p => {
-                costosProyectoSelector.innerHTML += `<option value="${p}">${p}</option>`;
+            const proyectosSet = new Set();
+            historicalLicitaciones.forEach(item => {
+                if (!item.proyecto) return;
+                // dividir multilínea y normalizar
+                item.proyecto.split('\n').map(s => s.trim()).filter(Boolean).forEach(p => proyectosSet.add(p));
             });
+            const proyectos = Array.from(proyectosSet).sort((a,b) => a.localeCompare(b, 'es'));
+            costosProyectoSelector.innerHTML = '<option value="">-- Seleccione un Proyecto --</option>';
+            proyectos.forEach(p => costosProyectoSelector.innerHTML += `<option value="${p}">${p}</option>`);
+            costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
+            costosTramoSelector.disabled = true;
+
             // Resetear y deshabilitar el selector de tramos
             costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
             costosTramoSelector.disabled = true;
@@ -6294,23 +6297,26 @@
          * @param {string} proyecto - El nombre del proyecto seleccionado.
          */
         function populateCostosTramoSelector(proyecto) {
-            if (!proyecto) {
-                costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
-                costosTramoSelector.disabled = true;
-                return;
-            }
+             if (!proyecto) {
+                 costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
+                 costosTramoSelector.disabled = true;
+                 return;
+             }
 
-            const tramos = [...new Set(
-                historicalLicitaciones
-                    .filter(item => item.proyecto === proyecto && item.tramo && !item.tramo.includes('\n')) // Excluir tramos múltiples
-                    .map(item => item.tramo)
-            )].sort();
-
-            costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
-            tramos.forEach(t => {
-                costosTramoSelector.innerHTML += `<option value="${t}">${t}</option>`;
-            });
-            costosTramoSelector.disabled = false;
+             // Extraer tramos de todas las licitaciones del proyecto, incluso los que están en formato multilinea
+             const tramosSet = new Set();
+             historicalLicitaciones.forEach(item => {
+                if (!item.tramo || !item.proyecto) return;
+                // si el proyecto aparece listado en el campo (multilínea o simple)
+                const proyectos = item.proyecto.split('\n').map(p => p.trim());
+                if (!proyectos.includes(proyecto)) return;
+                item.tramo.split('\n').map(t => t.trim()).filter(Boolean).forEach(t => tramosSet.add(t));
+             });
+ 
+             const tramos = Array.from(tramosSet).sort((a,b) => a.localeCompare(b, 'es'));
+             costosTramoSelector.innerHTML = '<option value="">-- Seleccione un Tramo --</option>';
+             tramos.forEach(t => costosTramoSelector.innerHTML += `<option value="${t}">${t}</option>`);
+             costosTramoSelector.disabled = tramos.length === 0;
         }
 
         /**
@@ -6325,13 +6331,16 @@
             );
  
             // 2. Filtrar licitaciones "conjuntas" (proyecto múltiple o tramo múltiple) que incluyan el proyecto y tramo seleccionados.
-            const licitacionesConjuntas = historicalLicitaciones.filter(lic =>
-                // La licitación debe incluir el proyecto y tramo seleccionados
-                (lic.proyecto && lic.proyecto.includes(proyecto)) &&
-                (lic.tramo && lic.tramo.includes(tramo)) &&
-                // Y debe ser una licitación múltiple (ya sea por proyecto o por tramo)
-                (lic.proyecto.includes('\n') || lic.tramo.includes('\n'))
-            );
+            const licitacionesConjuntas = historicalLicitaciones.filter(lic => {
+                if (!lic.proyecto || !lic.tramo) return false;
+                // considerar solo licitaciones que realmente son múltiples (tienen saltos)
+                if (!(lic.proyecto.includes('\n') || lic.tramo.includes('\n'))) return false;
+
+                const proyectos = lic.proyecto.split('\n').map(s => s.trim()).filter(Boolean);
+                const tramos = lic.tramo.split('\n').map(s => s.trim()).filter(Boolean);
+
+                return proyectos.includes(proyecto) && tramos.includes(tramo);
+            });
  
             // 3. Combinar ambos grupos de licitaciones.
             const todasLasLicitaciones = [...licitacionesNormales, ...licitacionesConjuntas];
@@ -6350,6 +6359,7 @@
              let totalMontoGeneral = 0;
              let totalKmAdjudicadosGeneral = 0;
              const costosPorTipo = {};
+             const costosPorTipoMultiples = {}; // Para licitaciones múltiples
              const licitacionesDeObra = [];
  
              todasLasLicitaciones.forEach(lic => {
@@ -6357,6 +6367,14 @@
                  const km = parseFloat(lic.kmAdjudicados) || 0;
                  const tipo = lic.tipo || 'Sin Tipo';
  
+                 const esMultiple = (lic.proyecto && lic.proyecto.includes('\n')) || (lic.tramo && lic.tramo.includes('\n'));
+
+                 if (esMultiple) {
+                    if (!costosPorTipoMultiples[tipo]) costosPorTipoMultiples[tipo] = 0;
+                    costosPorTipoMultiples[tipo] += monto;
+                 }
+
+
                  totalMontoGeneral += monto;
                  if (lic.tipo === "1.1 Obra") { // Sumar KM solo para licitaciones de obra
                      totalKmAdjudicadosGeneral += km;
@@ -6400,7 +6418,9 @@
                              </div>
                              <div class="summary-card-content">
                                  <ul id="costo-total-breakdown-list" class="text-sm space-y-1 mt-2 border-t pt-2">
-                                     ${Object.entries(costosPorTipo).sort(([,a],[,b]) => b-a).map(([tipo, monto]) => `
+                                     ${Object.entries(costosPorTipo).sort(([,a],[,b]) => b-a).map(([tipo, monto]) => {
+                                        const tieneMultiples = costosPorTipoMultiples[tipo] > 0;
+                                        return `
                                          <li class="flex justify-between items-center" data-tipo-li="${tipo}">
                                              <label class="flex items-center cursor-pointer text-slate-600 flex-grow" for="master-checkbox-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}">
                                                  <input type="checkbox" id="master-checkbox-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mr-2" data-monto="${monto}" data-master-checkbox-for="${tipo}" checked>
@@ -6409,8 +6429,17 @@
                                                  </span>
                                              </label>
                                              <span class="font-semibold text-white ml-2" data-summary-tipo="${tipo}">${monto.toLocaleString('es-MX', { style: 'currency', 'currency': 'MXN' })}</span>
-                                         </li>
-                                     `).join('')}
+                                          </li>
+                                          ${tieneMultiples ? `
+                                            <li class="flex justify-between items-center pl-6" data-tipo-li="${tipo}--multi">
+                                                <label class="flex items-center cursor-pointer text-slate-600 flex-grow" for="master-checkbox-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}-multi">
+                                                    <input type="checkbox" id="master-checkbox-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}-multi" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mr-2" data-monto="${costosPorTipoMultiples[tipo]}" data-master-checkbox-for="${tipo}--multi" checked>
+                                                    <span class="truncate text-white/80 text-xs">(Múltiples)</span>
+                                                </label>
+                                            </li>
+                                          ` : ''}
+                                        `;
+                                     }).join('')}
                                  </ul>
                              </div>
                          </div>
@@ -6504,10 +6533,13 @@
          * Recalcula y actualiza el costo total del tramo mostrado en la tarjeta de resumen.
          * Se basa en los checkboxes seleccionados en la lista de desglose.
          */
-        function updateCostoTotalTramo() { // REFACTORIZADO para actualizar también la lista de KM de obra
+        function updateCostoTotalTramo() {
+            // Filtro para sumar solo checkboxes visibles, evitando errores si hay tarjetas ocultas.
+            const getVisibleCheckboxes = (selector) => Array.from(document.querySelectorAll(selector)).filter(cb => cb.offsetParent !== null);
+
             // 1. Selecciona TODOS los checkboxes marcados en las tablas de detalle.
             const costosPorTipoSeleccionado = {};
-            const todosLosCheckboxesMarcados = document.querySelectorAll('#costos-cards-grid .bg-slate-50 tbody input[type="checkbox"]:checked');
+            const todosLosCheckboxesMarcados = getVisibleCheckboxes('#costos-cards-grid .bg-slate-50 tbody input[type="checkbox"]:checked');
             
             const licitacionesDeObraSeleccionadas = [];
             let nuevoTotalGeneral = 0;
@@ -6619,8 +6651,11 @@
          */
         function createCostoCardHTML(data, title, tipo) { // title puede ser string u objeto
             const uniqueCardId = `card-${tipo.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
-            let subtitle = tipo === "1.1 Obra" ? "(No considera costos de supervisión, asesoría y servicios.)" : "";
+            let subtitleHTML = tipo === "1.1 Obra" ? `<p class="text-xs text-center text-gray-500 mt-1">${"(No considera costos de supervisión, asesoría y servicios.)"}</p>` : "";
             let tableContent = '<p class="text-center text-gray-500 py-4">No hay datos para este tipo de licitación.</p>';
+
+            // Ordenar los datos por nombre para un renderizado estable y predecible.
+            data = data.slice().sort((a,b) => ( (a.nombre || '').localeCompare(b.nombre || '', 'es') ));
 
             // --- INICIO: Lógica para el título dinámico --- // REFACTOR: titleHTML
             let titleHTML; 
@@ -6696,7 +6731,7 @@
                         <tbody>
                             ${data.map(item => `
                                 <tr class="border-b hover:bg-slate-100" data-id="${item.id}" style="cursor: pointer;" title="Doble clic para ver detalles">
-                                    <td class="py-2 px-1 text-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" data-child-checkbox-of="${(typeof title === 'object' && title.isJoint) ? item.tipo : tipo}" data-monto="${item.monto || 0}" data-km="${item.kmAdjudicados || 0}" checked></td>
+                                    <td class="py-2 px-1 text-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" data-child-checkbox-of="${(typeof title === 'object' && title.isJoint) ? `${item.tipo}--multi` : tipo}" data-monto="${item.monto || 0}" data-km="${item.kmAdjudicados || 0}" checked></td>
                                     <td class="py-2 px-3">${item.siglasDependencia || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.nombre || 'N/A'}</td>
                                     <td class="py-2 px-3">${item.procedimientoContratacion || 'N/A'}</td>
@@ -6715,7 +6750,7 @@
             return `
                 <div id="${uniqueCardId}" class="bg-slate-50 p-6 rounded-lg border" data-tipo-licitacion="${(typeof title === 'object' && title.isJoint) ? data[0]?.tipo : tipo}">
                     ${titleHTML}
-                    ${subtitle ? `<p class="text-sm text-center text-gray-500 mb-4">${subtitle}</p>` : ''}
+                    ${subtitleHTML}
                     <div>
                         ${tableContent}
                     </div>
