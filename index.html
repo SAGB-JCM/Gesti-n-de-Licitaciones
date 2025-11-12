@@ -6776,6 +6776,28 @@
                 const montosValidos = data.map(item => parseFloat(item.monto)).filter(monto => !isNaN(monto) && monto > 0);
                 const kmValidos = data.map(item => parseFloat(item.kmAdjudicados)).filter(km => !isNaN(km) && km > 0);
  
+                // --- INICIO: Cálculo de la Moda para KM Adjudicados ---
+                let modaKmAdjudicados = 0;
+                if (kmValidos.length > 0) {
+                    const frequencyMap = kmValidos.reduce((acc, val) => {
+                        acc[val] = (acc[val] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                    let maxFreq = 0;
+                    let modes = [];
+                    for (const key in frequencyMap) {
+                        if (frequencyMap[key] > maxFreq) {
+                            modes = [Number(key)];
+                            maxFreq = frequencyMap[key];
+                        } else if (frequencyMap[key] === maxFreq) {
+                            modes.push(Number(key));
+                        }
+                    }
+                    modaKmAdjudicados = modes.length > 0 ? modes[0] : 0; // Tomamos la primera moda si hay varias
+                }
+                // --- FIN: Cálculo de la Moda ---
+
                 const promedioCostoKm = costosValidos.length > 0
                     ? costosValidos.reduce((sum, costo) => sum + costo, 0) / costosValidos.length
                     : 0;
@@ -6791,6 +6813,11 @@
                             <td class="py-2 px-3 text-center text-white bg-secondary total-km-cell">${totalKm.toLocaleString('es-MX')}</td>
                             <td class="py-2 px-3 text-center text-white bg-success total-monto-cell">${totalMonto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
                             <td class="py-2 px-3 text-center text-white bg-accent costo-total-km-cell">${costoTotalPorKm.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" class="py-2 px-3 text-right italic text-secondary">Moda de KM Adjudicados</td>
+                            <td class="py-2 px-3 text-center italic text-secondary">${modaKmAdjudicados.toLocaleString('es-MX')}</td>
+                            <td colspan="3"></td>
                         </tr>
                         <tr>
                             <td colspan="9" class="py-2 px-3 text-right italic text-accent">Costo Promedio por Km</td>
